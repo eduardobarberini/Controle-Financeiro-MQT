@@ -13,12 +13,12 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Landmark, Lock, Mail, ArrowRight, Loader2, Sparkles } from 'lucide-react'
+import { Landmark, Lock, Mail, ArrowRight, Loader2 } from 'lucide-react'
 import { COMPANY_NAME } from '@/types/financial'
 
 export default function Login() {
-  const [email, setEmail] = useState('eduardo@mqtnegociosdigitais.com.br')
-  const [password, setPassword] = useState('Skip@Pass')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -55,11 +55,6 @@ export default function Login() {
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  const handleFillDemo = () => {
-    setEmail('eduardo@mqtnegociosdigitais.com.br')
-    setPassword('Skip@Pass')
   }
 
   return (
@@ -130,19 +125,6 @@ export default function Login() {
                     required
                   />
                 </div>
-              </div>
-
-              <div className="pt-1">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleFillDemo}
-                  className="w-full text-xs text-slate-300 border-slate-700 bg-slate-800/60 hover:bg-slate-800 hover:text-white"
-                >
-                  <Sparkles className="w-3.5 h-3.5 mr-1.5 text-pink-400" />
-                  Preencher dados de demonstração (Eduardo)
-                </Button>
               </div>
             </CardContent>
 
