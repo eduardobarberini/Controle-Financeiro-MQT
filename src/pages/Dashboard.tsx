@@ -100,31 +100,30 @@ export default function Dashboard() {
 
       {/* 5 Responsive KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-        {/* KPI 1: Faturamento Acumulado */}
+        {/* 1. Investimento Anual */}
         <KpiCard
-          title="Faturamento Acumulado"
-          value={summary.totalRevenue}
+          title="Investimento Anual"
+          value={summary.totalInvestment}
           formatType="currency"
           icon={DollarSign}
+          subtext="Soma total investida no período"
+          iconBgColor="bg-blue-50 text-blue-600 border-blue-200"
+        />
+
+        {/* 2. Faturamento Anual */}
+        <KpiCard
+          title="Faturamento Anual"
+          value={summary.totalRevenue}
+          formatType="currency"
+          icon={TrendingUp}
           targetPercent={summary.revenueGoalPercent}
           showProgressBar={true}
           iconBgColor="bg-emerald-50 text-emerald-600 border-emerald-200"
         />
 
-        {/* KPI 2: Lucro Acumulado */}
+        {/* 3. ROAS */}
         <KpiCard
-          title="Lucro Acumulado"
-          value={summary.totalProfit}
-          formatType="currency"
-          icon={TrendingUp}
-          targetPercent={summary.profitGoalPercent}
-          showProgressBar={true}
-          iconBgColor="bg-teal-50 text-teal-600 border-teal-200"
-        />
-
-        {/* KPI 3: ROAS Médio */}
-        <KpiCard
-          title="ROAS Médio do Período"
+          title="ROAS"
           value={summary.averageRoas}
           formatType="roas"
           icon={Calculator}
@@ -136,9 +135,20 @@ export default function Dashboard() {
           iconBgColor="bg-indigo-50 text-indigo-600 border-indigo-200"
         />
 
-        {/* KPI 4: Margem Média */}
+        {/* 4. Lucro Liquido */}
         <KpiCard
-          title="Margem Média (%)"
+          title="Lucro Liquido"
+          value={summary.totalProfit}
+          formatType="currency"
+          icon={TrendingUp}
+          targetPercent={summary.profitGoalPercent}
+          showProgressBar={true}
+          iconBgColor="bg-teal-50 text-teal-600 border-teal-200"
+        />
+
+        {/* 5. Margem Lucro % */}
+        <KpiCard
+          title="Margem Lucro %"
           value={summary.averageMargin}
           formatType="percent"
           icon={Percent}
@@ -148,20 +158,6 @@ export default function Dashboard() {
               : 'Sem receita registrada'
           }
           iconBgColor="bg-amber-50 text-amber-600 border-amber-200"
-        />
-
-        {/* KPI 5: Faturamento do Mês Atual (último preenchido) */}
-        <KpiCard
-          title="Faturamento Mês Recente"
-          value={summary.currentMonthRevenue}
-          formatType="currency"
-          icon={CalendarCheck}
-          subtext={
-            summary.lastEnteredMonthLabel
-              ? `Último mês: ${summary.lastEnteredMonthLabel}`
-              : 'Nenhum mês lançado'
-          }
-          iconBgColor="bg-sky-50 text-sky-600 border-sky-200"
         />
       </div>
 
