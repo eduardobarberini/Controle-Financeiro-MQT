@@ -1,0 +1,163 @@
+{
+  "generatedAt": "2026-08-15T21:25:33.490Z",
+  "collections": [
+    {
+      "name": "users",
+      "type": "auth",
+      "apiRules": {
+        "list": "id = @request.auth.id",
+        "view": "id = @request.auth.id",
+        "create": "",
+        "update": "id = @request.auth.id",
+        "delete": "id = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "name",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "avatar",
+          "type": "file",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX `idx_tokenKey__pb_users_auth_` ON `users` (`tokenKey`)",
+        "CREATE UNIQUE INDEX `idx_email__pb_users_auth_` ON `users` (`email`) WHERE `email` != ''"
+      ]
+    },
+    {
+      "name": "monthly_data",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && user.id = @request.auth.id",
+        "view": "@request.auth.id != '' && user.id = @request.auth.id",
+        "create": "@request.auth.id != '' && user = @request.auth.id",
+        "update": "@request.auth.id != '' && user.id = @request.auth.id",
+        "delete": "@request.auth.id != '' && user.id = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "user",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "month",
+          "type": "date",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "investment",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "gross_revenue",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "net_profit",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_monthly_data_user_month ON monthly_data (user, month)",
+        "CREATE INDEX idx_monthly_data_month ON monthly_data (month)"
+      ]
+    },
+    {
+      "name": "goals",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && user.id = @request.auth.id",
+        "view": "@request.auth.id != '' && user.id = @request.auth.id",
+        "create": "@request.auth.id != '' && user = @request.auth.id",
+        "update": "@request.auth.id != '' && user.id = @request.auth.id",
+        "delete": "@request.auth.id != '' && user.id = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "user",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "year",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "annual_revenue_goal",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "annual_profit_goal",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE UNIQUE INDEX idx_goals_user_year ON goals (user, year)"]
+    }
+  ]
+}
