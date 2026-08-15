@@ -183,12 +183,12 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
           </CardContent>
         </Card>
 
-        {/* Gráfico 2: Progresso da Meta Anual (Faturamento) */}
+        {/* Gráfico 2: Progresso da Meta de Faturamento */}
         <Card className="lg:col-span-5 bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
           <CardHeader className="p-5 pb-2">
             <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
               <Target className="w-4 h-4 text-emerald-600" />
-              Progresso da Meta Anual
+              Progresso da Meta de Faturamento
             </CardTitle>
             <CardDescription className="text-xs text-slate-500 mt-0.5">
               Percentual do faturamento realizado em relação à meta anual
