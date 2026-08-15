@@ -59,6 +59,51 @@ export function formatCurrency(value: number | null | undefined): string {
   return currencyFormatter.format(value)
 }
 
+/**
+ * Parses a Brazilian formatted numeric string (e.g. "449.496", "449496", "31.871,63", "1.234,56", "1234,56")
+ * or standard JS number string (e.g. "449496.50") into a valid number.
+ *
+ * Handling rules for pt-BR formatted input:
+ * - If string contains both dots and commas (e.g. "31.871,63"), dots are thousand separators and comma is decimal.
+ * - If string contains only commas (e.g. "1234,56"), comma is decimal.
+ * - If string contains only dots:
+ *    - If there's 1 dot and exactly 1 or 2 digits after it (e.g. "12.5" or "12.50"), treat dot as decimal point.
+ *    - Otherwise (e.g. "449.496" or "1.000.000"), treat dots as thousand separators.
+ */
+export function parsePtBrNumber(val: string | number | null | undefined): number {
+  if (val === null || val === undefined) return 0
+  if (typeof val === 'number') return isNaN(val) ? 0 : val
+
+  let str = String(val).trim()
+  if (!str) return 0
+
+  // Remove currency prefix "R$", non-breaking spaces and whitespace
+  str = str.replace(/R\$\s?/, '').replace(/\s+/g, '')
+
+  const hasComma = str.includes(',')
+  const hasDot = str.includes('.')
+
+  if (hasComma && hasDot) {
+    // Standard pt-BR format: "1.234,56" -> dots are thousands, comma is decimal
+    str = str.replace(/\./g, '').replace(',', '.')
+  } else if (hasComma) {
+    // "1234,56" -> comma is decimal
+    str = str.replace(',', '.')
+  } else if (hasDot) {
+    // Only dot present, e.g. "449.496" or "449.5" or "1.000.000"
+    const dotParts = str.split('.')
+    if (dotParts.length === 2 && dotParts[1].length <= 2) {
+      // Single dot with 1 or 2 digits after: treat as standard decimal (e.g., "12.5" or "100.50")
+    } else {
+      // Multiple dots OR 3 digits after dot (e.g., "449.496" or "1.000.000") -> thousand separators
+      str = str.replace(/\./g, '')
+    }
+  }
+
+  const parsed = parseFloat(str)
+  return isNaN(parsed) ? 0 : parsed
+}
+
 export function formatCompactCurrency(value: number | null | undefined): string {
   if (value === null || value === undefined || isNaN(value)) return 'R$ 0'
   return compactCurrencyFormatter.format(value)

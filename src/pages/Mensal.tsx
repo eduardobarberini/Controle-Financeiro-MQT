@@ -31,6 +31,7 @@ import {
   formatPercent,
   formatRoas,
   computeMonthlyMetrics,
+  parsePtBrNumber,
   TAX_META_RATE,
   SALES_TAX_RATE,
 } from '@/lib/financial-utils'
@@ -76,7 +77,7 @@ const NUM_FIELDS = [
 ] as const
 type NumField = (typeof NUM_FIELDS)[number]
 
-const num = (s: string): number => parseFloat(s.replace(',', '.')) || 0
+const num = (s: string): number => parsePtBrNumber(s)
 
 const EMPTY_SAVED = {
   revenue: 0,
@@ -100,7 +101,7 @@ const CurrencyCell: React.FC<{
       type="text"
       inputMode="decimal"
       value={value}
-      onChange={(e) => onChange(e.target.value.replace(/[^0-9.,]/g, '').replace(',', '.'))}
+      onChange={(e) => onChange(e.target.value.replace(/[^0-9.,]/g, ''))}
       placeholder="0,00"
       className={`h-8 pl-7 pr-2 text-xs font-semibold tabular-nums text-slate-900 bg-white rounded-lg shadow-2xs ${
         modified
@@ -148,7 +149,7 @@ export default function Mensal() {
           }
         : { ...EMPTY_SAVED }
 
-      const str = (n: number) => (n > 0 ? String(n) : '')
+      const str = (n: number) => (n > 0 ? formatCurrency(n).replace('R$', '').trim() : '')
 
       newRows.push({
         key: `m-${i}`,
@@ -260,11 +261,17 @@ export default function Mensal() {
     setRows((prev) => prev.map((r) => (r.key === row.key ? { ...r, isSavingRow: true } : r)))
     try {
       await save(row.id, payload)
+      const str = (n: number) => (n > 0 ? formatCurrency(n).replace('R$', '').trim() : '')
       setRows((prev) =>
         prev.map((r) =>
           r.key === row.key
             ? {
                 ...r,
+                revenueStr: str(payload.revenue),
+                adsMetaStr: str(payload.ads_meta),
+                salesCommissionStr: str(payload.sales_commission),
+                otherVariableStr: str(payload.other_variable_costs),
+                fixedCostsStr: str(payload.fixed_costs),
                 isSavingRow: false,
                 saved: {
                   revenue: payload.revenue,
