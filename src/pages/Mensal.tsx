@@ -173,10 +173,25 @@ export default function Mensal() {
     setRows((prev) => prev.map((r) => (r.key === key ? { ...r, [field]: val } : r)))
   }
 
-  const handleClearRow = (key: string) => {
+  // Atomic clear + save: zeros every field of the row AND persists it
+  // to the backend immediately, without needing a separate "Salvar" click.
+  const handleClearAndSaveRow = async (row: RowState) => {
+    const payload = {
+      year: selectedYear,
+      month: row.monthIndex + 1,
+      revenue: 0,
+      investment: 0,
+      ads_meta: 0,
+      tax_meta: 0,
+      sales_tax: 0,
+      sales_commission: 0,
+      other_variable_costs: 0,
+      fixed_costs: 0,
+    }
+
     setRows((prev) =>
       prev.map((r) =>
-        r.key === key
+        r.key === row.key
           ? {
               ...r,
               revenueStr: '',
@@ -187,14 +202,37 @@ export default function Mensal() {
               salesCommissionStr: '',
               otherVariableStr: '',
               fixedCostsStr: '',
+              isSavingRow: true,
             }
           : r,
       ),
     )
-    toast({
-      title: 'Valores limpos',
-      description: 'Lembre-se de clicar em "Salvar" para confirmar o zeramento dos dados no banco.',
-    })
+    try {
+      await save(row.id, payload)
+      setRows((prev) =>
+        prev.map((r) =>
+          r.key === row.key
+            ? {
+                ...r,
+                isSavingRow: false,
+                saved: { ...EMPTY_SAVED },
+              }
+            : r,
+        ),
+      )
+      toast({
+        title: 'Dados apagados',
+        description: `Os dados de ${MONTH_NAMES_PT[row.monthIndex]}/${selectedYear} foram zerados e salvos automaticamente.`,
+      })
+    } catch (err: unknown) {
+      console.error(err)
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao apagar dados',
+        description: err instanceof Error ? err.message : 'Tente novamente.',
+      })
+      setRows((prev) => prev.map((r) => (r.key === row.key ? { ...r, isSavingRow: false } : r)))
+    }
   }
 
   const isRowModified = (row: RowState): boolean => {
@@ -755,13 +793,13 @@ export default function Mensal() {
                               <AlertDialogContent className="rounded-2xl">
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>
-                                    Limpar dados de {MONTH_NAMES_PT[row.monthIndex]}?
+                                    Apagar dados de {MONTH_NAMES_PT[row.monthIndex]}?
                                   </AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Isso redefinirá todos os campos numéricos deste mês
+                                    Esta ação apagará permanentemente todos os dados daquele mês
                                     (Faturamento, Investimento, Impostos, Comissões, Custos Fixos e
-                                    Outros) para zero. O estado da linha será atualizado para que
-                                    você possa salvar a linha zerada.
+                                    Outros), zerando-os e salvando automaticamente no banco. Não
+                                    será possível desfazer.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
@@ -769,10 +807,10 @@ export default function Mensal() {
                                     Cancelar
                                   </AlertDialogCancel>
                                   <AlertDialogAction
-                                    onClick={() => handleClearRow(row.key)}
+                                    onClick={() => handleClearAndSaveRow(row)}
                                     className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl"
                                   >
-                                    Limpar campos
+                                    Apagar
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
