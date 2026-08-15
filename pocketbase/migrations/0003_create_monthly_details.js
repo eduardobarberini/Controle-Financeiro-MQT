@@ -90,9 +90,9 @@ migrate(
     })
     app.save(monthlyDetailsCollection)
 
-    // Seed 12 months of 2026 for eduardo@body4you.com.br
+    // Seed 12 months of 2026 for eduardo@mqtnegociosdigitais.com.br
     const col = app.findCollectionByNameOrId('monthly_details')
-    const email = 'eduardo@body4you.com.br'
+    const email = 'eduardo@mqtnegociosdigitais.com.br'
     let userRecord
     try {
       userRecord = app.findAuthRecordByEmail('_pb_users_auth_', email)

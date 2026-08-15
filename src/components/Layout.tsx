@@ -82,7 +82,7 @@ export default function Layout() {
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 hidden sm:block">
-                Módulo 1 — Visão do ano de {selectedYear}
+                Visão do ano de {selectedYear}
               </p>
             </div>
           </div>
@@ -122,8 +122,8 @@ export default function Layout() {
           {/* Global Footer */}
           <footer className="max-w-[1280px] mx-auto border-t border-slate-200/80 pt-4 pb-8 mt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
             <div>
-              <span className="font-semibold text-slate-700">Módulo 1 — Financeiro</span> •{' '}
-              {COMPANY_NAME} • {selectedYear}
+              <span className="font-semibold text-slate-700">Financeiro</span> • {COMPANY_NAME} •{' '}
+              {selectedYear}
             </div>
             <div className="text-slate-500">Sistema expansível de gestão empresarial</div>
           </footer>

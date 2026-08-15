@@ -1,4 +1,4 @@
-export const COMPANY_NAME = 'Body4You'
+export const COMPANY_NAME = 'MQT Negócios Digitais'
 export const APP_TITLE = `Controle Financeiro — ${COMPANY_NAME}`
 export const DEFAULT_YEAR = 2026
 

@@ -48,9 +48,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
               <span className="text-xs text-emerald-400 font-semibold tracking-wide truncate">
                 {COMPANY_NAME}
               </span>
-              <span className="text-[10px] uppercase font-bold px-1.5 py-0.2 bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 rounded">
-                Módulos
-              </span>
             </div>
           </div>
         </div>

@@ -84,7 +84,7 @@ export default function Signup() {
             <Landmark className="w-7 h-7" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white">Criar Nova Conta</h1>
-          <p className="text-sm text-slate-400 mt-1 font-medium">{COMPANY_NAME} • Módulo 1</p>
+          <p className="text-sm text-slate-400 mt-1 font-medium">{COMPANY_NAME}</p>
         </div>
 
         <Card className="border-slate-800 bg-slate-900/90 backdrop-blur-xl text-slate-100 shadow-2xl rounded-2xl">
@@ -210,7 +210,7 @@ export default function Signup() {
         </Card>
 
         <p className="text-center text-xs text-slate-500 mt-6">
-          Módulo 1 — Financeiro • {COMPANY_NAME} • 2026
+          Financeiro • {COMPANY_NAME} • 2026
         </p>
       </div>
     </div>

@@ -4,7 +4,7 @@ migrate(
     const goalsCol = app.findCollectionByNameOrId('goals')
     const monthlyDataCol = app.findCollectionByNameOrId('monthly_data')
 
-    const email = 'eduardo@body4you.com.br'
+    const email = 'eduardo@mqtnegociosdigitais.com.br'
     let userRecord
 
     try {
@@ -139,7 +139,10 @@ migrate(
   },
   (app) => {
     try {
-      const user = app.findAuthRecordByEmail('_pb_users_auth_', 'eduardo@body4you.com.br')
+      const user = app.findAuthRecordByEmail(
+        '_pb_users_auth_',
+        'eduardo@mqtnegociosdigitais.com.br',
+      )
       app.delete(user)
     } catch (_) {}
   },
