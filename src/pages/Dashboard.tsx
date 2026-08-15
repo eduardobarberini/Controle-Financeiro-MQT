@@ -2,30 +2,18 @@ import React, { useState } from 'react'
 import { useFinancial } from '@/contexts/FinancialContext'
 import { KpiCard } from '@/components/dashboard/KpiCard'
 import { DashboardCharts } from '@/components/dashboard/DashboardCharts'
-import { SummaryTable } from '@/components/dashboard/SummaryTable'
 import { MetasModal } from '@/components/MetasModal'
-import {
-  TrendingUp,
-  Wallet,
-  Percent,
-  Info,
-  ChevronDown,
-  ChevronUp,
-  PlusCircle,
-  Sparkles,
-  Target,
-} from 'lucide-react'
+import { TrendingUp, Wallet, Percent, PlusCircle, Target } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Link } from 'react-router-dom'
 
 export default function Dashboard() {
   const { summary, selectedYear, isLoading } = useFinancial()
-  const [showInstructions, setShowInstructions] = useState(false)
   const [metasOpen, setMetasOpen] = useState(false)
 
   return (
     <div className="space-y-8 animate-in fade-in-50 duration-300">
-      {/* Top Section: Header & Instructions trigger */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900">
@@ -37,21 +25,6 @@ export default function Dashboard() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowInstructions(!showInstructions)}
-            className="text-xs text-slate-700 border-slate-300 hover:bg-slate-100 rounded-xl"
-          >
-            <Info className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
-            <span>Instruções de uso</span>
-            {showInstructions ? (
-              <ChevronUp className="w-3.5 h-3.5 ml-1.5" />
-            ) : (
-              <ChevronDown className="w-3.5 h-3.5 ml-1.5" />
-            )}
-          </Button>
-
           <Button
             asChild
             size="sm"
@@ -76,43 +49,6 @@ export default function Dashboard() {
           </Button>
         </div>
       </div>
-
-      {/* Collapsible Instructions Card */}
-      {showInstructions && (
-        <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-5 text-slate-800 animate-in slide-in-from-top-2 duration-200">
-          <div className="flex items-center gap-2 font-semibold text-sm text-emerald-900 mb-3">
-            <Sparkles className="w-4 h-4 text-emerald-600" />
-            Como utilizar o sistema em 3 passos:
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-            <div className="bg-white/90 p-3.5 rounded-xl border border-emerald-200/60 shadow-2xs">
-              <span className="font-bold text-emerald-700 text-sm block mb-1">Passo 1</span>
-              <p className="text-slate-600">
-                Preencha os dados mensais na aba{' '}
-                <strong className="text-slate-900">Controle Mensal</strong> — <em>Faturamento</em>,{' '}
-                <em>Investimento Meta</em> e os custos variáveis e fixos; o Imposto Meta, o Imposto
-                Sobre Vendas, os Custos Totais, o Lucro Líquido, o ROAS e a Margem são calculados
-                automaticamente ao vivo.
-              </p>
-            </div>
-            <div className="bg-white/90 p-3.5 rounded-xl border border-emerald-200/60 shadow-2xs">
-              <span className="font-bold text-emerald-700 text-sm block mb-1">Passo 2</span>
-              <p className="text-slate-600">
-                Defina as metas financeiras pelo botão{' '}
-                <strong className="text-slate-900">Metas</strong> no topo deste Dashboard para
-                parametrizar os gauges circulares e as linhas de referência dos gráficos.
-              </p>
-            </div>
-            <div className="bg-white/90 p-3.5 rounded-xl border border-emerald-200/60 shadow-2xs">
-              <span className="font-bold text-emerald-700 text-sm block mb-1">Passo 3</span>
-              <p className="text-slate-600">
-                Este <strong className="text-slate-900">Dashboard</strong> sincroniza
-                automaticamente em tempo real sempre que qualquer dado for salvo ou editado.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Responsive KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -182,11 +118,8 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
-          {/* Charts Grid 2x2 */}
+          {/* Line chart + Progress gauge */}
           <DashboardCharts summary={summary} />
-
-          {/* Monthly Summary Table */}
-          <SummaryTable summary={summary} />
         </>
       )}
 
