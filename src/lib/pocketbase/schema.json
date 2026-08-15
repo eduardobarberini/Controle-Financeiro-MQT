@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-15T21:51:30.410Z",
+  "generatedAt": "2026-08-15T22:00:30.304Z",
   "collections": [
     {
       "name": "users",
@@ -158,6 +158,103 @@
         }
       ],
       "indexes": ["CREATE UNIQUE INDEX idx_goals_user_year ON goals (user, year)"]
+    },
+    {
+      "name": "monthly_details",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && user.id = @request.auth.id",
+        "view": "@request.auth.id != '' && user.id = @request.auth.id",
+        "create": "@request.auth.id != '' && user = @request.auth.id",
+        "update": "@request.auth.id != '' && user.id = @request.auth.id",
+        "delete": "@request.auth.id != '' && user.id = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "user",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "year",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "month",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "revenue",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "investment",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ads_meta",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "tax_meta",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "sales_tax",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "sales_commission",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "other_variable_costs",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "fixed_costs",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_monthly_details_user_year_month ON monthly_details (user, year, month)"
+      ]
     }
   ]
 }

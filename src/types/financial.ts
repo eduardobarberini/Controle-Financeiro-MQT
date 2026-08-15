@@ -18,6 +18,20 @@ export interface GoalsRecord extends RecordModel {
   annual_revenue_goal: number
   annual_profit_goal: number
 }
+
+export interface MonthlyDetailsRecord extends RecordModel {
+  user: string
+  year: number
+  month: number // 1-12
+  revenue: number
+  investment: number
+  ads_meta: number
+  tax_meta: number
+  sales_tax: number
+  sales_commission: number
+  other_variable_costs: number
+  fixed_costs: number
+}
 export interface ComputedMonthlyItem {
   id?: string
   monthDate: string // YYYY-MM-01 format or full ISO

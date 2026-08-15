@@ -1,5 +1,5 @@
-import React from 'react'
-import { NavLink } from 'react-router-dom'
+import React, { useState } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
   TableProperties,
@@ -8,6 +8,9 @@ import {
   Landmark,
   LogOut,
   Sparkles,
+  CalendarDays,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react'
 import { COMPANY_NAME } from '@/types/financial'
 import { useAuth } from '@/contexts/AuthContext'
@@ -18,26 +21,56 @@ interface SidebarProps {
   onItemClick?: () => void
 }
 
+interface NavGroup {
+  id: string
+  label: string
+  items: { to: string; label: string; icon: React.ComponentType<{ className?: string }> }[]
+}
+
 export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
   const { user, logout } = useAuth()
+  const location = useLocation()
 
-  const navItems = [
+  const groups: NavGroup[] = [
     {
-      to: '/dashboard',
-      label: 'Dashboard',
-      icon: LayoutDashboard,
+      id: 'anual',
+      label: 'Anual',
+      items: [
+        { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { to: '/dados', label: 'Dados', icon: TableProperties },
+        { to: '/metas', label: 'Metas', icon: Target },
+      ],
     },
     {
-      to: '/dados',
-      label: 'Dados',
-      icon: TableProperties,
-    },
-    {
-      to: '/metas',
-      label: 'Metas',
-      icon: Target,
+      id: 'mensal',
+      label: 'Mensal',
+      items: [{ to: '/mensal', label: 'Controle Mensal', icon: CalendarDays }],
     },
   ]
+
+  // A group is open by default if it contains the active route.
+  const initialOpen: Record<string, boolean> = {}
+  groups.forEach((g) => {
+    initialOpen[g.id] = g.items.some((i) => location.pathname.startsWith(i.to))
+  })
+  // "Anual" is open by default regardless.
+  initialOpen['anual'] = true
+
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(initialOpen)
+
+  const toggleGroup = (id: string) => setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }))
+
+  // Keep "Anual" open whenever the active route is inside it.
+  React.useEffect(() => {
+    setOpenGroups((prev) => {
+      const next = { ...prev }
+      groups.forEach((g) => {
+        if (g.items.some((i) => location.pathname.startsWith(i.to))) next[g.id] = true
+      })
+      return next
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname])
 
   const upcomingModules = [
     { label: 'Fluxo de Caixa', desc: 'Controle de entradas/saídas diárias' },
@@ -77,7 +110,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
                 {COMPANY_NAME}
               </span>
               <span className="text-[10px] uppercase font-bold px-1.5 py-0.2 bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 rounded">
-                Módulo 1
+                Módulos
               </span>
             </div>
           </div>
@@ -85,35 +118,52 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
       </div>
 
       {/* Nav Groups */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-        {/* Active Module: Financeiro */}
-        <div>
-          <div className="px-3 mb-2 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
-            Financeiro
-          </div>
-          <nav className="space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  onClick={onItemClick}
-                  className={({ isActive }) =>
-                    `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
-                      isActive
-                        ? 'bg-emerald-500/15 text-emerald-300 border-l-4 border-emerald-500 shadow-sm font-semibold'
-                        : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/70'
-                    }`
-                  }
-                >
-                  <Icon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" />
-                  <span>{item.label}</span>
-                </NavLink>
-              )
-            })}
-          </nav>
-        </div>
+      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+        {groups.map((group) => {
+          const isOpen = !!openGroups[group.id]
+          return (
+            <div key={group.id}>
+              {/* Group header (expandable) */}
+              <button
+                type="button"
+                onClick={() => toggleGroup(group.id)}
+                className="w-full flex items-center justify-between px-3 mb-2 text-[11px] font-semibold tracking-wider text-slate-400 uppercase hover:text-slate-200 transition-colors"
+              >
+                <span>{group.label}</span>
+                {isOpen ? (
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+                ) : (
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+                )}
+              </button>
+
+              {isOpen && (
+                <nav className="space-y-1">
+                  {group.items.map((item) => {
+                    const Icon = item.icon
+                    return (
+                      <NavLink
+                        key={item.to}
+                        to={item.to}
+                        onClick={onItemClick}
+                        className={({ isActive }) =>
+                          `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+                            isActive
+                              ? 'bg-emerald-500/15 text-emerald-300 border-l-4 border-emerald-500 shadow-sm font-semibold'
+                              : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/70'
+                          }`
+                        }
+                      >
+                        <Icon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" />
+                        <span>{item.label}</span>
+                      </NavLink>
+                    )
+                  })}
+                </nav>
+              )}
+            </div>
+          )
+        })}
 
         {/* Locked Modules: Future expansion */}
         <div>
