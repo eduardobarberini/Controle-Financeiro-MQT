@@ -6,9 +6,8 @@ import { SummaryTable } from '@/components/dashboard/SummaryTable'
 import { MetasModal } from '@/components/MetasModal'
 import {
   TrendingUp,
-  DollarSign,
+  Wallet,
   Percent,
-  Calculator,
   Info,
   ChevronDown,
   ChevronUp,
@@ -115,19 +114,9 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* 5 Responsive KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-        {/* 1. Investimento Anual */}
-        <KpiCard
-          title="Investimento Anual"
-          value={summary.totalInvestment}
-          formatType="currency"
-          icon={DollarSign}
-          subtext="Soma total investida no período"
-          iconBgColor="bg-blue-50 text-blue-600 border-blue-200"
-        />
-
-        {/* 2. Faturamento Anual */}
+      {/* Responsive KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* 1. Faturamento Anual */}
         <KpiCard
           title="Faturamento Anual"
           value={summary.totalRevenue}
@@ -138,23 +127,19 @@ export default function Dashboard() {
           iconBgColor="bg-emerald-50 text-emerald-600 border-emerald-200"
         />
 
-        {/* 3. ROAS */}
+        {/* 2. Custos Anuais */}
         <KpiCard
-          title="ROAS"
-          value={summary.averageRoas}
-          formatType="roas"
-          icon={Calculator}
-          subtext={
-            summary.totalInvestment > 0
-              ? `Retorno sobre R$ ${summary.totalInvestment.toLocaleString('pt-BR')} investidos`
-              : 'Sem investimentos lançados'
-          }
-          iconBgColor="bg-indigo-50 text-indigo-600 border-indigo-200"
+          title="Custos Anuais"
+          value={summary.totalCosts}
+          formatType="currency"
+          icon={Wallet}
+          subtext="Soma dos custos fixos e variáveis"
+          iconBgColor="bg-rose-50 text-rose-600 border-rose-200"
         />
 
-        {/* 4. Lucro Liquido */}
+        {/* 3. Lucro Líquido */}
         <KpiCard
-          title="Lucro Liquido"
+          title="Lucro Líquido"
           value={summary.totalProfit}
           formatType="currency"
           icon={TrendingUp}
@@ -163,7 +148,7 @@ export default function Dashboard() {
           iconBgColor="bg-teal-50 text-teal-600 border-teal-200"
         />
 
-        {/* 5. Margem Lucro % */}
+        {/* 4. Margem Lucro % */}
         <KpiCard
           title="Margem Lucro %"
           value={summary.averageMargin}

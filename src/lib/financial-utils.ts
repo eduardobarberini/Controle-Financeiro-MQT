@@ -277,6 +277,7 @@ export function buildYearFinancialSummary(
   const computedItems: ComputedMonthlyItem[] = []
   let totalInvestment = 0 // soma de ads_meta (Investimento Meta)
   let totalRevenue = 0
+  let totalCosts = 0
   let totalProfit = 0
   let lastEnteredMonthLabel: string | null = null
   let currentMonthRevenue: number | null = null
@@ -299,7 +300,7 @@ export function buildYearFinancialSummary(
         fixedCosts: Number(rec.fixed_costs) || 0,
       })
 
-      if (m.revenue > 0 || m.adsMeta > 0 || m.netProfit !== 0) {
+      if (m.revenue > 0 || m.adsMeta > 0 || m.netProfit !== 0 || m.totalCosts > 0) {
         hasAnyData = true
         lastEnteredMonthLabel = monthLabel
         currentMonthRevenue = m.revenue
@@ -307,6 +308,7 @@ export function buildYearFinancialSummary(
 
       totalInvestment += m.adsMeta
       totalRevenue += m.revenue
+      totalCosts += m.totalCosts
       totalProfit += m.netProfit
 
       computedItems.push({
@@ -349,6 +351,7 @@ export function buildYearFinancialSummary(
   return {
     totalInvestment,
     totalRevenue,
+    totalCosts,
     totalProfit,
     averageRoas: calculateRoas(totalRevenue, totalInvestment),
     averageMargin: calculateMarginPercent(totalProfit, totalRevenue),

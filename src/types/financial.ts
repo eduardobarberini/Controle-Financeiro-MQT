@@ -48,6 +48,7 @@ export interface ComputedMonthlyItem {
 export interface YearFinancialSummary {
   totalInvestment: number
   totalRevenue: number
+  totalCosts: number
   totalProfit: number
   averageRoas: number | null
   averageMargin: number | null
