@@ -17,7 +17,7 @@ export default function Dashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-            Painel Executivo • {selectedYear}
+            Controle Anual • {selectedYear}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Visão consolidada de receitas, lucros, metas e indicadores de performance
