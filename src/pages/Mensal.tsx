@@ -420,25 +420,26 @@ export default function Mensal() {
                   dataKey="faturamento"
                   name="faturamento"
                   fill="#3B82F6"
-                  radius={[5, 5, 0, 0]}
+                  radius={[2, 2, 0, 0]}
                   animationDuration={600}
-                  barSize={14}
+                  barSize={20}
                 />
                 <Bar
                   dataKey="custos"
                   name="custos"
                   fill="#F59E0B"
-                  radius={[5, 5, 0, 0]}
+                  radius={[2, 2, 0, 0]}
                   animationDuration={600}
-                  barSize={14}
+                  barSize={20}
                 />
                 <Line
                   type="monotone"
                   dataKey="lucro"
                   name="lucro"
-                  stroke="#10B981"
+                  stroke="#34D399"
+                  strokeDasharray="5 5"
                   strokeWidth={2.5}
-                  dot={{ r: 3, fill: '#10B981' }}
+                  dot={{ r: 3, fill: '#34D399' }}
                   activeDot={{ r: 5 }}
                   animationDuration={600}
                 />
