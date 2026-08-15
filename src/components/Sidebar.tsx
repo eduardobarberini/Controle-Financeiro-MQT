@@ -33,11 +33,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
   }
 
   return (
-    <aside className="w-[248px] bg-slate-900 text-slate-300 flex flex-col h-full border-r border-slate-800 select-none">
+    <aside className="w-[248px] bg-gradient-to-b from-[#3b0764] via-[#5b21b6] to-[#9d174d] text-purple-100 flex flex-col h-full border-r border-purple-900/60 select-none">
       {/* Brand Header */}
-      <div className="p-5 border-b border-slate-800/80">
+      <div className="p-5 border-b border-purple-400/20">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-950/50 border border-emerald-400/20 shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 to-purple-500 flex items-center justify-center text-white shadow-md shadow-pink-950/50 border border-pink-300/30 shrink-0">
             <Landmark className="w-5 h-5" />
           </div>
           <div className="min-w-0">
@@ -45,7 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
               Controle Financeiro
             </h1>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-xs text-emerald-400 font-semibold tracking-wide truncate">
+              <span className="text-xs text-pink-200 font-semibold tracking-wide truncate">
                 {COMPANY_NAME}
               </span>
             </div>
@@ -66,8 +66,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
                 className={({ isActive }) =>
                   `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                     isActive
-                      ? 'bg-emerald-500/15 text-emerald-300 border-l-4 border-emerald-500 shadow-sm font-semibold'
-                      : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/70'
+                      ? 'bg-pink-500/25 text-pink-100 border-l-4 border-pink-400 shadow-sm font-semibold'
+                      : 'text-purple-200/80 hover:text-white hover:bg-purple-500/20'
                   }`
                 }
               >
@@ -80,17 +80,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
       </div>
 
       {/* User Mini Profile & Logout */}
-      <div className="p-3 border-t border-slate-800/80 bg-slate-950/40">
-        <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900/80 border border-slate-800">
+      <div className="p-3 border-t border-purple-400/20 bg-purple-950/40">
+        <div className="flex items-center justify-between p-2 rounded-xl bg-purple-900/50 border border-purple-400/20">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-emerald-700/60 border border-emerald-500/30 flex items-center justify-center text-xs font-bold text-emerald-200 shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-pink-500/40 border border-pink-300/30 flex items-center justify-center text-xs font-bold text-pink-50 shrink-0">
               {getUserInitials()}
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-semibold text-slate-200 truncate">
+              <p className="text-xs font-semibold text-purple-50 truncate">
                 {getUserDisplayName()}
               </p>
-              <p className="text-[11px] text-slate-400 truncate">{user?.email as string}</p>
+              <p className="text-[11px] text-purple-200/70 truncate">{user?.email as string}</p>
             </div>
           </div>
           <Button
@@ -98,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
             size="icon"
             onClick={logout}
             title="Sair da conta"
-            className="h-7 w-7 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg shrink-0 ml-1"
+            className="h-7 w-7 text-purple-200/70 hover:text-rose-300 hover:bg-rose-500/15 rounded-lg shrink-0 ml-1"
           >
             <LogOut className="h-4 w-4" />
           </Button>

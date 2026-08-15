@@ -34,7 +34,7 @@ export const SummaryTable: React.FC<SummaryTableProps> = ({ summary }) => {
       <CardHeader className="p-5 pb-3 border-b border-slate-100">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <TableProperties className="w-4 h-4 text-emerald-600" />
+            <TableProperties className="w-4 h-4 text-purple-600" />
             Resumo Mensal ({populatedMonths.length}{' '}
             {populatedMonths.length === 1 ? 'mês com dados' : 'meses com dados'})
           </CardTitle>
@@ -78,7 +78,7 @@ export const SummaryTable: React.FC<SummaryTableProps> = ({ summary }) => {
                   <TableCell className="text-xs text-slate-700 py-3 px-4 text-right tabular-nums">
                     {formatCurrency(item.investment)}
                   </TableCell>
-                  <TableCell className="text-xs text-emerald-700 font-medium py-3 px-4 text-right tabular-nums">
+                  <TableCell className="text-xs text-purple-700 font-medium py-3 px-4 text-right tabular-nums">
                     {formatCurrency(item.grossRevenue)}
                   </TableCell>
                   <TableCell className="text-xs text-slate-700 py-3 px-4 text-right tabular-nums">
@@ -91,7 +91,7 @@ export const SummaryTable: React.FC<SummaryTableProps> = ({ summary }) => {
                     <span
                       className={
                         (item.marginPercent || 0) >= 25
-                          ? 'text-emerald-600'
+                          ? 'text-purple-600'
                           : (item.marginPercent || 0) >= 15
                             ? 'text-amber-600'
                             : 'text-slate-600'
@@ -111,13 +111,13 @@ export const SummaryTable: React.FC<SummaryTableProps> = ({ summary }) => {
                 <TableCell className="text-xs text-slate-200 py-3.5 px-4 text-right tabular-nums font-bold">
                   {formatCurrency(totalInvestment)}
                 </TableCell>
-                <TableCell className="text-xs text-emerald-400 py-3.5 px-4 text-right tabular-nums font-bold">
+                <TableCell className="text-xs text-purple-300 py-3.5 px-4 text-right tabular-nums font-bold">
                   {formatCurrency(totalRevenue)}
                 </TableCell>
                 <TableCell className="text-xs text-slate-200 py-3.5 px-4 text-right tabular-nums font-bold">
                   {formatRoas(averageRoas)}
                 </TableCell>
-                <TableCell className="text-xs text-emerald-300 py-3.5 px-4 text-right tabular-nums font-bold">
+                <TableCell className="text-xs text-pink-300 py-3.5 px-4 text-right tabular-nums font-bold">
                   {formatCurrency(totalProfit)}
                 </TableCell>
                 <TableCell className="text-xs text-white py-3.5 px-4 text-right tabular-nums font-bold">

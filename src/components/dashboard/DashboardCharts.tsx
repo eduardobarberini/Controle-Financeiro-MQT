@@ -101,7 +101,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
         <Card className="lg:col-span-7 bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
           <CardHeader className="p-5 pb-2">
             <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-emerald-600" />
+              <TrendingUp className="w-4 h-4 text-purple-600" />
               Meta vs Realizado — Faturamento Acumulado
             </CardTitle>
             <CardDescription className="text-xs text-slate-500 mt-0.5">
@@ -160,7 +160,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
                     type="monotone"
                     dataKey="meta"
                     name="meta"
-                    stroke="#93c5fd"
+                    stroke="#c4b5fd"
                     strokeWidth={2}
                     strokeDasharray="6 5"
                     dot={false}
@@ -171,9 +171,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
                     type="monotone"
                     dataKey="realizado"
                     name="realizado"
-                    stroke="#059669"
+                    stroke="#9333ea"
                     strokeWidth={2.5}
-                    dot={{ r: 2.5, fill: '#059669', strokeWidth: 0 }}
+                    dot={{ r: 2.5, fill: '#9333ea', strokeWidth: 0 }}
                     activeDot={{ r: 5 }}
                     animationDuration={600}
                   />
@@ -187,7 +187,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
         <Card className="lg:col-span-5 bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
           <CardHeader className="p-5 pb-2">
             <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Target className="w-4 h-4 text-emerald-600" />
+              <Target className="w-4 h-4 text-purple-600" />
               Progresso da Meta de Faturamento
             </CardTitle>
             <CardDescription className="text-xs text-slate-500 mt-0.5">
@@ -245,7 +245,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
         <Card className="lg:col-span-7 bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
           <CardHeader className="p-5 pb-2">
             <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-teal-600" />
+              <TrendingUp className="w-4 h-4 text-pink-600" />
               Meta vs Realizado — Lucro Líquido Acumulado
             </CardTitle>
             <CardDescription className="text-xs text-slate-500 mt-0.5">
@@ -304,7 +304,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
                     type="monotone"
                     dataKey="meta"
                     name="meta"
-                    stroke="#a5f3fc"
+                    stroke="#f9a8d4"
                     strokeWidth={2}
                     strokeDasharray="6 5"
                     dot={false}
@@ -315,9 +315,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
                     type="monotone"
                     dataKey="realizado"
                     name="realizado"
-                    stroke="#0d9488"
+                    stroke="#db2777"
                     strokeWidth={2.5}
-                    dot={{ r: 2.5, fill: '#0d9488', strokeWidth: 0 }}
+                    dot={{ r: 2.5, fill: '#db2777', strokeWidth: 0 }}
                     activeDot={{ r: 5 }}
                     animationDuration={600}
                   />
@@ -331,7 +331,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
         <Card className="lg:col-span-5 bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
           <CardHeader className="p-5 pb-2">
             <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Target className="w-4 h-4 text-teal-600" />
+              <Target className="w-4 h-4 text-pink-600" />
               Progresso da Meta de Lucro
             </CardTitle>
             <CardDescription className="text-xs text-slate-500 mt-0.5">

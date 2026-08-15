@@ -28,7 +28,7 @@ export default function Dashboard() {
           <Button
             asChild
             size="sm"
-            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs rounded-xl shadow-xs"
+            className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white text-xs rounded-xl shadow-xs"
           >
             <Link to="/mensal">
               <PlusCircle className="w-3.5 h-3.5 mr-1.5" />
@@ -44,7 +44,7 @@ export default function Dashboard() {
             className="text-xs text-slate-700 border-slate-300 hover:bg-slate-100 rounded-xl"
             title="Editar metas anuais"
           >
-            <Target className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
+            <Target className="w-3.5 h-3.5 mr-1.5 text-purple-600" />
             <span>Metas</span>
           </Button>
         </div>
@@ -60,7 +60,7 @@ export default function Dashboard() {
           icon={TrendingUp}
           targetPercent={summary.revenueGoalPercent}
           showProgressBar={true}
-          iconBgColor="bg-emerald-50 text-emerald-600 border-emerald-200"
+          iconBgColor="bg-purple-50 text-purple-600 border-purple-200"
         />
 
         {/* 2. Custos Anuais */}
@@ -81,7 +81,7 @@ export default function Dashboard() {
           icon={TrendingUp}
           targetPercent={summary.profitGoalPercent}
           showProgressBar={true}
-          iconBgColor="bg-teal-50 text-teal-600 border-teal-200"
+          iconBgColor="bg-pink-50 text-pink-600 border-pink-200"
         />
 
         {/* 4. Margem Lucro % */}
@@ -102,7 +102,7 @@ export default function Dashboard() {
       {/* Empty State vs Charts */}
       {!isLoading && !summary.hasAnyData ? (
         <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center shadow-sm">
-          <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-emerald-100">
+          <div className="w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-purple-100">
             <PlusCircle className="w-8 h-8" />
           </div>
           <h3 className="text-lg font-bold text-slate-900">
@@ -112,7 +112,10 @@ export default function Dashboard() {
             Lance os primeiros valores de investimento, faturamento e lucro para visualizar
             gráficos, gauges e relatórios.
           </p>
-          <Button asChild className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl">
+          <Button
+            asChild
+            className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white rounded-xl"
+          >
             <Link to="/mensal">Ir para Controle Mensal</Link>
           </Button>
         </div>

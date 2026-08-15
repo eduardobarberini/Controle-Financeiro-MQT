@@ -98,7 +98,7 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
       <DialogContent className="sm:max-w-[560px] bg-white border-slate-200 rounded-2xl shadow-xl">
         <DialogHeader>
           <DialogTitle className="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <Target className="w-5 h-5 text-emerald-600" />
+            <Target className="w-5 h-5 text-purple-600" />
             Metas Anuais • {selectedYear}
           </DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
@@ -115,7 +115,7 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                 htmlFor="revenueGoal"
                 className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5"
               >
-                <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
+                <DollarSign className="w-3.5 h-3.5 text-purple-600" />
                 Meta de Faturamento (R$)
               </Label>
               <div className="relative">
@@ -129,7 +129,7 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                   value={revenueGoalStr}
                   onChange={(e) => handleInputChange(setRevenueGoalStr, e.target.value)}
                   placeholder="500.000,00"
-                  className="h-11 pl-10 pr-3 text-sm font-semibold tabular-nums text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-emerald-500 rounded-xl"
+                  className="h-11 pl-10 pr-3 text-sm font-semibold tabular-nums text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-purple-500 rounded-xl"
                   required
                 />
               </div>
@@ -148,7 +148,7 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                 htmlFor="profitGoal"
                 className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5"
               >
-                <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+                <TrendingUp className="w-3.5 h-3.5 text-purple-600" />
                 Meta de Lucro (R$)
               </Label>
               <div className="relative">
@@ -162,7 +162,7 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                   value={profitGoalStr}
                   onChange={(e) => handleInputChange(setProfitGoalStr, e.target.value)}
                   placeholder="150.000,00"
-                  className="h-11 pl-10 pr-3 text-sm font-semibold tabular-nums text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-emerald-500 rounded-xl"
+                  className="h-11 pl-10 pr-3 text-sm font-semibold tabular-nums text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-purple-500 rounded-xl"
                   required
                 />
               </div>
@@ -220,13 +220,13 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
 
           <DialogFooter className="flex items-center justify-between gap-3 pt-1">
             <div className="text-[11px] text-slate-500 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <Sparkles className="w-3.5 h-3.5 text-purple-600 shrink-0" />
               <span>Valores positivos e obrigatórios</span>
             </div>
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-6 rounded-xl shadow-xs"
+              className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-medium px-6 rounded-xl shadow-xs"
             >
               {isSubmitting ? (
                 <>
