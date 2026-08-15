@@ -10,7 +10,18 @@ import {
   Tooltip,
   Legend,
 } from 'recharts'
-import { CalendarDays, Save, Loader2, Check, Info, TrendingUp } from 'lucide-react'
+import { CalendarDays, Save, Loader2, Check, Info, TrendingUp, Trash2 } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { useMonthlyDetails } from '@/hooks/use-monthly-details'
 import { toast } from '@/hooks/use-toast'
 import {
@@ -160,6 +171,30 @@ export default function Mensal() {
 
   const handleField = (key: string, field: NumField, val: string) => {
     setRows((prev) => prev.map((r) => (r.key === key ? { ...r, [field]: val } : r)))
+  }
+
+  const handleClearRow = (key: string) => {
+    setRows((prev) =>
+      prev.map((r) =>
+        r.key === key
+          ? {
+              ...r,
+              revenueStr: '',
+              investmentStr: '',
+              adsMetaStr: '',
+              taxMetaStr: '',
+              salesTaxStr: '',
+              salesCommissionStr: '',
+              otherVariableStr: '',
+              fixedCostsStr: '',
+            }
+          : r,
+      ),
+    )
+    toast({
+      title: 'Valores limpos',
+      description: 'Lembre-se de clicar em "Salvar" para confirmar o zeramento dos dados no banco.',
+    })
   }
 
   const isRowModified = (row: RowState): boolean => {
@@ -703,6 +738,45 @@ export default function Mensal() {
                                 </>
                               )}
                             </Button>
+
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="ghost"
+                                  disabled={row.isSavingRow}
+                                  title="Limpar dados do mês"
+                                  className="h-7 w-7 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200/80 transition-colors shrink-0"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="rounded-2xl">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Limpar dados de {MONTH_NAMES_PT[row.monthIndex]}?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Isso redefinirá todos os campos numéricos deste mês
+                                    (Faturamento, Investimento, Impostos, Comissões, Custos Fixos e
+                                    Outros) para zero. O estado da linha será atualizado para que
+                                    você possa salvar a linha zerada.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel className="rounded-xl">
+                                    Cancelar
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleClearRow(row.key)}
+                                    className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl"
+                                  >
+                                    Limpar campos
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </TableCell>
                       </TableRow>
