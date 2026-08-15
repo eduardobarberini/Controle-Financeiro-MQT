@@ -24,10 +24,7 @@ export interface MonthlyDetailsRecord extends RecordModel {
   year: number
   month: number // 1-12
   revenue: number
-  investment: number
-  ads_meta: number
-  tax_meta: number
-  sales_tax: number
+  ads_meta: number // Investimento Meta (Anúncios Meta) — manual
   sales_commission: number
   other_variable_costs: number
   fixed_costs: number

@@ -98,6 +98,74 @@ export function calculateMarginPercent(netProfit: number, grossRevenue: number):
   return (netProfit / grossRevenue) * 100
 }
 
+/**
+ * Fixed rates for the automatic monthly calculations.
+ */
+export const TAX_META_RATE = 0.1215 // 12,15% sobre investimento meta (anúncios)
+export const SALES_TAX_RATE = 0.075 // 7,5% sobre faturamento
+
+/**
+ * Result of the automatic monthly metric calculation. Every read-only field
+ * shown on the Mensal page derives from these values.
+ */
+export interface MonthlyMetrics {
+  revenue: number
+  adsMeta: number // Investimento Meta (manual)
+  taxMeta: number // = adsMeta * 12,15%  (auto)
+  salesTax: number // = revenue * 7,5%   (auto)
+  salesCommission: number
+  otherVariable: number
+  fixedCosts: number
+  totalVariable: number // soma dos custos variáveis (auto)
+  totalCosts: number // = fixedCosts + totalVariable (auto)
+  netProfit: number // = revenue - totalCosts (auto)
+  roas: number | null // = revenue / adsMeta (auto) — null se adsMeta = 0
+  margin: number | null // = netProfit / revenue * 100 (auto) — null se revenue = 0
+}
+
+/**
+ * Compute every automatic monthly metric from the manual inputs.
+ *
+ * Manual inputs: revenue, adsMeta (Investimento Meta), salesCommission,
+ * otherVariable, fixedCosts.
+ */
+export function computeMonthlyMetrics(input: {
+  revenue: number
+  adsMeta: number
+  salesCommission: number
+  otherVariable: number
+  fixedCosts: number
+}): MonthlyMetrics {
+  const revenue = input.revenue || 0
+  const adsMeta = input.adsMeta || 0
+  const salesCommission = input.salesCommission || 0
+  const otherVariable = input.otherVariable || 0
+  const fixedCosts = input.fixedCosts || 0
+
+  const taxMeta = adsMeta * TAX_META_RATE
+  const salesTax = revenue * SALES_TAX_RATE
+  const totalVariable = adsMeta + taxMeta + salesTax + salesCommission + otherVariable
+  const totalCosts = fixedCosts + totalVariable
+  const netProfit = revenue - totalCosts
+  const roas = adsMeta > 0 ? revenue / adsMeta : null
+  const margin = revenue > 0 ? (netProfit / revenue) * 100 : null
+
+  return {
+    revenue,
+    adsMeta,
+    taxMeta,
+    salesTax,
+    salesCommission,
+    otherVariable,
+    fixedCosts,
+    totalVariable,
+    totalCosts,
+    netProfit,
+    roas,
+    margin,
+  }
+}
+
 export function getProgressColor(percent: number | null | undefined): {
   badgeBg: string
   badgeText: string
@@ -135,9 +203,17 @@ export function getProgressColor(percent: number | null | undefined): {
 /**
  * Build the annual financial summary directly from `monthly_details` records.
  *
- * Net profit per month = revenue − investment − (all variable costs) − fixed costs.
- * ROAS = total revenue / total investment.
- * Margin = total profit / total revenue × 100.
+ * Only manual inputs are stored (revenue, ads_meta, sales_commission,
+ * other_variable_costs, fixed_costs). Every derived value is recomputed here:
+ *   tax_meta     = ads_meta × 12,15%
+ *   sales_tax    = revenue × 7,5%
+ *   totalVariable = ads_meta + tax_meta + sales_tax + sales_commission + other
+ *   totalCosts   = fixed_costs + totalVariable
+ *   netProfit    = revenue − totalCosts
+ *   roas         = revenue / ads_meta  (null se ads_meta = 0)
+ *   margin       = netProfit / revenue × 100  (null se revenue = 0)
+ *
+ * Annual totals: revenue, ads_meta (investment), profit, totalVariable, fixedCosts.
  */
 export function buildYearFinancialSummary(
   year: number,
@@ -154,7 +230,7 @@ export function buildYearFinancialSummary(
   })
 
   const computedItems: ComputedMonthlyItem[] = []
-  let totalInvestment = 0
+  let totalInvestment = 0 // soma de ads_meta (Investimento Meta)
   let totalRevenue = 0
   let totalProfit = 0
   let lastEnteredMonthLabel: string | null = null
@@ -170,27 +246,23 @@ export function buildYearFinancialSummary(
     const shortLabel = MONTH_SHORT_NAMES_PT[i]
 
     if (rec) {
-      const rev = Number(rec.revenue) || 0
-      const inv = Number(rec.investment) || 0
-      const adsMeta = Number(rec.ads_meta) || 0
-      const taxMeta = Number(rec.tax_meta) || 0
-      const salesTax = Number(rec.sales_tax) || 0
-      const salesCommission = Number(rec.sales_commission) || 0
-      const otherVariable = Number(rec.other_variable_costs) || 0
-      const fixedCosts = Number(rec.fixed_costs) || 0
+      const m = computeMonthlyMetrics({
+        revenue: Number(rec.revenue) || 0,
+        adsMeta: Number(rec.ads_meta) || 0,
+        salesCommission: Number(rec.sales_commission) || 0,
+        otherVariable: Number(rec.other_variable_costs) || 0,
+        fixedCosts: Number(rec.fixed_costs) || 0,
+      })
 
-      const variableCosts = adsMeta + taxMeta + salesTax + salesCommission + otherVariable
-      const prof = rev - inv - variableCosts - fixedCosts
-
-      if (rev > 0 || inv > 0 || prof !== 0) {
+      if (m.revenue > 0 || m.adsMeta > 0 || m.netProfit !== 0) {
         hasAnyData = true
         lastEnteredMonthLabel = monthLabel
-        currentMonthRevenue = rev
+        currentMonthRevenue = m.revenue
       }
 
-      totalInvestment += inv
-      totalRevenue += rev
-      totalProfit += prof
+      totalInvestment += m.adsMeta
+      totalRevenue += m.revenue
+      totalProfit += m.netProfit
 
       computedItems.push({
         id: rec.id,
@@ -199,11 +271,11 @@ export function buildYearFinancialSummary(
         monthIndex: i,
         monthLabel,
         shortLabel,
-        investment: inv,
-        grossRevenue: rev,
-        netProfit: prof,
-        roas: calculateRoas(rev, inv),
-        marginPercent: calculateMarginPercent(prof, rev),
+        investment: m.adsMeta,
+        grossRevenue: m.revenue,
+        netProfit: m.netProfit,
+        roas: m.roas,
+        marginPercent: m.margin,
         hasRecord: true,
       })
     } else {

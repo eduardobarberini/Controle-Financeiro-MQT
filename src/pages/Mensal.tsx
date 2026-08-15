@@ -30,6 +30,9 @@ import {
   formatCurrency,
   formatPercent,
   formatRoas,
+  computeMonthlyMetrics,
+  TAX_META_RATE,
+  SALES_TAX_RATE,
 } from '@/lib/financial-utils'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -49,20 +52,14 @@ interface RowState {
   id?: string
   monthIndex: number // 0-11
   revenueStr: string
-  investmentStr: string
   adsMetaStr: string
-  taxMetaStr: string
-  salesTaxStr: string
   salesCommissionStr: string
   otherVariableStr: string
   fixedCostsStr: string
   // saved snapshot (numbers) for change detection
   saved: {
     revenue: number
-    investment: number
     ads_meta: number
-    tax_meta: number
-    sales_tax: number
     sales_commission: number
     other_variable_costs: number
     fixed_costs: number
@@ -72,10 +69,7 @@ interface RowState {
 
 const NUM_FIELDS = [
   'revenueStr',
-  'investmentStr',
   'adsMetaStr',
-  'taxMetaStr',
-  'salesTaxStr',
   'salesCommissionStr',
   'otherVariableStr',
   'fixedCostsStr',
@@ -86,10 +80,7 @@ const num = (s: string): number => parseFloat(s.replace(',', '.')) || 0
 
 const EMPTY_SAVED = {
   revenue: 0,
-  investment: 0,
   ads_meta: 0,
-  tax_meta: 0,
-  sales_tax: 0,
   sales_commission: 0,
   other_variable_costs: 0,
   fixed_costs: 0,
@@ -120,6 +111,18 @@ const CurrencyCell: React.FC<{
   </div>
 )
 
+/** Read-only computed cell — muted background, no input. */
+const ReadOnlyCell: React.FC<{
+  value: string
+  className?: string
+}> = ({ value, className = '' }) => (
+  <div
+    className={`h-8 flex items-center justify-end px-2.5 text-xs font-bold tabular-nums text-slate-700 bg-slate-100/80 border border-slate-200/70 rounded-lg ${className}`}
+  >
+    {value}
+  </div>
+)
+
 export default function Mensal() {
   const { selectedYear, records, isLoading, save } = useMonthlyDetails()
   const [rows, setRows] = useState<RowState[]>([])
@@ -138,10 +141,7 @@ export default function Mensal() {
       const s = rec
         ? {
             revenue: Number(rec.revenue) || 0,
-            investment: Number(rec.investment) || 0,
             ads_meta: Number(rec.ads_meta) || 0,
-            tax_meta: Number(rec.tax_meta) || 0,
-            sales_tax: Number(rec.sales_tax) || 0,
             sales_commission: Number(rec.sales_commission) || 0,
             other_variable_costs: Number(rec.other_variable_costs) || 0,
             fixed_costs: Number(rec.fixed_costs) || 0,
@@ -155,10 +155,7 @@ export default function Mensal() {
         id: rec?.id,
         monthIndex: i,
         revenueStr: str(s.revenue),
-        investmentStr: str(s.investment),
         adsMetaStr: str(s.ads_meta),
-        taxMetaStr: str(s.tax_meta),
-        salesTaxStr: str(s.sales_tax),
         salesCommissionStr: str(s.sales_commission),
         otherVariableStr: str(s.other_variable_costs),
         fixedCostsStr: str(s.fixed_costs),
@@ -180,10 +177,7 @@ export default function Mensal() {
       year: selectedYear,
       month: row.monthIndex + 1,
       revenue: 0,
-      investment: 0,
       ads_meta: 0,
-      tax_meta: 0,
-      sales_tax: 0,
       sales_commission: 0,
       other_variable_costs: 0,
       fixed_costs: 0,
@@ -195,10 +189,7 @@ export default function Mensal() {
           ? {
               ...r,
               revenueStr: '',
-              investmentStr: '',
               adsMetaStr: '',
-              taxMetaStr: '',
-              salesTaxStr: '',
               salesCommissionStr: '',
               otherVariableStr: '',
               fixedCostsStr: '',
@@ -239,43 +230,28 @@ export default function Mensal() {
     const s = row.saved
     return (
       num(row.revenueStr) !== s.revenue ||
-      num(row.investmentStr) !== s.investment ||
       num(row.adsMetaStr) !== s.ads_meta ||
-      num(row.taxMetaStr) !== s.tax_meta ||
-      num(row.salesTaxStr) !== s.sales_tax ||
       num(row.salesCommissionStr) !== s.sales_commission ||
       num(row.otherVariableStr) !== s.other_variable_costs ||
       num(row.fixedCostsStr) !== s.fixed_costs
     )
   }
 
-  const computeRow = (row: RowState) => {
-    const revenue = num(row.revenueStr)
-    const investment = num(row.investmentStr)
-    const adsMeta = num(row.adsMetaStr)
-    const taxMeta = num(row.taxMetaStr)
-    const salesTax = num(row.salesTaxStr)
-    const salesCommission = num(row.salesCommissionStr)
-    const otherVariable = num(row.otherVariableStr)
-    const fixedCosts = num(row.fixedCostsStr)
-
-    const variableCosts = adsMeta + taxMeta + salesTax + salesCommission + otherVariable
-    const netProfit = revenue - investment - variableCosts - fixedCosts
-    const roas = investment > 0 ? revenue / investment : null
-    const margin = revenue > 0 ? (netProfit / revenue) * 100 : null
-
-    return { revenue, investment, variableCosts, netProfit, roas, margin }
-  }
+  const computeRow = (row: RowState) =>
+    computeMonthlyMetrics({
+      revenue: num(row.revenueStr),
+      adsMeta: num(row.adsMetaStr),
+      salesCommission: num(row.salesCommissionStr),
+      otherVariable: num(row.otherVariableStr),
+      fixedCosts: num(row.fixedCostsStr),
+    })
 
   const handleSaveRow = async (row: RowState) => {
     const payload = {
       year: selectedYear,
       month: row.monthIndex + 1,
       revenue: num(row.revenueStr),
-      investment: num(row.investmentStr),
       ads_meta: num(row.adsMetaStr),
-      tax_meta: num(row.taxMetaStr),
-      sales_tax: num(row.salesTaxStr),
       sales_commission: num(row.salesCommissionStr),
       other_variable_costs: num(row.otherVariableStr),
       fixed_costs: num(row.fixedCostsStr),
@@ -292,10 +268,7 @@ export default function Mensal() {
                 isSavingRow: false,
                 saved: {
                   revenue: payload.revenue,
-                  investment: payload.investment,
                   ads_meta: payload.ads_meta,
-                  tax_meta: payload.tax_meta,
-                  sales_tax: payload.sales_tax,
                   sales_commission: payload.sales_commission,
                   other_variable_costs: payload.other_variable_costs,
                   fixed_costs: payload.fixed_costs,
@@ -328,7 +301,8 @@ export default function Mensal() {
           name: MONTH_SHORT_NAMES_PT[row.monthIndex],
           monthLabel: `${MONTH_NAMES_PT[row.monthIndex]}/${selectedYear}`,
           faturamento: c.revenue,
-          investimento: c.investment,
+          investimento: c.adsMeta,
+          custos: c.totalCosts,
           lucro: c.netProfit,
         }
       }),
@@ -338,19 +312,23 @@ export default function Mensal() {
   // Annual totals
   const totals = useMemo(() => {
     let revenue = 0,
-      investment = 0,
+      adsMeta = 0,
       variable = 0,
       fixed = 0,
+      totalCosts = 0,
       profit = 0
     rows.forEach((row) => {
       const c = computeRow(row)
       revenue += c.revenue
-      investment += c.investment
-      variable += c.variableCosts
-      fixed += num(row.fixedCostsStr)
+      adsMeta += c.adsMeta
+      variable += c.totalVariable
+      fixed += c.fixedCosts
+      totalCosts += c.totalCosts
       profit += c.netProfit
     })
-    return { revenue, investment, variable, fixed, profit }
+    const roas = adsMeta > 0 ? revenue / adsMeta : null
+    const margin = revenue > 0 ? (profit / revenue) * 100 : null
+    return { revenue, adsMeta, variable, fixed, totalCosts, profit, roas, margin }
   }, [rows])
 
   return (
@@ -363,8 +341,8 @@ export default function Mensal() {
             Controle Mensal • {selectedYear}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Faturamento, investimento e detalhamento de custos mês a mês. Lucro, ROAS e margem
-            calculam automaticamente.
+            Faturamento, Investimento Meta e custos mês a mês. Impostos, Total Variável, Custos
+            Totais, Lucro, ROAS e Margem calculam automaticamente em tempo real.
           </p>
         </div>
       </div>
@@ -384,20 +362,20 @@ export default function Mensal() {
         <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl">
           <CardContent className="p-4">
             <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-              Investimento
+              Investimento Meta
             </p>
             <p className="text-lg font-bold text-amber-600 tabular-nums mt-1">
-              {formatCurrency(totals.investment)}
+              {formatCurrency(totals.adsMeta)}
             </p>
           </CardContent>
         </Card>
         <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl">
           <CardContent className="p-4">
             <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-              Custos Variáveis + Fixos
+              Custos Totais
             </p>
             <p className="text-lg font-bold text-slate-900 tabular-nums mt-1">
-              {formatCurrency(totals.variable + totals.fixed)}
+              {formatCurrency(totals.totalCosts)}
             </p>
           </CardContent>
         </Card>
@@ -422,10 +400,10 @@ export default function Mensal() {
         <CardHeader className="p-5 pb-2">
           <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-emerald-600" />
-            Faturamento, Investimento e Lucro Líquido
+            Faturamento, Custos Totais e Lucro Líquido
           </CardTitle>
           <CardDescription className="text-xs text-slate-500 mt-0.5">
-            Visão mensal de {selectedYear} — barras para faturamento/investimento e linha de lucro.
+            Visão mensal de {selectedYear} — barras para faturamento/custos e linha de lucro.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-5 pt-2">
@@ -450,8 +428,8 @@ export default function Mensal() {
                     const label =
                       name === 'faturamento'
                         ? 'Faturamento'
-                        : name === 'investimento'
-                          ? 'Investimento'
+                        : name === 'custos'
+                          ? 'Custos Totais'
                           : 'Lucro Líquido'
                     return [formatCurrency(value), label]
                   }}
@@ -474,8 +452,8 @@ export default function Mensal() {
                   formatter={(value) =>
                     value === 'faturamento'
                       ? 'Faturamento'
-                      : value === 'investimento'
-                        ? 'Investimento'
+                      : value === 'custos'
+                        ? 'Custos Totais'
                         : 'Lucro Líquido'
                   }
                 />
@@ -488,8 +466,8 @@ export default function Mensal() {
                   barSize={14}
                 />
                 <Bar
-                  dataKey="investimento"
-                  name="investimento"
+                  dataKey="custos"
+                  name="custos"
                   fill="#F59E0B"
                   radius={[5, 5, 0, 0]}
                   animationDuration={600}
@@ -520,8 +498,8 @@ export default function Mensal() {
               Detalhamento Mensal ({selectedYear})
             </CardTitle>
             <CardDescription className="text-xs text-slate-500 mt-0.5">
-              Edite os campos e clique em &ldquo;Salvar&rdquo; por linha. ROAS, Custos Variáveis,
-              Lucro e Margem são automáticos.
+              Edite os campos e clique em &ldquo;Salvar&rdquo; por linha. Imposto Meta, Imposto
+              Sobre Vendas, Total Variável, Custos Totais, Lucro, ROAS e Margem são automáticos.
             </CardDescription>
           </div>
           <div className="flex items-center gap-3 text-xs text-slate-500">
@@ -563,12 +541,6 @@ export default function Mensal() {
                     ROAS
                   </TableHead>
                   <TableHead
-                    rowSpan={2}
-                    className="font-semibold text-slate-700 text-xs py-3 px-3 min-w-[130px] align-bottom"
-                  >
-                    Investimento (R$)
-                  </TableHead>
-                  <TableHead
                     colSpan={6}
                     className="font-bold text-slate-700 text-xs py-2 px-3 text-center bg-slate-100/80 border-x border-slate-200"
                   >
@@ -579,6 +551,12 @@ export default function Mensal() {
                     className="font-semibold text-slate-700 text-xs py-3 px-3 min-w-[120px] align-bottom"
                   >
                     Custos Fixos (R$)
+                  </TableHead>
+                  <TableHead
+                    rowSpan={2}
+                    className="font-bold text-slate-700 text-xs py-3 px-3 text-right min-w-[120px] align-bottom"
+                  >
+                    Custos Totais
                   </TableHead>
                   <TableHead
                     rowSpan={2}
@@ -602,12 +580,12 @@ export default function Mensal() {
                 {/* Row 2: sub-headers for the variable costs group */}
                 <TableRow className="hover:bg-transparent border-b border-slate-200">
                   <TableHead className="font-medium text-slate-500 text-[11px] py-2 px-2 min-w-[110px] bg-slate-50">
-                    Anúncios Meta
+                    Investimento Meta
                   </TableHead>
-                  <TableHead className="font-medium text-slate-500 text-[11px] py-2 px-2 min-w-[110px] bg-slate-50">
+                  <TableHead className="font-medium text-slate-400 text-[11px] py-2 px-2 min-w-[110px] bg-slate-50 italic">
                     Imposto Meta
                   </TableHead>
-                  <TableHead className="font-medium text-slate-500 text-[11px] py-2 px-2 min-w-[120px] bg-slate-50">
+                  <TableHead className="font-medium text-slate-400 text-[11px] py-2 px-2 min-w-[120px] bg-slate-50 italic">
                     Imposto S/ Vendas
                   </TableHead>
                   <TableHead className="font-medium text-slate-500 text-[11px] py-2 px-2 min-w-[120px] bg-slate-50">
@@ -660,16 +638,8 @@ export default function Mensal() {
                           {formatRoas(c.roas)}
                         </TableCell>
 
-                        {/* Investimento */}
-                        <TableCell className="py-1.5 px-2">
-                          <CurrencyCell
-                            value={row.investmentStr}
-                            onChange={(v) => handleField(row.key, 'investmentStr', v)}
-                            modified={modified}
-                          />
-                        </TableCell>
-
                         {/* Variable costs group (subitems + total) */}
+                        {/* Investimento Meta (Anúncios Meta) */}
                         <TableCell className="py-1.5 px-2 bg-slate-50/40">
                           <CurrencyCell
                             value={row.adsMetaStr}
@@ -677,20 +647,21 @@ export default function Mensal() {
                             modified={modified}
                           />
                         </TableCell>
+                        {/* Imposto Meta (auto) */}
                         <TableCell className="py-1.5 px-2 bg-slate-50/40">
-                          <CurrencyCell
-                            value={row.taxMetaStr}
-                            onChange={(v) => handleField(row.key, 'taxMetaStr', v)}
-                            modified={modified}
+                          <ReadOnlyCell
+                            value={formatCurrency(c.taxMeta)}
+                            className="text-slate-500"
                           />
                         </TableCell>
+                        {/* Imposto Sobre Vendas (auto) */}
                         <TableCell className="py-1.5 px-2 bg-slate-50/40">
-                          <CurrencyCell
-                            value={row.salesTaxStr}
-                            onChange={(v) => handleField(row.key, 'salesTaxStr', v)}
-                            modified={modified}
+                          <ReadOnlyCell
+                            value={formatCurrency(c.salesTax)}
+                            className="text-slate-500"
                           />
                         </TableCell>
+                        {/* Comissão Comercial */}
                         <TableCell className="py-1.5 px-2 bg-slate-50/40">
                           <CurrencyCell
                             value={row.salesCommissionStr}
@@ -698,6 +669,7 @@ export default function Mensal() {
                             modified={modified}
                           />
                         </TableCell>
+                        {/* Outros */}
                         <TableCell className="py-1.5 px-2 bg-slate-50/40">
                           <CurrencyCell
                             value={row.otherVariableStr}
@@ -705,9 +677,12 @@ export default function Mensal() {
                             modified={modified}
                           />
                         </TableCell>
-                        {/* Total Variável (computed, highlighted) */}
-                        <TableCell className="py-2.5 px-3 text-right tabular-nums text-xs font-bold text-slate-800 bg-slate-100/80 border-l border-slate-200">
-                          {formatCurrency(c.variableCosts)}
+                        {/* Total Variável (auto) */}
+                        <TableCell className="py-1.5 px-2 bg-slate-100/80 border-l border-slate-200">
+                          <ReadOnlyCell
+                            value={formatCurrency(c.totalVariable)}
+                            className="text-slate-800"
+                          />
                         </TableCell>
 
                         {/* Custos Fixos */}
@@ -719,14 +694,22 @@ export default function Mensal() {
                           />
                         </TableCell>
 
-                        {/* Lucro Líquido */}
+                        {/* Custos Totais (auto) */}
+                        <TableCell className="py-1.5 px-2">
+                          <ReadOnlyCell
+                            value={formatCurrency(c.totalCosts)}
+                            className="text-slate-800"
+                          />
+                        </TableCell>
+
+                        {/* Lucro Líquido (auto) */}
                         <TableCell className="py-2.5 px-3 text-right tabular-nums text-xs font-bold bg-slate-50/40">
                           <span className={c.netProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
                             {formatCurrency(c.netProfit)}
                           </span>
                         </TableCell>
 
-                        {/* Margem */}
+                        {/* Margem (auto) */}
                         <TableCell className="py-2.5 px-3 text-right tabular-nums text-xs font-bold">
                           <span
                             className={
@@ -797,9 +780,9 @@ export default function Mensal() {
                                   </AlertDialogTitle>
                                   <AlertDialogDescription>
                                     Esta ação apagará permanentemente todos os dados daquele mês
-                                    (Faturamento, Investimento, Impostos, Comissões, Custos Fixos e
-                                    Outros), zerando-os e salvando automaticamente no banco. Não
-                                    será possível desfazer.
+                                    (Faturamento, Investimento Meta, Comissão Comercial, Outros e
+                                    Custos Fixos), zerando-os e salvando automaticamente no banco.
+                                    Não será possível desfazer.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
@@ -833,20 +816,30 @@ export default function Mensal() {
         <div className="space-y-1">
           <p className="font-semibold text-slate-800">Regras de Cálculo Automático</p>
           <p>
-            • <strong>ROAS</strong> = Faturamento ÷ Investimento (2 casas). Exibe &ldquo;—&rdquo; se
-            investimento for 0.
+            • <strong>ROAS</strong> = Faturamento ÷ Investimento Meta (2 casas). Exibe
+            &ldquo;—&rdquo; se o investimento for 0.
           </p>
           <p>
-            • <strong>Custos Variáveis</strong> = Anúncios Meta + Imposto Meta + Imposto Sobre
-            Vendas + Comissão Comercial + Outros.
+            • <strong>Imposto Meta</strong> = Investimento Meta ×{' '}
+            {(TAX_META_RATE * 100).toFixed(2).replace('.', ',')}% (auto, somente leitura).
           </p>
           <p>
-            • <strong>Lucro Líquido</strong> = Faturamento − Investimento − Custos Variáveis −
-            Custos Fixos.
+            • <strong>Imposto Sobre Vendas</strong> = Faturamento ×{' '}
+            {(SALES_TAX_RATE * 100).toFixed(1).replace('.', ',')}% (auto, somente leitura).
+          </p>
+          <p>
+            • <strong>Total Variável</strong> = Investimento Meta + Imposto Meta + Imposto Sobre
+            Vendas + Comissão Comercial + Outros (auto).
+          </p>
+          <p>
+            • <strong>Custos Totais</strong> = Custo Fixo + Total Variável (auto).
+          </p>
+          <p>
+            • <strong>Lucro Líquido</strong> = Faturamento − Custos Totais (auto).
           </p>
           <p>
             • <strong>Margem %</strong> = Lucro Líquido ÷ Faturamento × 100 (1 casa). Exibe
-            &ldquo;—&rdquo; se faturamento for 0.
+            &ldquo;—&rdquo; se o faturamento for 0.
           </p>
         </div>
       </div>

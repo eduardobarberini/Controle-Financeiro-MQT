@@ -5,10 +5,7 @@ export interface MonthlyDetailsInput {
   year: number
   month: number // 1-12
   revenue: number
-  investment: number
   ads_meta: number
-  tax_meta: number
-  sales_tax: number
   sales_commission: number
   other_variable_costs: number
   fixed_costs: number
@@ -42,10 +39,7 @@ export const monthlyDetailsService = {
       year: data.year,
       month: data.month,
       revenue: data.revenue,
-      investment: data.investment,
       ads_meta: data.ads_meta,
-      tax_meta: data.tax_meta,
-      sales_tax: data.sales_tax,
       sales_commission: data.sales_commission,
       other_variable_costs: data.other_variable_costs,
       fixed_costs: data.fixed_costs,
@@ -58,10 +52,7 @@ export const monthlyDetailsService = {
       year: data.year,
       month: data.month,
       revenue: data.revenue,
-      investment: data.investment,
       ads_meta: data.ads_meta,
-      tax_meta: data.tax_meta,
-      sales_tax: data.sales_tax,
       sales_commission: data.sales_commission,
       other_variable_costs: data.other_variable_costs,
       fixed_costs: data.fixed_costs,

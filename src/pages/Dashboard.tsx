@@ -91,8 +91,9 @@ export default function Dashboard() {
               <p className="text-slate-600">
                 Preencha os dados mensais na aba{' '}
                 <strong className="text-slate-900">Controle Mensal</strong> — <em>Faturamento</em>,{' '}
-                <em>Investimento</em> e os custos variáveis e fixos; o Lucro Líquido, o ROAS e a
-                Margem são calculados automaticamente ao vivo.
+                <em>Investimento Meta</em> e os custos variáveis e fixos; o Imposto Meta, o Imposto
+                Sobre Vendas, os Custos Totais, o Lucro Líquido, o ROAS e a Margem são calculados
+                automaticamente ao vivo.
               </p>
             </div>
             <div className="bg-white/90 p-3.5 rounded-xl border border-emerald-200/60 shadow-2xs">

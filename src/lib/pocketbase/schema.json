@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-15T22:16:29.959Z",
+  "generatedAt": "2026-08-15T22:41:44.670Z",
   "collections": [
     {
       "name": "users",
@@ -196,25 +196,7 @@
           "system": false
         },
         {
-          "name": "investment",
-          "type": "number",
-          "required": false,
-          "system": false
-        },
-        {
           "name": "ads_meta",
-          "type": "number",
-          "required": false,
-          "system": false
-        },
-        {
-          "name": "tax_meta",
-          "type": "number",
-          "required": false,
-          "system": false
-        },
-        {
-          "name": "sales_tax",
           "type": "number",
           "required": false,
           "system": false
