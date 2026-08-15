@@ -2,7 +2,7 @@ import {
   ComputedMonthlyItem,
   YearFinancialSummary,
   GoalsRecord,
-  MonthlyDataRecord,
+  MonthlyDetailsRecord,
 } from '@/types/financial'
 
 export const MONTH_NAMES_PT = [
@@ -132,35 +132,24 @@ export function getProgressColor(percent: number | null | undefined): {
   }
 }
 
+/**
+ * Build the annual financial summary directly from `monthly_details` records.
+ *
+ * Net profit per month = revenue − investment − (all variable costs) − fixed costs.
+ * ROAS = total revenue / total investment.
+ * Margin = total profit / total revenue × 100.
+ */
 export function buildYearFinancialSummary(
   year: number,
-  monthlyRecords: MonthlyDataRecord[],
+  monthlyRecords: MonthlyDetailsRecord[],
   goalsRecord: GoalsRecord | null,
 ): YearFinancialSummary {
-  // Create base 12 months map
-  const monthMap = new Map<number, MonthlyDataRecord>()
-  const extraRecords: MonthlyDataRecord[] = []
-
+  // Map records by month index (0-11). `monthly_details.month` is 1-12.
+  const monthMap = new Map<number, MonthlyDetailsRecord>()
   monthlyRecords.forEach((rec) => {
-    // extract date info
-    const dateStr = rec.month.replace(' ', 'T')
-    const d = new Date(dateStr)
-    const recYear = d.getUTCFullYear()
-    const recMonth = d.getUTCMonth() // 0 to 11
-
-    if (recYear === year) {
-      if (recMonth >= 0 && recMonth < 12) {
-        monthMap.set(recMonth, rec)
-      } else {
-        extraRecords.push(rec)
-      }
-    } else {
-      // If matches query by year but formatted differently
-      const parsedYear = parseInt(rec.month.substring(0, 4), 10)
-      const parsedMonth = parseInt(rec.month.substring(5, 7), 10) - 1
-      if (parsedYear === year && parsedMonth >= 0 && parsedMonth < 12) {
-        monthMap.set(parsedMonth, rec)
-      }
+    const m = Number(rec.month)
+    if (m >= 1 && m <= 12) {
+      monthMap.set(m - 1, rec)
     }
   })
 
@@ -181,11 +170,19 @@ export function buildYearFinancialSummary(
     const shortLabel = MONTH_SHORT_NAMES_PT[i]
 
     if (rec) {
+      const rev = Number(rec.revenue) || 0
       const inv = Number(rec.investment) || 0
-      const rev = Number(rec.gross_revenue) || 0
-      const prof = Number(rec.net_profit) || 0
+      const adsMeta = Number(rec.ads_meta) || 0
+      const taxMeta = Number(rec.tax_meta) || 0
+      const salesTax = Number(rec.sales_tax) || 0
+      const salesCommission = Number(rec.sales_commission) || 0
+      const otherVariable = Number(rec.other_variable_costs) || 0
+      const fixedCosts = Number(rec.fixed_costs) || 0
 
-      if (inv > 0 || rev > 0 || prof > 0) {
+      const variableCosts = adsMeta + taxMeta + salesTax + salesCommission + otherVariable
+      const prof = rev - inv - variableCosts - fixedCosts
+
+      if (rev > 0 || inv > 0 || prof !== 0) {
         hasAnyData = true
         lastEnteredMonthLabel = monthLabel
         currentMonthRevenue = rev
@@ -197,7 +194,7 @@ export function buildYearFinancialSummary(
 
       computedItems.push({
         id: rec.id,
-        monthDate: rec.month,
+        monthDate,
         monthKey,
         monthIndex: i,
         monthLabel,
@@ -225,35 +222,6 @@ export function buildYearFinancialSummary(
       })
     }
   }
-
-  // Handle any extra items
-  extraRecords.forEach((rec, idx) => {
-    const inv = Number(rec.investment) || 0
-    const rev = Number(rec.gross_revenue) || 0
-    const prof = Number(rec.net_profit) || 0
-    if (inv > 0 || rev > 0 || prof > 0) {
-      hasAnyData = true
-    }
-    totalInvestment += inv
-    totalRevenue += rev
-    totalProfit += prof
-
-    computedItems.push({
-      id: rec.id,
-      monthDate: rec.month,
-      monthKey: `extra-${rec.id || idx}`,
-      monthIndex: 12 + idx,
-      monthLabel: `Extra ${idx + 1}/${year}`,
-      shortLabel: `Ext${idx + 1}`,
-      investment: inv,
-      grossRevenue: rev,
-      netProfit: prof,
-      roas: calculateRoas(rev, inv),
-      marginPercent: calculateMarginPercent(prof, rev),
-      isExtra: true,
-      hasRecord: true,
-    })
-  })
 
   const revenueGoal = goalsRecord ? Number(goalsRecord.annual_revenue_goal) || 0 : 0
   const profitGoal = goalsRecord ? Number(goalsRecord.annual_profit_goal) || 0 : 0

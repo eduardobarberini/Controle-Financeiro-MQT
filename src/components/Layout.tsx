@@ -31,8 +31,6 @@ export default function Layout() {
   const getPageTitle = () => {
     const path = location.pathname
     if (path.startsWith('/dashboard')) return 'Dashboard Financeiro'
-    if (path.startsWith('/dados')) return 'Entrada de Dados Mensais'
-    if (path.startsWith('/metas')) return 'Definição de Metas Anuais'
     if (path.startsWith('/mensal')) return 'Controle Mensal'
     return 'Controle Financeiro'
   }

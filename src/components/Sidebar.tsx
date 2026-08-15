@@ -1,21 +1,9 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import {
-  LayoutDashboard,
-  TableProperties,
-  Target,
-  Lock,
-  Landmark,
-  LogOut,
-  Sparkles,
-  CalendarDays,
-  ChevronDown,
-  ChevronRight,
-} from 'lucide-react'
+import { LayoutDashboard, Landmark, LogOut, CalendarDays } from 'lucide-react'
 import { COMPANY_NAME } from '@/types/financial'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface SidebarProps {
   onItemClick?: () => void
@@ -34,48 +22,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
   const groups: NavGroup[] = [
     {
       id: 'anual',
-      label: 'Anual',
-      items: [
-        { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { to: '/dados', label: 'Dados', icon: TableProperties },
-        { to: '/metas', label: 'Metas', icon: Target },
-      ],
+      label: 'Controle Anual',
+      items: [{ to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }],
     },
     {
       id: 'mensal',
-      label: 'Mensal',
+      label: 'Controle Mensal',
       items: [{ to: '/mensal', label: 'Controle Mensal', icon: CalendarDays }],
     },
-  ]
-
-  // A group is open by default if it contains the active route.
-  const initialOpen: Record<string, boolean> = {}
-  groups.forEach((g) => {
-    initialOpen[g.id] = g.items.some((i) => location.pathname.startsWith(i.to))
-  })
-  // "Anual" is open by default regardless.
-  initialOpen['anual'] = true
-
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(initialOpen)
-
-  const toggleGroup = (id: string) => setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }))
-
-  // Keep "Anual" open whenever the active route is inside it.
-  React.useEffect(() => {
-    setOpenGroups((prev) => {
-      const next = { ...prev }
-      groups.forEach((g) => {
-        if (g.items.some((i) => location.pathname.startsWith(i.to))) next[g.id] = true
-      })
-      return next
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname])
-
-  const upcomingModules = [
-    { label: 'Fluxo de Caixa', desc: 'Controle de entradas/saídas diárias' },
-    { label: 'Despesas Fixas', desc: 'Gestão de centros de custo' },
-    { label: 'DRE', desc: 'Demonstração do Resultado do Exercício' },
   ]
 
   const getUserInitials = () => {
@@ -92,6 +46,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
     if (!user) return 'Usuário'
     return (user.name as string) || (user.email as string)?.split('@')[0] || 'Usuário'
   }
+
+  // A group is open by default if it contains the active route. Both stay open.
+  const openGroups: Record<string, boolean> = {}
+  groups.forEach((g) => {
+    openGroups[g.id] = g.items.some((i) => location.pathname.startsWith(i.to))
+  })
+  openGroups['anual'] = true
+  openGroups['mensal'] = true
 
   return (
     <aside className="w-[248px] bg-slate-900 text-slate-300 flex flex-col h-full border-r border-slate-800 select-none">
@@ -123,19 +85,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
           const isOpen = !!openGroups[group.id]
           return (
             <div key={group.id}>
-              {/* Group header (expandable) */}
-              <button
-                type="button"
-                onClick={() => toggleGroup(group.id)}
-                className="w-full flex items-center justify-between px-3 mb-2 text-[11px] font-semibold tracking-wider text-slate-400 uppercase hover:text-slate-200 transition-colors"
-              >
-                <span>{group.label}</span>
-                {isOpen ? (
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
-                ) : (
-                  <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
-                )}
-              </button>
+              <div className="px-3 mb-2 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
+                {group.label}
+              </div>
 
               {isOpen && (
                 <nav className="space-y-1">
@@ -164,39 +116,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
             </div>
           )
         })}
-
-        {/* Locked Modules: Future expansion */}
-        <div>
-          <div className="px-3 mb-2 flex items-center justify-between">
-            <span className="text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
-              Próximos Módulos
-            </span>
-            <Sparkles className="w-3 h-3 text-slate-600" />
-          </div>
-          <div className="space-y-1">
-            {upcomingModules.map((mod) => (
-              <Tooltip key={mod.label} delayDuration={150}>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center justify-between px-3 py-2 rounded-xl text-xs text-slate-500 bg-slate-900/40 border border-slate-800/40 cursor-not-allowed opacity-75 hover:border-slate-800 transition-colors">
-                    <span className="truncate">{mod.label}</span>
-                    <div className="flex items-center gap-1 shrink-0 ml-2">
-                      <span className="text-[10px] text-slate-500 bg-slate-800/90 px-1.5 py-0.5 rounded font-medium">
-                        Em breve
-                      </span>
-                      <Lock className="w-3 h-3 text-slate-600" />
-                    </div>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent
-                  side="right"
-                  className="bg-slate-800 text-slate-200 border-slate-700 text-xs"
-                >
-                  {mod.desc}
-                </TooltipContent>
-              </Tooltip>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* User Mini Profile & Logout */}

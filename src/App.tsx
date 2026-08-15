@@ -8,8 +8,6 @@ import { FinancialProvider } from '@/contexts/FinancialContext'
 import Layout from './components/Layout'
 import Index from './pages/Index'
 import Dashboard from './pages/Dashboard'
-import Dados from './pages/Dados'
-import Metas from './pages/Metas'
 import Mensal from './pages/Mensal'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
@@ -31,8 +29,6 @@ const App = () => (
             <Route element={<Layout />}>
               <Route path="/" element={<Index />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/dados" element={<Dados />} />
-              <Route path="/metas" element={<Metas />} />
               <Route path="/mensal" element={<Mensal />} />
             </Route>
 

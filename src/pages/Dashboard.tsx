@@ -3,17 +3,18 @@ import { useFinancial } from '@/contexts/FinancialContext'
 import { KpiCard } from '@/components/dashboard/KpiCard'
 import { DashboardCharts } from '@/components/dashboard/DashboardCharts'
 import { SummaryTable } from '@/components/dashboard/SummaryTable'
+import { MetasModal } from '@/components/MetasModal'
 import {
   TrendingUp,
   DollarSign,
   Percent,
   Calculator,
-  CalendarCheck,
   Info,
   ChevronDown,
   ChevronUp,
   PlusCircle,
   Sparkles,
+  Target,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Link } from 'react-router-dom'
@@ -21,6 +22,7 @@ import { Link } from 'react-router-dom'
 export default function Dashboard() {
   const { summary, selectedYear, isLoading } = useFinancial()
   const [showInstructions, setShowInstructions] = useState(false)
+  const [metasOpen, setMetasOpen] = useState(false)
 
   return (
     <div className="space-y-8 animate-in fade-in-50 duration-300">
@@ -56,10 +58,22 @@ export default function Dashboard() {
             size="sm"
             className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs rounded-xl shadow-xs"
           >
-            <Link to="/dados">
+            <Link to="/mensal">
               <PlusCircle className="w-3.5 h-3.5 mr-1.5" />
               Lançar Dados
             </Link>
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setMetasOpen(true)}
+            className="text-xs text-slate-700 border-slate-300 hover:bg-slate-100 rounded-xl"
+            title="Editar metas anuais"
+          >
+            <Target className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
+            <span>Metas</span>
           </Button>
         </div>
       </div>
@@ -75,16 +89,18 @@ export default function Dashboard() {
             <div className="bg-white/90 p-3.5 rounded-xl border border-emerald-200/60 shadow-2xs">
               <span className="font-bold text-emerald-700 text-sm block mb-1">Passo 1</span>
               <p className="text-slate-600">
-                Preencha os dados mensais na aba <strong className="text-slate-900">Dados</strong> —
-                apenas <em>Investimento</em>, <em>Faturamento Total</em> e <em>Lucro Líquido</em>; o
-                ROAS e a Margem são calculados automaticamente ao vivo.
+                Preencha os dados mensais na aba{' '}
+                <strong className="text-slate-900">Controle Mensal</strong> — <em>Faturamento</em>,{' '}
+                <em>Investimento</em> e os custos variáveis e fixos; o Lucro Líquido, o ROAS e a
+                Margem são calculados automaticamente ao vivo.
               </p>
             </div>
             <div className="bg-white/90 p-3.5 rounded-xl border border-emerald-200/60 shadow-2xs">
               <span className="font-bold text-emerald-700 text-sm block mb-1">Passo 2</span>
               <p className="text-slate-600">
-                Defina as metas financeiras na aba <strong className="text-slate-900">Metas</strong>{' '}
-                para parametrizar os gauges circulares e as linhas de referência dos gráficos.
+                Defina as metas financeiras pelo botão{' '}
+                <strong className="text-slate-900">Metas</strong> no topo deste Dashboard para
+                parametrizar os gauges circulares e as linhas de referência dos gráficos.
               </p>
             </div>
             <div className="bg-white/90 p-3.5 rounded-xl border border-emerald-200/60 shadow-2xs">
@@ -175,7 +191,7 @@ export default function Dashboard() {
             gráficos, gauges e relatórios.
           </p>
           <Button asChild className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl">
-            <Link to="/dados">Ir para Entrada de Dados</Link>
+            <Link to="/mensal">Ir para Controle Mensal</Link>
           </Button>
         </div>
       ) : (
@@ -187,6 +203,9 @@ export default function Dashboard() {
           <SummaryTable summary={summary} />
         </>
       )}
+
+      {/* Metas Modal */}
+      <MetasModal open={metasOpen} onOpenChange={setMetasOpen} />
     </div>
   )
 }
