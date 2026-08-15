@@ -354,54 +354,6 @@ export default function Mensal() {
         </div>
       </div>
 
-      {/* Summary KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl">
-          <CardContent className="p-4">
-            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-              Faturamento
-            </p>
-            <p className="text-lg font-bold text-slate-900 tabular-nums mt-1">
-              {formatCurrency(totals.revenue)}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl">
-          <CardContent className="p-4">
-            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-              Investimento Meta
-            </p>
-            <p className="text-lg font-bold text-amber-600 tabular-nums mt-1">
-              {formatCurrency(totals.adsMeta)}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl">
-          <CardContent className="p-4">
-            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-              Custos Totais
-            </p>
-            <p className="text-lg font-bold text-slate-900 tabular-nums mt-1">
-              {formatCurrency(totals.totalCosts)}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl">
-          <CardContent className="p-4">
-            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-              Lucro Líquido
-            </p>
-            <p
-              className={`text-lg font-bold tabular-nums mt-1 ${
-                totals.profit >= 0 ? 'text-emerald-600' : 'text-rose-600'
-              }`}
-            >
-              {formatCurrency(totals.profit)}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Chart */}
       <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
         <CardHeader className="p-5 pb-2">
