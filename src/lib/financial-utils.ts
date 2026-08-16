@@ -144,10 +144,12 @@ export function calculateMarginPercent(netProfit: number, grossRevenue: number):
 }
 
 /**
- * Fixed rates for the automatic monthly calculations.
+ * Default fixed rates for the automatic monthly calculations (in decimal: 0.1215 = 12.15%, 0.075 = 7.5%).
  */
 export const TAX_META_RATE = 0.1215 // 12,15% sobre investimento meta (anúncios)
 export const SALES_TAX_RATE = 0.075 // 7,5% sobre faturamento
+export const DEFAULT_TAX_META_PERCENT = 12.15
+export const DEFAULT_SALES_TAX_PERCENT = 7.5
 
 /**
  * Result of the automatic monthly metric calculation. Every read-only field
@@ -180,6 +182,8 @@ export function computeMonthlyMetrics(input: {
   salesCommission: number
   otherVariable: number
   fixedCosts: number
+  taxMetaRate?: number // e.g. 0.1215 (12.15%)
+  salesTaxRate?: number // e.g. 0.075 (7.5%)
 }): MonthlyMetrics {
   const revenue = input.revenue || 0
   const adsMeta = input.adsMeta || 0
@@ -187,8 +191,17 @@ export function computeMonthlyMetrics(input: {
   const otherVariable = input.otherVariable || 0
   const fixedCosts = input.fixedCosts || 0
 
-  const taxMeta = adsMeta * TAX_META_RATE
-  const salesTax = revenue * SALES_TAX_RATE
+  const taxMetaRate =
+    input.taxMetaRate !== undefined && input.taxMetaRate !== null
+      ? input.taxMetaRate
+      : TAX_META_RATE
+  const salesTaxRate =
+    input.salesTaxRate !== undefined && input.salesTaxRate !== null
+      ? input.salesTaxRate
+      : SALES_TAX_RATE
+
+  const taxMeta = adsMeta * taxMetaRate
+  const salesTax = revenue * salesTaxRate
   const totalVariable = adsMeta + taxMeta + salesTax + salesCommission + otherVariable
   const totalCosts = fixedCosts + totalVariable
   const netProfit = revenue - totalCosts
@@ -292,12 +305,23 @@ export function buildYearFinancialSummary(
     const shortLabel = MONTH_SHORT_NAMES_PT[i]
 
     if (rec) {
+      const taxMetaRate =
+        goalsRecord?.tax_meta_rate !== undefined && goalsRecord?.tax_meta_rate !== null
+          ? Number(goalsRecord.tax_meta_rate) / 100
+          : TAX_META_RATE
+      const salesTaxRate =
+        goalsRecord?.sales_tax_rate !== undefined && goalsRecord?.sales_tax_rate !== null
+          ? Number(goalsRecord.sales_tax_rate) / 100
+          : SALES_TAX_RATE
+
       const m = computeMonthlyMetrics({
         revenue: Number(rec.revenue) || 0,
         adsMeta: Number(rec.ads_meta) || 0,
         salesCommission: Number(rec.sales_commission) || 0,
         otherVariable: Number(rec.other_variable_costs) || 0,
         fixedCosts: Number(rec.fixed_costs) || 0,
+        taxMetaRate,
+        salesTaxRate,
       })
 
       if (m.revenue > 0 || m.adsMeta > 0 || m.netProfit !== 0 || m.totalCosts > 0) {

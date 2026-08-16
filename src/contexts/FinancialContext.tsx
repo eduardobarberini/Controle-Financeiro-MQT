@@ -16,7 +16,12 @@ interface FinancialContextType {
   isLoading: boolean
   isSaving: boolean
   refreshData: () => Promise<void>
-  saveGoalsData: (annualRevenueGoal: number, annualProfitGoal: number) => Promise<GoalsRecord>
+  saveGoalsData: (
+    annualRevenueGoal: number,
+    annualProfitGoal: number,
+    taxMetaRate?: number,
+    salesTaxRate?: number,
+  ) => Promise<GoalsRecord>
 }
 
 const FinancialContext = createContext<FinancialContextType | undefined>(undefined)
@@ -73,10 +78,21 @@ export const FinancialProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     isAuthenticated,
   )
 
-  const saveGoalsData = async (annualRevenueGoal: number, annualProfitGoal: number) => {
+  const saveGoalsData = async (
+    annualRevenueGoal: number,
+    annualProfitGoal: number,
+    taxMetaRate?: number,
+    salesTaxRate?: number,
+  ) => {
     setIsSaving(true)
     try {
-      const saved = await goalsService.saveGoals(selectedYear, annualRevenueGoal, annualProfitGoal)
+      const saved = await goalsService.saveGoals(
+        selectedYear,
+        annualRevenueGoal,
+        annualProfitGoal,
+        taxMetaRate,
+        salesTaxRate,
+      )
       await fetchData()
       return saved
     } finally {

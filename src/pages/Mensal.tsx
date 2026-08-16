@@ -35,6 +35,7 @@ import {
   TAX_META_RATE,
   SALES_TAX_RATE,
 } from '@/lib/financial-utils'
+import { useFinancial } from '@/contexts/FinancialContext'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -125,8 +126,18 @@ const ReadOnlyCell: React.FC<{
 )
 
 export default function Mensal() {
+  const { goals } = useFinancial()
   const { selectedYear, records, isLoading, save } = useMonthlyDetails()
   const [rows, setRows] = useState<RowState[]>([])
+
+  const taxMetaRate =
+    goals?.tax_meta_rate !== undefined && goals?.tax_meta_rate !== null
+      ? Number(goals.tax_meta_rate) / 100
+      : TAX_META_RATE
+  const salesTaxRate =
+    goals?.sales_tax_rate !== undefined && goals?.sales_tax_rate !== null
+      ? Number(goals.sales_tax_rate) / 100
+      : SALES_TAX_RATE
 
   // Build rows from records (12 months, gaps filled with empty).
   useEffect(() => {
@@ -245,6 +256,8 @@ export default function Mensal() {
       salesCommission: num(row.salesCommissionStr),
       otherVariable: num(row.otherVariableStr),
       fixedCosts: num(row.fixedCostsStr),
+      taxMetaRate,
+      salesTaxRate,
     })
 
   const handleSaveRow = async (row: RowState) => {
@@ -781,11 +794,13 @@ export default function Mensal() {
           </p>
           <p>
             • <strong>Imposto Meta</strong> = Investimento Meta ×{' '}
-            {(TAX_META_RATE * 100).toFixed(2).replace('.', ',')}% (auto, somente leitura).
+            {(taxMetaRate * 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}% (auto,
+            somente leitura).
           </p>
           <p>
             • <strong>Imposto Sobre Vendas</strong> = Faturamento ×{' '}
-            {(SALES_TAX_RATE * 100).toFixed(1).replace('.', ',')}% (auto, somente leitura).
+            {(salesTaxRate * 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}% (auto,
+            somente leitura).
           </p>
           <p>
             • <strong>Total Variável</strong> = Investimento Meta + Imposto Meta + Imposto Sobre

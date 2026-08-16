@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { useFinancial } from '@/contexts/FinancialContext'
 import { toast } from '@/hooks/use-toast'
-import { formatCurrency, formatPercent, getProgressColor } from '@/lib/financial-utils'
+import {
+  formatCurrency,
+  formatPercent,
+  getProgressColor,
+  DEFAULT_TAX_META_PERCENT,
+  DEFAULT_SALES_TAX_PERCENT,
+} from '@/lib/financial-utils'
 import {
   Dialog,
   DialogContent,
@@ -13,7 +19,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Target, TrendingUp, DollarSign, Save, Loader2, Sparkles } from 'lucide-react'
+import { Target, TrendingUp, DollarSign, Save, Loader2, Sparkles, Percent } from 'lucide-react'
 
 interface MetasModalProps {
   open: boolean
@@ -29,6 +35,8 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
   const { selectedYear, goals, saveGoalsData, summary } = useFinancial()
   const [revenueGoalStr, setRevenueGoalStr] = useState<string>('')
   const [profitGoalStr, setProfitGoalStr] = useState<string>('')
+  const [taxMetaRateStr, setTaxMetaRateStr] = useState<string>('')
+  const [salesTaxRateStr, setSalesTaxRateStr] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -36,6 +44,16 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
     if (open) {
       setRevenueGoalStr(goals?.annual_revenue_goal ? String(goals.annual_revenue_goal) : '')
       setProfitGoalStr(goals?.annual_profit_goal ? String(goals.annual_profit_goal) : '')
+      setTaxMetaRateStr(
+        goals?.tax_meta_rate !== undefined && goals?.tax_meta_rate !== null
+          ? String(goals.tax_meta_rate)
+          : String(DEFAULT_TAX_META_PERCENT),
+      )
+      setSalesTaxRateStr(
+        goals?.sales_tax_rate !== undefined && goals?.sales_tax_rate !== null
+          ? String(goals.sales_tax_rate)
+          : String(DEFAULT_SALES_TAX_PERCENT),
+      )
       setErrors({})
     }
   }, [goals, selectedYear, open])
@@ -50,12 +68,20 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
     const errs: Record<string, string> = {}
     const rev = parseFloat(revenueGoalStr)
     const prof = parseFloat(profitGoalStr)
+    const taxMeta = parseFloat(taxMetaRateStr)
+    const salesTax = parseFloat(salesTaxRateStr)
 
     if (isNaN(rev) || rev <= 0) {
       errs.revenue = 'A Meta de Faturamento Anual deve ser maior que zero.'
     }
     if (isNaN(prof) || prof <= 0) {
       errs.profit = 'A Meta de Lucro Anual deve ser maior que zero.'
+    }
+    if (isNaN(taxMeta) || taxMeta < 0) {
+      errs.taxMeta = 'A alíquota de Imposto Meta não pode ser negativa.'
+    }
+    if (isNaN(salesTax) || salesTax < 0) {
+      errs.salesTax = 'A alíquota de Imposto S/ Vendas não pode ser negativa.'
     }
 
     setErrors(errs)
@@ -68,13 +94,15 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
 
     const rev = parseFloat(revenueGoalStr)
     const prof = parseFloat(profitGoalStr)
+    const taxMeta = parseFloat(taxMetaRateStr)
+    const salesTax = parseFloat(salesTaxRateStr)
 
     try {
       setIsSubmitting(true)
-      await saveGoalsData(rev, prof)
+      await saveGoalsData(rev, prof, taxMeta, salesTax)
       toast({
-        title: 'Metas salvas com sucesso',
-        description: `Metas para o ano de ${selectedYear} atualizadas.`,
+        title: 'Metas e alíquotas salvas com sucesso',
+        description: `Configurações para o ano de ${selectedYear} atualizadas.`,
       })
       onOpenChange(false)
     } catch (err: unknown) {
@@ -173,6 +201,77 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                   ≈ {formatCurrency((parseFloat(profitGoalStr) || 0) / 12)} / mês de média
                 </p>
               )}
+            </div>
+          </div>
+
+          {/* Alíquotas de Impostos */}
+          <div className="pt-2 border-t border-slate-100">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-3 flex items-center gap-1.5">
+              <Percent className="w-3.5 h-3.5 text-purple-600" />
+              Alíquotas de Impostos (%)
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Alíquota Imposto Meta (%) */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="taxMetaRate"
+                  className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"
+                >
+                  Alíquota Imposto Meta (%)
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="taxMetaRate"
+                    type="text"
+                    inputMode="decimal"
+                    value={taxMetaRateStr}
+                    onChange={(e) => handleInputChange(setTaxMetaRateStr, e.target.value)}
+                    placeholder="12.15"
+                    className="h-11 pr-8 text-sm font-semibold tabular-nums text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-purple-500 rounded-xl"
+                    required
+                  />
+                  <span className="absolute right-3.5 top-3 text-sm text-slate-400 font-semibold pointer-events-none">
+                    %
+                  </span>
+                </div>
+                {errors.taxMeta ? (
+                  <p className="text-xs text-rose-500 mt-1">{errors.taxMeta}</p>
+                ) : (
+                  <p className="text-[11px] text-slate-400">
+                    Incide sobre Investimento Meta (Anúncios)
+                  </p>
+                )}
+              </div>
+
+              {/* Alíquota Imposto S/ Vendas (%) */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="salesTaxRate"
+                  className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"
+                >
+                  Alíquota Imposto S/ Vendas (%)
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="salesTaxRate"
+                    type="text"
+                    inputMode="decimal"
+                    value={salesTaxRateStr}
+                    onChange={(e) => handleInputChange(setSalesTaxRateStr, e.target.value)}
+                    placeholder="7.5"
+                    className="h-11 pr-8 text-sm font-semibold tabular-nums text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-purple-500 rounded-xl"
+                    required
+                  />
+                  <span className="absolute right-3.5 top-3 text-sm text-slate-400 font-semibold pointer-events-none">
+                    %
+                  </span>
+                </div>
+                {errors.salesTax ? (
+                  <p className="text-xs text-rose-500 mt-1">{errors.salesTax}</p>
+                ) : (
+                  <p className="text-[11px] text-slate-400">Incide sobre o Faturamento Bruto</p>
+                )}
+              </div>
             </div>
           </div>
 

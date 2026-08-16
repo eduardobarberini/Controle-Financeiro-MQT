@@ -17,6 +17,8 @@ export interface GoalsRecord extends RecordModel {
   year: number
   annual_revenue_goal: number
   annual_profit_goal: number
+  tax_meta_rate?: number | null
+  sales_tax_rate?: number | null
 }
 
 export interface MonthlyDetailsRecord extends RecordModel {

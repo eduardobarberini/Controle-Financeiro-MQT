@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-16T00:01:01.935Z",
+  "generatedAt": "2026-08-16T00:05:22.145Z",
   "collections": [
     {
       "name": "users",
@@ -155,6 +155,18 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "tax_meta_rate",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "sales_tax_rate",
+          "type": "number",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": ["CREATE UNIQUE INDEX idx_goals_user_year ON goals (user, year)"]

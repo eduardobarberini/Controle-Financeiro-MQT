@@ -20,19 +20,25 @@ export const goalsService = {
     year: number,
     annualRevenueGoal: number,
     annualProfitGoal: number,
+    taxMetaRate?: number,
+    salesTaxRate?: number,
   ): Promise<GoalsRecord> {
     const userId = pb.authStore.record?.id
     if (!userId) throw new Error('Usuário não autenticado')
+
+    const data: Partial<GoalsRecord> = {
+      annual_revenue_goal: annualRevenueGoal,
+      annual_profit_goal: annualProfitGoal,
+      ...(taxMetaRate !== undefined && { tax_meta_rate: taxMetaRate }),
+      ...(salesTaxRate !== undefined && { sales_tax_rate: salesTaxRate }),
+    }
 
     try {
       const existing = await pb
         .collection<GoalsRecord>('goals')
         .getFirstListItem(`user = '${userId}' && year = ${year}`)
       if (existing) {
-        return await pb.collection<GoalsRecord>('goals').update(existing.id, {
-          annual_revenue_goal: annualRevenueGoal,
-          annual_profit_goal: annualProfitGoal,
-        })
+        return await pb.collection<GoalsRecord>('goals').update(existing.id, data)
       }
     } catch (_) {
       // not found
@@ -41,8 +47,7 @@ export const goalsService = {
     return await pb.collection<GoalsRecord>('goals').create({
       user: userId,
       year: year,
-      annual_revenue_goal: annualRevenueGoal,
-      annual_profit_goal: annualProfitGoal,
+      ...data,
     })
   },
 }
