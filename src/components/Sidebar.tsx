@@ -1,6 +1,6 @@
 import React from 'react'
 import { NavLink, Link } from 'react-router-dom'
-import { LayoutDashboard, Landmark, LogOut, CalendarDays, Settings, UserCog } from 'lucide-react'
+import { LayoutDashboard, Landmark, LogOut, CalendarDays, UserCog } from 'lucide-react'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -16,7 +16,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
   const navItems = [
     { to: '/dashboard', label: 'Controle Anual', icon: LayoutDashboard },
     { to: '/mensal', label: 'Controle Mensal', icon: CalendarDays },
-    { to: '/configuracoes', label: 'Configurações', icon: Settings },
   ]
 
   const getUserInitials = () => {
@@ -117,7 +116,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
           className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11px] font-semibold text-slate-300 hover:text-white hover:bg-[#6D49F2]/30 transition-colors"
         >
           <UserCog className="w-3 h-3" />
-          <span>Editar perfil</span>
+          <span>Configurações do Perfil</span>
         </Link>
       </div>
     </aside>
