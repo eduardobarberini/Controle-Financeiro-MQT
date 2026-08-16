@@ -28,13 +28,6 @@ export default function Layout() {
     return <Navigate to="/login" replace state={{ from: location }} />
   }
 
-  const getPageTitle = () => {
-    const path = location.pathname
-    if (path.startsWith('/dashboard')) return 'Dashboard Financeiro'
-    if (path.startsWith('/mensal')) return 'Controle Mensal'
-    return 'Controle Financeiro'
-  }
-
   const getUserInitials = () => {
     if (!user) return 'CF'
     const name = (user.name as string) || (user.email as string) || ''
@@ -78,7 +71,7 @@ export default function Layout() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight truncate">
-                  {getPageTitle()}
+                  Dashboard Financeiro
                 </h1>
                 <span className="hidden sm:inline-block text-[11px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200/60">
                   {COMPANY_NAME}
