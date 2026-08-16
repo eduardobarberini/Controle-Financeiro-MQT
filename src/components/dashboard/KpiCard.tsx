@@ -78,8 +78,8 @@ export const KpiCard: React.FC<KpiCardProps> = ({
   }
 
   const isTargetComparison = statusMode === 'targetComparison'
-  const isGoalReached =
-    targetPercent !== undefined && targetPercent !== null && targetPercent >= 100
+  const hasTarget = targetPercent !== undefined && targetPercent !== null
+  const isGoalReached = hasTarget && targetPercent >= 100
 
   const getCustomProgress = () => {
     if (!isTargetComparison) {
@@ -106,8 +106,17 @@ export const KpiCard: React.FC<KpiCardProps> = ({
   const progress = getCustomProgress()
   const clampedProgressWidth = Math.min(Math.max(targetPercent || 0, 0), 100)
 
+  const cardBgClass =
+    isTargetComparison && hasTarget
+      ? isGoalReached
+        ? 'bg-emerald-50 border-emerald-200/80'
+        : 'bg-rose-50 border-rose-200/80'
+      : 'bg-white border-slate-200/90'
+
   return (
-    <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+    <Card
+      className={`${cardBgClass} shadow-sm rounded-2xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}
+    >
       <CardContent className="p-5 flex flex-col justify-between h-full">
         {/* Top row: Label & Icon */}
         <div className="flex items-start justify-between gap-2 mb-2">
