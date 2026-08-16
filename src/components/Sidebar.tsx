@@ -1,6 +1,6 @@
 import React from 'react'
 import { NavLink, Link } from 'react-router-dom'
-import { LayoutDashboard, Landmark, LogOut, CalendarDays, UserCog } from 'lucide-react'
+import { BarChart3, Landmark, LogOut, CalendarDays, UserCog } from 'lucide-react'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -14,7 +14,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
   const { companyName, logoUrl } = useCompany()
 
   const navItems = [
-    { to: '/dashboard', label: 'Controle Anual', icon: LayoutDashboard },
+    { to: '/dashboard', label: 'Controle Anual', icon: BarChart3 },
     { to: '/mensal', label: 'Controle Mensal', icon: CalendarDays },
   ]
 
