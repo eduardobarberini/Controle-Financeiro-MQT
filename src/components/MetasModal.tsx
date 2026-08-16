@@ -35,6 +35,7 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
   const { selectedYear, goals, saveGoalsData, summary } = useFinancial()
   const [revenueGoalStr, setRevenueGoalStr] = useState<string>('')
   const [profitGoalStr, setProfitGoalStr] = useState<string>('')
+  const [profitMarginGoalStr, setProfitMarginGoalStr] = useState<string>('')
   const [taxMetaRateStr, setTaxMetaRateStr] = useState<string>('')
   const [salesTaxRateStr, setSalesTaxRateStr] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
@@ -44,6 +45,11 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
     if (open) {
       setRevenueGoalStr(goals?.annual_revenue_goal ? String(goals.annual_revenue_goal) : '')
       setProfitGoalStr(goals?.annual_profit_goal ? String(goals.annual_profit_goal) : '')
+      setProfitMarginGoalStr(
+        goals?.profit_margin_goal !== undefined && goals?.profit_margin_goal !== null
+          ? String(goals.profit_margin_goal)
+          : '',
+      )
       setTaxMetaRateStr(
         goals?.tax_meta_rate !== undefined && goals?.tax_meta_rate !== null
           ? String(goals.tax_meta_rate)
@@ -68,6 +74,7 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
     const errs: Record<string, string> = {}
     const rev = parseFloat(revenueGoalStr)
     const prof = parseFloat(profitGoalStr)
+    const margin = parseFloat(profitMarginGoalStr)
     const taxMeta = parseFloat(taxMetaRateStr)
     const salesTax = parseFloat(salesTaxRateStr)
 
@@ -76,6 +83,9 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
     }
     if (isNaN(prof) || prof <= 0) {
       errs.profit = 'A Meta de Lucro Anual deve ser maior que zero.'
+    }
+    if (profitMarginGoalStr !== '' && (isNaN(margin) || margin <= 0 || margin > 100)) {
+      errs.margin = 'A Meta de Margem de Lucro deve ser um percentual válido (ex: 30).'
     }
     if (isNaN(taxMeta) || taxMeta < 0) {
       errs.taxMeta = 'A alíquota de Imposto Meta não pode ser negativa.'
@@ -94,12 +104,13 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
 
     const rev = parseFloat(revenueGoalStr)
     const prof = parseFloat(profitGoalStr)
+    const margin = profitMarginGoalStr !== '' ? parseFloat(profitMarginGoalStr) : null
     const taxMeta = parseFloat(taxMetaRateStr)
     const salesTax = parseFloat(salesTaxRateStr)
 
     try {
       setIsSubmitting(true)
-      await saveGoalsData(rev, prof, taxMeta, salesTax)
+      await saveGoalsData(rev, prof, taxMeta, salesTax, margin)
       toast({
         title: 'Metas e alíquotas salvas com sucesso',
         description: `Configurações para o ano de ${selectedYear} atualizadas.`,
@@ -130,13 +141,13 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
             Metas Anuais • {selectedYear}
           </DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
-            Estabeleça os objetivos financeiros de Faturamento e Lucro para o acompanhamento no
-            Dashboard.
+            Estabeleça os objetivos financeiros de Faturamento, Lucro e Margem para o acompanhamento
+            no Dashboard.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Meta de Faturamento */}
             <div className="space-y-2">
               <Label
@@ -144,10 +155,10 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                 className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5"
               >
                 <DollarSign className="w-3.5 h-3.5 text-[#6D49F2]" />
-                Meta de Faturamento (R$)
+                Faturamento (R$)
               </Label>
               <div className="relative">
-                <span className="absolute left-3.5 top-3 text-sm text-slate-400 font-semibold">
+                <span className="absolute left-3 top-3 text-xs text-slate-400 font-semibold">
                   R$
                 </span>
                 <Input
@@ -157,15 +168,15 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                   value={revenueGoalStr}
                   onChange={(e) => handleInputChange(setRevenueGoalStr, e.target.value)}
                   placeholder="500.000,00"
-                  className="h-11 pl-10 pr-3 text-sm font-semibold tabular-nums text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-[#6D49F2] rounded-xl"
+                  className="h-11 pl-8 pr-2 text-xs font-semibold tabular-nums text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-[#6D49F2] rounded-xl"
                   required
                 />
               </div>
               {errors.revenue ? (
-                <p className="text-xs text-rose-500 mt-1">{errors.revenue}</p>
+                <p className="text-[11px] text-rose-500 mt-1">{errors.revenue}</p>
               ) : (
-                <p className="text-[11px] text-slate-400">
-                  ≈ {formatCurrency((parseFloat(revenueGoalStr) || 0) / 12)} / mês de média
+                <p className="text-[10px] text-slate-400">
+                  ≈ {formatCurrency((parseFloat(revenueGoalStr) || 0) / 12)} / mês
                 </p>
               )}
             </div>
@@ -177,10 +188,10 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                 className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5"
               >
                 <TrendingUp className="w-3.5 h-3.5 text-[#6D49F2]" />
-                Meta de Lucro (R$)
+                Lucro (R$)
               </Label>
               <div className="relative">
-                <span className="absolute left-3.5 top-3 text-sm text-slate-400 font-semibold">
+                <span className="absolute left-3 top-3 text-xs text-slate-400 font-semibold">
                   R$
                 </span>
                 <Input
@@ -190,16 +201,46 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                   value={profitGoalStr}
                   onChange={(e) => handleInputChange(setProfitGoalStr, e.target.value)}
                   placeholder="150.000,00"
-                  className="h-11 pl-10 pr-3 text-sm font-semibold tabular-nums text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-purple-500 rounded-xl"
+                  className="h-11 pl-8 pr-2 text-xs font-semibold tabular-nums text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-[#6D49F2] rounded-xl"
                   required
                 />
               </div>
               {errors.profit ? (
-                <p className="text-xs text-rose-500 mt-1">{errors.profit}</p>
+                <p className="text-[11px] text-rose-500 mt-1">{errors.profit}</p>
               ) : (
-                <p className="text-[11px] text-slate-400">
-                  ≈ {formatCurrency((parseFloat(profitGoalStr) || 0) / 12)} / mês de média
+                <p className="text-[10px] text-slate-400">
+                  ≈ {formatCurrency((parseFloat(profitGoalStr) || 0) / 12)} / mês
                 </p>
+              )}
+            </div>
+
+            {/* Meta de Margem de Lucro (%) */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="profitMarginGoal"
+                className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5"
+              >
+                <Percent className="w-3.5 h-3.5 text-[#6D49F2]" />
+                Margem Lucro (%)
+              </Label>
+              <div className="relative">
+                <Input
+                  id="profitMarginGoal"
+                  type="text"
+                  inputMode="decimal"
+                  value={profitMarginGoalStr}
+                  onChange={(e) => handleInputChange(setProfitMarginGoalStr, e.target.value)}
+                  placeholder="30"
+                  className="h-11 pr-7 text-xs font-semibold tabular-nums text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-[#6D49F2] rounded-xl"
+                />
+                <span className="absolute right-3 top-3 text-xs text-slate-400 font-semibold pointer-events-none">
+                  %
+                </span>
+              </div>
+              {errors.margin ? (
+                <p className="text-[11px] text-rose-500 mt-1">{errors.margin}</p>
+              ) : (
+                <p className="text-[10px] text-slate-400">Meta KPI Principal</p>
               )}
             </div>
           </div>
@@ -276,10 +317,10 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
           </div>
 
           {/* Progresso atual */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50/70 border border-slate-200/80 rounded-xl p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50/70 border border-slate-200/80 rounded-xl p-4">
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs text-slate-500">
-                <span>Faturamento acumulado</span>
+                <span>Faturamento</span>
                 <span className={`font-bold tabular-nums ${revProgress.badgeText}`}>
                   {formatPercent(summary.revenueGoalPercent, 1)}
                 </span>
@@ -298,7 +339,7 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
             </div>
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs text-slate-500">
-                <span>Lucro acumulado</span>
+                <span>Lucro</span>
                 <span className={`font-bold tabular-nums ${profProgress.badgeText}`}>
                   {formatPercent(summary.profitGoalPercent, 1)}
                 </span>
@@ -311,6 +352,43 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                   className={`h-full rounded-full transition-all duration-500 ${profProgress.barColor}`}
                   style={{
                     width: `${Math.min(Math.max(summary.profitGoalPercent || 0, 0), 100)}%`,
+                  }}
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs text-slate-500">
+                <span>Margem Real</span>
+                <span
+                  className={`font-bold tabular-nums ${
+                    summary.profitMarginGoal
+                      ? (summary.averageMargin || 0) >= summary.profitMarginGoal
+                        ? 'text-emerald-600'
+                        : 'text-rose-600'
+                      : 'text-slate-600'
+                  }`}
+                >
+                  {summary.profitMarginGoal
+                    ? `${formatPercent(summary.marginGoalPercent, 1)} da meta`
+                    : '—'}
+                </span>
+              </div>
+              <div className="text-sm font-bold text-slate-900 tabular-nums">
+                {formatPercent(summary.averageMargin, 1)}
+              </div>
+              <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    summary.profitMarginGoal
+                      ? (summary.averageMargin || 0) >= summary.profitMarginGoal
+                        ? 'bg-emerald-500'
+                        : 'bg-rose-500'
+                      : 'bg-slate-400'
+                  }`}
+                  style={{
+                    width: summary.profitMarginGoal
+                      ? `${Math.min(Math.max(summary.marginGoalPercent || 0, 0), 100)}%`
+                      : '0%',
                   }}
                 />
               </div>

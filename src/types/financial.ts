@@ -17,6 +17,8 @@ export interface GoalsRecord extends RecordModel {
   year: number
   annual_revenue_goal: number
   annual_profit_goal: number
+  profit_margin_goal?: number | null
+  min_margin_goal?: number | null
   tax_meta_rate?: number | null
   sales_tax_rate?: number | null
 }
@@ -58,8 +60,10 @@ export interface YearFinancialSummary {
   lastEnteredMonthLabel: string | null
   revenueGoal: number
   profitGoal: number
+  profitMarginGoal: number | null
   revenueGoalPercent: number | null
   profitGoalPercent: number | null
+  marginGoalPercent: number | null
   hasAnyData: boolean
   monthlyItems: ComputedMonthlyItem[]
 }

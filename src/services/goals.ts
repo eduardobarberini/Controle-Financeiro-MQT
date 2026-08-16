@@ -24,6 +24,7 @@ export const goalsService = {
     annualProfitGoal: number,
     taxMetaRate?: number,
     salesTaxRate?: number,
+    profitMarginGoal?: number | null,
   ): Promise<GoalsRecord> {
     const userId = pb.authStore.record?.id
     if (!userId) throw new Error('Usuário não autenticado')
@@ -32,6 +33,10 @@ export const goalsService = {
     const cleanProfit = Number(annualProfitGoal) || 0
     const cleanTaxMeta = taxMetaRate !== undefined ? Number(taxMetaRate) || 0 : 0
     const cleanSalesTax = salesTaxRate !== undefined ? Number(salesTaxRate) || 0 : 0
+    const cleanMarginGoal =
+      profitMarginGoal !== undefined && profitMarginGoal !== null
+        ? Number(profitMarginGoal) || 0
+        : null
 
     // 1. Check if record already exists using safe parameterized filter with requestKey: null
     let existing: GoalsRecord | null = null
@@ -52,6 +57,7 @@ export const goalsService = {
       annual_profit_goal: cleanProfit,
       tax_meta_rate: cleanTaxMeta,
       sales_tax_rate: cleanSalesTax,
+      profit_margin_goal: cleanMarginGoal,
     }
 
     if (existing) {

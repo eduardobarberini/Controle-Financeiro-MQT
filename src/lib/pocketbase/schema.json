@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-16T01:06:19.879Z",
+  "generatedAt": "2026-08-16T03:06:42.758Z",
   "collections": [
     {
       "name": "users",
@@ -164,6 +164,18 @@
         },
         {
           "name": "sales_tax_rate",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "min_margin_goal",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "profit_margin_goal",
           "type": "number",
           "required": false,
           "system": false

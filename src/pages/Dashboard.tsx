@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useFinancial } from '@/contexts/FinancialContext'
 import { KpiCard } from '@/components/dashboard/KpiCard'
+import { formatPercent } from '@/lib/financial-utils'
 import { DashboardCharts } from '@/components/dashboard/DashboardCharts'
 import { MetasModal } from '@/components/MetasModal'
 import { TrendingUp, Wallet, Percent, PlusCircle, Target } from 'lucide-react'
@@ -90,10 +91,15 @@ export default function Dashboard() {
           value={summary.averageMargin}
           formatType="percent"
           icon={Percent}
+          targetPercent={summary.marginGoalPercent}
+          showProgressBar={summary.profitMarginGoal !== null && summary.profitMarginGoal > 0}
+          statusMode="targetComparison"
           subtext={
-            summary.totalRevenue > 0
-              ? `Margem líquida global do exercício`
-              : 'Sem receita registrada'
+            summary.profitMarginGoal
+              ? `Meta: ${formatPercent(summary.profitMarginGoal, 1)}`
+              : summary.totalRevenue > 0
+                ? 'Margem líquida global do exercício'
+                : 'Sem receita registrada'
           }
           iconBgColor="bg-amber-50 text-amber-600 border-amber-200"
         />

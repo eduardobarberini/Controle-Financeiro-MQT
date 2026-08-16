@@ -368,9 +368,19 @@ export function buildYearFinancialSummary(
 
   const revenueGoal = goalsRecord ? Number(goalsRecord.annual_revenue_goal) || 0 : 0
   const profitGoal = goalsRecord ? Number(goalsRecord.annual_profit_goal) || 0 : 0
+  const profitMarginGoal =
+    goalsRecord?.profit_margin_goal !== undefined && goalsRecord?.profit_margin_goal !== null
+      ? Number(goalsRecord.profit_margin_goal)
+      : null
 
   const revenueGoalPercent = revenueGoal > 0 ? (totalRevenue / revenueGoal) * 100 : null
   const profitGoalPercent = profitGoal > 0 ? (totalProfit / profitGoal) * 100 : null
+
+  const averageMargin = calculateMarginPercent(totalProfit, totalRevenue)
+  const marginGoalPercent =
+    profitMarginGoal !== null && profitMarginGoal > 0 && averageMargin !== null
+      ? (averageMargin / profitMarginGoal) * 100
+      : null
 
   return {
     totalInvestment,
@@ -378,13 +388,15 @@ export function buildYearFinancialSummary(
     totalCosts,
     totalProfit,
     averageRoas: calculateRoas(totalRevenue, totalInvestment),
-    averageMargin: calculateMarginPercent(totalProfit, totalRevenue),
+    averageMargin,
     currentMonthRevenue,
     lastEnteredMonthLabel,
     revenueGoal,
     profitGoal,
+    profitMarginGoal,
     revenueGoalPercent,
     profitGoalPercent,
+    marginGoalPercent,
     hasAnyData,
     monthlyItems: computedItems,
   }

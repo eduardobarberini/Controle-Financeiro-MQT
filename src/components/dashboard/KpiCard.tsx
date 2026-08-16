@@ -12,6 +12,7 @@ interface KpiCardProps {
   subtext?: string
   targetPercent?: number | null
   showProgressBar?: boolean
+  statusMode?: 'default' | 'targetComparison'
   tooltipText?: string
   iconBgColor?: string
   iconColor?: string
@@ -26,7 +27,9 @@ export const KpiCard: React.FC<KpiCardProps> = ({
   subtext,
   targetPercent,
   showProgressBar = false,
+  statusMode = 'default',
   iconBgColor = 'bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20',
+  iconColor,
 }) => {
   // Animated count-up simulation
   const [displayValue, setDisplayValue] = useState<number>(0)
@@ -74,7 +77,33 @@ export const KpiCard: React.FC<KpiCardProps> = ({
     }
   }
 
-  const progress = getProgressColor(targetPercent)
+  const isTargetComparison = statusMode === 'targetComparison'
+  const isGoalReached =
+    targetPercent !== undefined && targetPercent !== null && targetPercent >= 100
+
+  const getCustomProgress = () => {
+    if (!isTargetComparison) {
+      return getProgressColor(targetPercent)
+    }
+    if (isGoalReached) {
+      return {
+        badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        badgeText: 'text-emerald-600',
+        barColor: 'bg-emerald-500',
+        gaugeColor: '#10b981',
+        status: 'success' as const,
+      }
+    }
+    return {
+      badgeBg: 'bg-rose-50 text-rose-700 border-rose-200',
+      badgeText: 'text-rose-600',
+      barColor: 'bg-rose-500',
+      gaugeColor: '#f43f5e',
+      status: 'danger' as const,
+    }
+  }
+
+  const progress = getCustomProgress()
   const clampedProgressWidth = Math.min(Math.max(targetPercent || 0, 0), 100)
 
   return (
@@ -85,7 +114,10 @@ export const KpiCard: React.FC<KpiCardProps> = ({
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
             {title}
           </span>
-          <div className={`p-2 rounded-xl border ${iconBgColor} shrink-0`}>
+          <div
+            className={`p-2 rounded-xl border ${iconBgColor} shrink-0`}
+            style={iconColor ? { color: iconColor } : undefined}
+          >
             <Icon className="w-4 h-4" />
           </div>
         </div>
@@ -102,7 +134,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
           {showProgressBar && targetPercent !== undefined && targetPercent !== null ? (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-500">Meta atingida</span>
+                <span className="text-slate-500">{subtext || 'Meta atingida'}</span>
                 <span className={`font-bold tabular-nums ${progress.badgeText}`}>
                   {formatPercent(targetPercent, 1)}
                 </span>
