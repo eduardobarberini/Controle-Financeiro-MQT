@@ -73,7 +73,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
                 to={item.to}
                 onClick={onItemClick}
                 className={({ isActive }) =>
-                  `group relative flex items-center gap-3 pl-3.5 pr-3 py-2.5 rounded-lg text-xs font-medium tracking-wide transition-all duration-150 ${
+                  `group flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium tracking-wide transition-all duration-150 ${
                     isActive
                       ? 'bg-white/[0.07] text-white font-semibold shadow-xs'
                       : 'text-slate-300/80 hover:text-white hover:bg-white/[0.04]'
@@ -82,10 +82,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
               >
                 {({ isActive }) => (
                   <>
-                    {/* Indicador sutil na esquerda: linha vertical de 3px com degradê da marca */}
-                    {isActive && (
-                      <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-gradient-to-b from-[#6D49F2] to-[#FF2AFF]" />
-                    )}
                     <Icon
                       className={`w-4 h-4 shrink-0 transition-colors duration-150 ${
                         isActive ? 'text-[#FF2AFF]' : 'text-slate-400 group-hover:text-slate-200'
