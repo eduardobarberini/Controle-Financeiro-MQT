@@ -1,7 +1,8 @@
 import React from 'react'
 import {
   ResponsiveContainer,
-  LineChart,
+  ComposedChart,
+  Area,
   Line,
   XAxis,
   YAxis,
@@ -26,6 +27,51 @@ interface DashboardChartsProps {
   summary: YearFinancialSummary
 }
 
+interface CustomDotProps {
+  cx?: number
+  cy?: number
+  index?: number
+  lastIndex: number
+  color: string
+  value?: number | null
+}
+
+const CustomRealizedDot: React.FC<CustomDotProps> = ({
+  cx,
+  cy,
+  index,
+  lastIndex,
+  color,
+  value,
+}) => {
+  if (cx === undefined || cy === undefined || value === null || value === undefined) return null
+
+  const isLast = index === lastIndex
+
+  if (isLast) {
+    return (
+      <g key={`dot-${index}`}>
+        {/* Glow / outer ring for current month */}
+        <circle cx={cx} cy={cy} r={9} fill={color} fillOpacity={0.25} />
+        {/* Main larger dot */}
+        <circle cx={cx} cy={cy} r={5.5} fill={color} stroke="#FFFFFF" strokeWidth={2} />
+      </g>
+    )
+  }
+
+  return (
+    <circle
+      key={`dot-${index}`}
+      cx={cx}
+      cy={cy}
+      r={3}
+      fill={color}
+      stroke="#FFFFFF"
+      strokeWidth={1}
+    />
+  )
+}
+
 export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => {
   const {
     monthlyItems,
@@ -37,6 +83,16 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
     totalProfit,
   } = summary
 
+  // Identify the last month index with data (hasRecord or non-zero activity)
+  let lastDataMonthIndex = -1
+  monthlyItems.forEach((item, index) => {
+    if (item.hasRecord || item.investment > 0 || item.grossRevenue > 0 || item.netProfit !== 0) {
+      lastDataMonthIndex = index
+    }
+  })
+  // If no month has data yet, default lastDataMonthIndex to 0 so Jan displays initial point
+  const targetLastIndex = lastDataMonthIndex === -1 ? 0 : lastDataMonthIndex
+
   // --- Row 1: Faturamento ---
   // Chart 1: Cumulative target vs realized revenue
   const monthlyRevenueGoal = revenueGoal > 0 ? revenueGoal / 12 : 0
@@ -44,11 +100,12 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
   let runningRevenueReal = 0
   const cumulativeRevenueData = monthlyItems.map((item, i) => {
     runningRevenueReal += item.grossRevenue
+    const isPastOrCurrent = lastDataMonthIndex === -1 ? i === 0 : i <= lastDataMonthIndex
     return {
       name: MONTH_SHORT_NAMES_PT[i],
       monthLabel: item.monthLabel,
       meta: monthlyRevenueGoal * (i + 1), // cumulative target
-      realizado: runningRevenueReal, // cumulative realized
+      realizado: isPastOrCurrent ? runningRevenueReal : null, // cumulative realized up to last data month
     }
   })
 
@@ -72,11 +129,12 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
   let runningProfitReal = 0
   const cumulativeProfitData = monthlyItems.map((item, i) => {
     runningProfitReal += item.netProfit
+    const isPastOrCurrent = lastDataMonthIndex === -1 ? i === 0 : i <= lastDataMonthIndex
     return {
       name: MONTH_SHORT_NAMES_PT[i],
       monthLabel: item.monthLabel,
       meta: monthlyProfitGoal * (i + 1), // cumulative profit target
-      realizado: runningProfitReal, // cumulative profit realized
+      realizado: isPastOrCurrent ? runningProfitReal : null, // cumulative profit realized up to last data month
     }
   })
 
@@ -112,10 +170,16 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
           <CardContent className="p-5 pt-2">
             <div className="h-[350px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart
+                <ComposedChart
                   data={cumulativeRevenueData}
                   margin={{ top: 15, right: 20, left: 0, bottom: 0 }}
                 >
+                  <defs>
+                    <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6D49F2" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="#6D49F2" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis
                     dataKey="name"
@@ -167,17 +231,21 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
                     activeDot={{ r: 4 }}
                     animationDuration={600}
                   />
-                  <Line
+                  <Area
                     type="monotone"
                     dataKey="realizado"
                     name="realizado"
                     stroke="#6D49F2"
                     strokeWidth={2.5}
-                    dot={{ r: 2.5, fill: '#6D49F2', strokeWidth: 0 }}
-                    activeDot={{ r: 5 }}
+                    fill="url(#revenueGradient)"
+                    connectNulls={false}
+                    dot={(props: any) => (
+                      <CustomRealizedDot {...props} lastIndex={targetLastIndex} color="#6D49F2" />
+                    )}
+                    activeDot={{ r: 6, fill: '#6D49F2', stroke: '#FFFFFF', strokeWidth: 2 }}
                     animationDuration={600}
                   />
-                </LineChart>
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
@@ -253,10 +321,16 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
           <CardContent className="p-5 pt-2">
             <div className="h-[350px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart
+                <ComposedChart
                   data={cumulativeProfitData}
                   margin={{ top: 15, right: 20, left: 0, bottom: 0 }}
                 >
+                  <defs>
+                    <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#FF2AFF" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="#FF2AFF" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis
                     dataKey="name"
@@ -308,17 +382,21 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
                     activeDot={{ r: 4 }}
                     animationDuration={600}
                   />
-                  <Line
+                  <Area
                     type="monotone"
                     dataKey="realizado"
                     name="realizado"
                     stroke="#FF2AFF"
                     strokeWidth={2.5}
-                    dot={{ r: 2.5, fill: '#FF2AFF', strokeWidth: 0 }}
-                    activeDot={{ r: 5 }}
+                    fill="url(#profitGradient)"
+                    connectNulls={false}
+                    dot={(props: any) => (
+                      <CustomRealizedDot {...props} lastIndex={targetLastIndex} color="#FF2AFF" />
+                    )}
+                    activeDot={{ r: 6, fill: '#FF2AFF', stroke: '#FFFFFF', strokeWidth: 2 }}
                     animationDuration={600}
                   />
-                </LineChart>
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
