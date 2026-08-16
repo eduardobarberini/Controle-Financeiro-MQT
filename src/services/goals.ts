@@ -7,11 +7,13 @@ export const goalsService = {
     if (!userId) return null
 
     try {
-      const record = await pb
-        .collection<GoalsRecord>('goals')
-        .getFirstListItem(`user = '${userId}' && year = ${year}`)
-      return record
-    } catch (_) {
+      const records = await pb.collection<GoalsRecord>('goals').getFullList({
+        filter: pb.filter('user = {:userId} && year = {:year}', { userId, year }),
+        requestKey: null,
+      })
+      return records[0] || null
+    } catch (err) {
+      console.error('Error in goalsService.getByYear:', err)
       return null
     }
   },
@@ -26,28 +28,57 @@ export const goalsService = {
     const userId = pb.authStore.record?.id
     if (!userId) throw new Error('Usuário não autenticado')
 
-    const data: Partial<GoalsRecord> = {
-      annual_revenue_goal: annualRevenueGoal,
-      annual_profit_goal: annualProfitGoal,
-      ...(taxMetaRate !== undefined && { tax_meta_rate: taxMetaRate }),
-      ...(salesTaxRate !== undefined && { sales_tax_rate: salesTaxRate }),
-    }
+    const cleanRevenue = Number(annualRevenueGoal) || 0
+    const cleanProfit = Number(annualProfitGoal) || 0
+    const cleanTaxMeta = taxMetaRate !== undefined ? Number(taxMetaRate) || 0 : 0
+    const cleanSalesTax = salesTaxRate !== undefined ? Number(salesTaxRate) || 0 : 0
 
+    // 1. Check if record already exists using safe parameterized filter with requestKey: null
+    let existing: GoalsRecord | null = null
     try {
-      const existing = await pb
-        .collection<GoalsRecord>('goals')
-        .getFirstListItem(`user = '${userId}' && year = ${year}`)
-      if (existing) {
-        return await pb.collection<GoalsRecord>('goals').update(existing.id, data)
+      const records = await pb.collection<GoalsRecord>('goals').getFullList({
+        filter: pb.filter('user = {:userId} && year = {:year}', { userId, year }),
+        requestKey: null,
+      })
+      if (records.length > 0) {
+        existing = records[0]
       }
-    } catch (_) {
-      // not found
+    } catch (err) {
+      console.warn('Error checking existing goal record:', err)
     }
 
-    return await pb.collection<GoalsRecord>('goals').create({
-      user: userId,
-      year: year,
-      ...data,
-    })
+    const data: Partial<GoalsRecord> = {
+      annual_revenue_goal: cleanRevenue,
+      annual_profit_goal: cleanProfit,
+      tax_meta_rate: cleanTaxMeta,
+      sales_tax_rate: cleanSalesTax,
+    }
+
+    if (existing) {
+      return await pb.collection<GoalsRecord>('goals').update(existing.id, data)
+    }
+
+    // 2. If not found by filter, attempt creation with a fallback catch for unique constraint race/conflict
+    try {
+      return await pb.collection<GoalsRecord>('goals').create({
+        user: userId,
+        year: Number(year),
+        ...data,
+      })
+    } catch (err: unknown) {
+      // If creation fails due to unique constraint or collision, try one final search & update
+      try {
+        const records = await pb.collection<GoalsRecord>('goals').getFullList({
+          filter: pb.filter('user = {:userId} && year = {:year}', { userId, year }),
+          requestKey: null,
+        })
+        if (records.length > 0) {
+          return await pb.collection<GoalsRecord>('goals').update(records[0].id, data)
+        }
+      } catch (_) {
+        // Ignore fallback search error and throw original
+      }
+      throw err
+    }
   },
 }

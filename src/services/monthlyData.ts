@@ -40,18 +40,19 @@ export const monthlyDataService = {
 
     // Check if record already exists for this exact month date
     try {
-      const existing = await pb
-        .collection<MonthlyDataRecord>('monthly_data')
-        .getFirstListItem(`user = '${userId}' && month = '${data.month}'`)
-      if (existing) {
-        return await pb.collection<MonthlyDataRecord>('monthly_data').update(existing.id, {
+      const records = await pb.collection<MonthlyDataRecord>('monthly_data').getFullList({
+        filter: pb.filter('user = {:userId} && month = {:month}', { userId, month: data.month }),
+        requestKey: null,
+      })
+      if (records.length > 0) {
+        return await pb.collection<MonthlyDataRecord>('monthly_data').update(records[0].id, {
           investment: data.investment,
           gross_revenue: data.gross_revenue,
           net_profit: data.net_profit,
         })
       }
     } catch (_) {
-      // not found, proceed to create
+      // proceed to create if check fails
     }
 
     return await pb.collection<MonthlyDataRecord>('monthly_data').create({
