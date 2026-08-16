@@ -107,7 +107,7 @@ const CurrencyCell: React.FC<{
       className={`h-8 pl-7 pr-2 text-xs font-semibold tabular-nums text-slate-900 bg-white rounded-lg shadow-2xs ${
         modified
           ? 'border-amber-400 focus-visible:ring-amber-400'
-          : 'border-slate-200 focus-visible:ring-purple-500'
+          : 'border-slate-200 focus-visible:ring-[#6D49F2]'
       }`}
     />
   </div>
@@ -357,7 +357,7 @@ export default function Mensal() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            <CalendarDays className="w-6 h-6 text-purple-600" />
+            <CalendarDays className="w-6 h-6 text-[#6D49F2]" />
             Controle Mensal • {selectedYear}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
@@ -371,7 +371,7 @@ export default function Mensal() {
       <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
         <CardHeader className="p-5 pb-2">
           <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-purple-600" />
+            <TrendingUp className="w-4 h-4 text-[#6D49F2]" />
             Faturamento, Custos Totais e Lucro Líquido
           </CardTitle>
           <CardDescription className="text-xs text-slate-500 mt-0.5">
@@ -432,7 +432,7 @@ export default function Mensal() {
                 <Bar
                   dataKey="faturamento"
                   name="faturamento"
-                  fill="#9333ea"
+                  fill="#6D49F2"
                   radius={[2, 2, 0, 0]}
                   animationDuration={600}
                   barSize={20}
@@ -440,7 +440,7 @@ export default function Mensal() {
                 <Bar
                   dataKey="custos"
                   name="custos"
-                  fill="#db2777"
+                  fill="#FF2AFF"
                   radius={[2, 2, 0, 0]}
                   animationDuration={600}
                   barSize={20}
@@ -449,10 +449,10 @@ export default function Mensal() {
                   type="monotone"
                   dataKey="lucro"
                   name="lucro"
-                  stroke="#7c3aed"
+                  stroke="#A38CF7"
                   strokeDasharray="5 5"
                   strokeWidth={2.5}
-                  dot={{ r: 3, fill: '#7c3aed' }}
+                  dot={{ r: 3, fill: '#A38CF7' }}
                   activeDot={{ r: 5 }}
                   animationDuration={600}
                 />
@@ -467,7 +467,7 @@ export default function Mensal() {
         <CardHeader className="p-5 pb-3 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div>
             <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <CalendarDays className="w-4 h-4 text-purple-600" />
+              <CalendarDays className="w-4 h-4 text-[#6D49F2]" />
               Detalhamento Mensal ({selectedYear})
             </CardTitle>
             <CardDescription className="text-xs text-slate-500 mt-0.5">
@@ -481,7 +481,7 @@ export default function Mensal() {
               Alterado
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-5 h-5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center">
+              <span className="w-5 h-5 rounded-full bg-[#6D49F2]/10 border border-[#6D49F2]/20 text-[#6D49F2] flex items-center justify-center">
                 <Check className="w-3 h-3" />
               </span>
               Salvo
@@ -677,7 +677,7 @@ export default function Mensal() {
 
                         {/* Lucro Líquido (auto) */}
                         <TableCell className="py-2.5 px-3 text-right tabular-nums text-xs font-bold bg-slate-50/40">
-                          <span className={c.netProfit >= 0 ? 'text-purple-600' : 'text-rose-600'}>
+                          <span className={c.netProfit >= 0 ? 'text-[#FF2AFF]' : 'text-rose-600'}>
                             {formatCurrency(c.netProfit)}
                           </span>
                         </TableCell>
@@ -687,7 +687,7 @@ export default function Mensal() {
                           <span
                             className={
                               (c.margin || 0) >= 25
-                                ? 'text-purple-600'
+                                ? 'text-[#6D49F2]'
                                 : (c.margin || 0) >= 15
                                   ? 'text-amber-600'
                                   : 'text-slate-700'
@@ -707,7 +707,7 @@ export default function Mensal() {
                                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500" />
                                 </span>
                               ) : (
-                                <div className="w-5 h-5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center shadow-2xs">
+                                <div className="w-5 h-5 rounded-full bg-[#6D49F2]/10 border border-[#6D49F2]/20 text-[#6D49F2] flex items-center justify-center shadow-2xs">
                                   <Check className="w-3 h-3" />
                                 </div>
                               )}
@@ -719,7 +719,7 @@ export default function Mensal() {
                               onClick={() => handleSaveRow(row)}
                               className={`h-7 px-2.5 text-xs font-medium rounded-lg transition-all ${
                                 modified
-                                  ? 'bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white shadow-xs'
+                                  ? 'bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] hover:opacity-90 text-white shadow-xs'
                                   : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                               }`}
                             >
@@ -785,7 +785,7 @@ export default function Mensal() {
 
       {/* Explanatory footer */}
       <div className="bg-slate-100/80 border border-slate-200/90 rounded-2xl p-4 sm:p-5 flex items-start gap-3 text-xs text-slate-600">
-        <Info className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
+        <Info className="w-4 h-4 text-[#6D49F2] shrink-0 mt-0.5" />
         <div className="space-y-1">
           <p className="font-semibold text-slate-800">Regras de Cálculo Automático</p>
           <p>

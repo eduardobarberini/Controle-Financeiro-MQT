@@ -26,7 +26,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
   subtext,
   targetPercent,
   showProgressBar = false,
-  iconBgColor = 'bg-purple-50 text-purple-600 border-purple-100',
+  iconBgColor = 'bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20',
 }) => {
   // Animated count-up simulation
   const [displayValue, setDisplayValue] = useState<number>(0)

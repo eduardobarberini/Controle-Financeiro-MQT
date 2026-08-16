@@ -274,9 +274,9 @@ export default function Configuracoes() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* ===================== IDENTIDADE DA EMPRESA ===================== */}
         <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-pink-50 to-purple-50 border-b border-slate-200/70">
+          <CardHeader className="bg-gradient-to-r from-[#6D49F2]/10 to-[#FF2AFF]/10 border-b border-slate-200/70">
             <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-purple-600" />
+              <Building2 className="w-5 h-5 text-[#6D49F2]" />
               Identidade da Empresa
             </CardTitle>
             <CardDescription className="text-xs text-slate-600">
@@ -361,7 +361,7 @@ export default function Configuracoes() {
                   value={companyNameInput}
                   onChange={(e) => setCompanyNameInput(e.target.value)}
                   placeholder="MQT Negócios Digitais"
-                  className="h-11 text-sm font-semibold text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-purple-500 rounded-xl"
+                  className="h-11 text-sm font-semibold text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-[#6D49F2] rounded-xl"
                   required
                 />
               </div>
@@ -370,7 +370,7 @@ export default function Configuracoes() {
               <Button
                 type="submit"
                 disabled={isSavingCompany}
-                className="ml-auto bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-medium rounded-xl shadow-xs"
+                className="ml-auto bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] hover:opacity-90 text-white font-medium rounded-xl shadow-xs"
               >
                 {isSavingCompany ? (
                   <>
@@ -392,9 +392,9 @@ export default function Configuracoes() {
         <div className="space-y-6">
           {/* Perfil: nome */}
           <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-pink-50 to-purple-50 border-b border-slate-200/70">
+            <CardHeader className="bg-gradient-to-r from-[#6D49F2]/10 to-[#FF2AFF]/10 border-b border-slate-200/70">
               <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <UserIcon className="w-5 h-5 text-purple-600" />
+                <UserIcon className="w-5 h-5 text-[#6D49F2]" />
                 Meus Dados
               </CardTitle>
               <CardDescription className="text-xs text-slate-600">
@@ -416,7 +416,7 @@ export default function Configuracoes() {
                     value={userNameInput}
                     onChange={(e) => setUserNameInput(e.target.value)}
                     placeholder="Seu nome"
-                    className="h-11 text-sm font-semibold text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-purple-500 rounded-xl"
+                    className="h-11 text-sm font-semibold text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-[#6D49F2] rounded-xl"
                     required
                   />
                 </div>
@@ -425,7 +425,7 @@ export default function Configuracoes() {
                 <Button
                   type="submit"
                   disabled={isSavingProfile}
-                  className="ml-auto bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-medium rounded-xl shadow-xs"
+                  className="ml-auto bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] hover:opacity-90 text-white font-medium rounded-xl shadow-xs"
                 >
                   {isSavingProfile ? (
                     <>
@@ -447,7 +447,7 @@ export default function Configuracoes() {
           <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden">
             <CardHeader className="border-b border-slate-200/70 px-6 py-4">
               <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Mail className="w-4 h-4 text-purple-600" />
+                <Mail className="w-4 h-4 text-[#6D49F2]" />
                 E-mail
               </CardTitle>
             </CardHeader>
@@ -465,7 +465,7 @@ export default function Configuracoes() {
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
                   placeholder="nome@empresa.com.br"
-                  className="h-11 text-sm font-semibold text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-purple-500 rounded-xl"
+                  className="h-11 text-sm font-semibold text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-[#6D49F2] rounded-xl"
                   required
                 />
                 <p className="text-[11px] text-slate-400">
@@ -476,7 +476,7 @@ export default function Configuracoes() {
                 <Button
                   type="submit"
                   disabled={isSavingEmail}
-                  className="ml-auto bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-medium rounded-xl shadow-xs"
+                  className="ml-auto bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] hover:opacity-90 text-white font-medium rounded-xl shadow-xs"
                 >
                   {isSavingEmail ? (
                     <>
@@ -497,9 +497,9 @@ export default function Configuracoes() {
 
         {/* ===================== SENHA (largura total) ===================== */}
         <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden lg:col-span-2">
-          <CardHeader className="bg-gradient-to-r from-pink-50 to-purple-50 border-b border-slate-200/70">
+          <CardHeader className="bg-gradient-to-r from-[#6D49F2]/10 to-[#FF2AFF]/10 border-b border-slate-200/70">
             <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <KeyRound className="w-5 h-5 text-purple-600" />
+              <KeyRound className="w-5 h-5 text-[#6D49F2]" />
               Segurança & Senha
             </CardTitle>
             <CardDescription className="text-xs text-slate-600">
@@ -522,7 +522,7 @@ export default function Configuracoes() {
                     value={currentPass}
                     onChange={(e) => setCurrentPass(e.target.value)}
                     placeholder="••••••••"
-                    className="h-11 text-sm text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-purple-500 rounded-xl"
+                    className="h-11 text-sm text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-[#6D49F2] rounded-xl"
                     required
                   />
                 </div>
@@ -562,7 +562,7 @@ export default function Configuracoes() {
                 </div>
               </div>
               <div className="mt-4 flex items-start gap-2 text-[11px] text-slate-500 bg-slate-50 border border-slate-200/70 rounded-lg p-3">
-                <ShieldCheck className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
+                <ShieldCheck className="w-4 h-4 text-[#6D49F2] shrink-0 mt-0.5" />
                 <span>
                   A nova senha deve ter no mínimo 8 caracteres. Use letras, números e símbolos para
                   maior segurança.
@@ -573,7 +573,7 @@ export default function Configuracoes() {
               <Button
                 type="submit"
                 disabled={isSavingPass}
-                className="ml-auto bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-medium rounded-xl shadow-xs"
+                className="ml-auto bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] hover:opacity-90 text-white font-medium rounded-xl shadow-xs"
               >
                 {isSavingPass ? (
                   <>

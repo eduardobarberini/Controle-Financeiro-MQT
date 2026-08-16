@@ -21,7 +21,7 @@ export default function Layout() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
-        <Loader2 className="w-8 h-8 animate-spin text-pink-400 mb-3" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#FF2AFF] mb-3" />
         <p className="text-sm text-slate-400">Carregando painel financeiro...</p>
       </div>
     )
@@ -64,7 +64,7 @@ export default function Layout() {
                 </SheetTrigger>
                 <SheetContent
                   side="left"
-                  className="p-0 w-[248px] bg-gradient-to-b from-[#3b0764] via-[#5b21b6] to-[#9d174d] border-r-purple-900/60"
+                  className="p-0 w-[248px] bg-gradient-to-b from-[#180B38] via-[#2A1254] to-[#4C0E52] border-r-[#6D49F2]/30"
                 >
                   <Sidebar onItemClick={() => setMobileOpen(false)} />
                 </SheetContent>
@@ -76,7 +76,7 @@ export default function Layout() {
                 <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight truncate">
                   Dashboard Financeiro
                 </h1>
-                <span className="hidden sm:inline-block text-[11px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200/60">
+                <span className="hidden sm:inline-block text-[11px] font-semibold text-[#6D49F2] bg-[#6D49F2]/10 px-2 py-0.5 rounded-full border border-[#6D49F2]/30">
                   {companyName}
                 </span>
               </div>
@@ -94,7 +94,7 @@ export default function Layout() {
 
             <div className="flex items-center gap-2">
               <div
-                className="w-8 h-8 rounded-full bg-purple-100 text-purple-800 font-bold text-xs flex items-center justify-center border border-purple-300 shadow-2xs"
+                className="w-8 h-8 rounded-full bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] text-white font-bold text-xs flex items-center justify-center border border-[#6D49F2]/30 shadow-2xs"
                 title={user?.email as string}
               >
                 {getUserInitials()}
@@ -102,7 +102,7 @@ export default function Layout() {
               <Link
                 to="/configuracoes"
                 title="Configurações"
-                className="hidden sm:flex items-center gap-1.5 text-xs text-slate-600 hover:text-purple-700 hover:bg-purple-50 px-2.5 py-1.5 rounded-lg transition-colors"
+                className="hidden sm:flex items-center gap-1.5 text-xs text-slate-600 hover:text-[#6D49F2] hover:bg-[#6D49F2]/10 px-2.5 py-1.5 rounded-lg transition-colors"
               >
                 <Settings className="h-3.5 w-3.5" />
                 <span>Configurações</span>

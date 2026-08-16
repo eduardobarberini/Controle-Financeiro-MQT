@@ -35,7 +35,7 @@ export const YearSelector: React.FC<YearSelectorProps> = ({ selectedYear, onYear
             size="sm"
             className="h-7 px-2.5 text-xs font-semibold text-slate-800 hover:bg-slate-100 rounded-lg flex items-center gap-1.5"
           >
-            <Calendar className="h-3.5 w-3.5 text-purple-600" />
+            <Calendar className="h-3.5 w-3.5 text-[#6D49F2]" />
             <span>Ano: {selectedYear}</span>
           </Button>
         </DropdownMenuTrigger>
@@ -45,7 +45,7 @@ export const YearSelector: React.FC<YearSelectorProps> = ({ selectedYear, onYear
               key={y}
               onClick={() => onYearChange(y)}
               className={`text-xs font-medium cursor-pointer ${
-                y === selectedYear ? 'bg-purple-50 text-purple-700 font-semibold' : ''
+                y === selectedYear ? 'bg-[#6D49F2]/10 text-[#6D49F2] font-semibold' : ''
               }`}
             >
               {y}

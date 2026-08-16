@@ -242,18 +242,18 @@ export function getProgressColor(percent: number | null | undefined): {
   }
   if (percent < 100) {
     return {
-      badgeBg: 'bg-amber-50 text-amber-700 border-amber-200',
-      badgeText: 'text-amber-600',
-      barColor: 'bg-amber-500',
-      gaugeColor: '#f59e0b',
+      badgeBg: 'bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20',
+      badgeText: 'text-[#6D49F2]',
+      barColor: 'bg-[#6D49F2]',
+      gaugeColor: '#6D49F2',
       status: 'warning',
     }
   }
   return {
-    badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    badgeText: 'text-emerald-600',
-    barColor: 'bg-emerald-500',
-    gaugeColor: '#059669',
+    badgeBg: 'bg-[#FF2AFF]/10 text-[#FF2AFF] border-[#FF2AFF]/20',
+    badgeText: 'text-[#FF2AFF]',
+    barColor: 'bg-[#FF2AFF]',
+    gaugeColor: '#FF2AFF',
     status: 'success',
   }
 }

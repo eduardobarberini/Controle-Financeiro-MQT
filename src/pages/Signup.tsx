@@ -74,14 +74,14 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#3b0764] via-[#4c1d95] to-[#831843] flex flex-col justify-center items-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#1A0B36] via-[#351563] to-[#5B0E5A] flex flex-col justify-center items-center p-4 relative overflow-hidden">
       {/* Background decoration */}
-      <div className="absolute top-1/4 -right-32 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 -left-32 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 -right-32 w-96 h-96 bg-[#FF2AFF]/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 -left-32 w-96 h-96 bg-[#6D49F2]/25 rounded-full blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md relative z-10 animate-in fade-in-50 duration-500">
         <div className="flex flex-col items-center mb-8 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-500 flex items-center justify-center text-white shadow-xl shadow-purple-950/40 mb-3 shrink-0 overflow-hidden">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] flex items-center justify-center text-white shadow-xl shadow-[#6D49F2]/40 mb-3 shrink-0 overflow-hidden">
             {logoUrl ? (
               <img
                 src={logoUrl}
@@ -119,7 +119,7 @@ export default function Signup() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Seu nome"
-                    className="pl-9 bg-slate-950/60 border-slate-700 text-slate-100 placeholder:text-slate-500 focus-visible:ring-pink-500"
+                    className="pl-9 bg-slate-950/60 border-slate-700 text-slate-100 placeholder:text-slate-500 focus-visible:ring-[#FF2AFF]"
                     required
                   />
                 </div>
@@ -190,7 +190,7 @@ export default function Signup() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-medium py-2.5 rounded-xl shadow-lg shadow-pink-950/50 transition-all active:scale-[0.98]"
+                className="w-full bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] hover:opacity-90 text-white font-medium py-2.5 rounded-xl shadow-lg shadow-[#6D49F2]/40 transition-all active:scale-[0.98]"
               >
                 {isSubmitting ? (
                   <>
@@ -209,7 +209,7 @@ export default function Signup() {
                 Já possui uma conta?{' '}
                 <Link
                   to="/login"
-                  className="text-pink-300 hover:text-pink-200 font-medium underline-offset-4 hover:underline"
+                  className="text-[#FF2AFF] hover:text-[#FF2AFF]/80 font-medium underline-offset-4 hover:underline"
                 >
                   Fazer login
                 </Link>

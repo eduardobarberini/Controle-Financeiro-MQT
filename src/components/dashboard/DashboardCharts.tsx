@@ -101,7 +101,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
         <Card className="lg:col-span-7 bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
           <CardHeader className="p-5 pb-2">
             <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-purple-600" />
+              <TrendingUp className="w-4 h-4 text-[#6D49F2]" />
               Meta vs Realizado — Faturamento Acumulado
             </CardTitle>
             <CardDescription className="text-xs text-slate-500 mt-0.5">
@@ -160,7 +160,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
                     type="monotone"
                     dataKey="meta"
                     name="meta"
-                    stroke="#c4b5fd"
+                    stroke="#A38CF7"
                     strokeWidth={2}
                     strokeDasharray="6 5"
                     dot={false}
@@ -171,9 +171,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
                     type="monotone"
                     dataKey="realizado"
                     name="realizado"
-                    stroke="#9333ea"
+                    stroke="#6D49F2"
                     strokeWidth={2.5}
-                    dot={{ r: 2.5, fill: '#9333ea', strokeWidth: 0 }}
+                    dot={{ r: 2.5, fill: '#6D49F2', strokeWidth: 0 }}
                     activeDot={{ r: 5 }}
                     animationDuration={600}
                   />
@@ -187,7 +187,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
         <Card className="lg:col-span-5 bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
           <CardHeader className="p-5 pb-2">
             <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Target className="w-4 h-4 text-purple-600" />
+              <Target className="w-4 h-4 text-[#6D49F2]" />
               Progresso da Meta de Faturamento
             </CardTitle>
             <CardDescription className="text-xs text-slate-500 mt-0.5">
@@ -211,16 +211,13 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
                       dataKey="value"
                       stroke="none"
                     >
-                      <Cell fill={revenueProgress.gaugeColor} />
+                      <Cell fill="#6D49F2" />
                       <Cell fill="#e2e8f0" />
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span
-                    className="text-4xl font-extrabold tabular-nums"
-                    style={{ color: revenueProgress.gaugeColor }}
-                  >
+                  <span className="text-4xl font-extrabold tabular-nums text-[#6D49F2]">
                     {formatPercent(validRevenuePercent, 0)}
                   </span>
                   <span className="text-xs text-slate-400 font-medium mt-1">da meta anual</span>
@@ -245,7 +242,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
         <Card className="lg:col-span-7 bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
           <CardHeader className="p-5 pb-2">
             <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-pink-600" />
+              <TrendingUp className="w-4 h-4 text-[#FF2AFF]" />
               Meta vs Realizado — Lucro Líquido Acumulado
             </CardTitle>
             <CardDescription className="text-xs text-slate-500 mt-0.5">
@@ -304,7 +301,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
                     type="monotone"
                     dataKey="meta"
                     name="meta"
-                    stroke="#f9a8d4"
+                    stroke="#FF88FF"
                     strokeWidth={2}
                     strokeDasharray="6 5"
                     dot={false}
@@ -315,9 +312,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
                     type="monotone"
                     dataKey="realizado"
                     name="realizado"
-                    stroke="#db2777"
+                    stroke="#FF2AFF"
                     strokeWidth={2.5}
-                    dot={{ r: 2.5, fill: '#db2777', strokeWidth: 0 }}
+                    dot={{ r: 2.5, fill: '#FF2AFF', strokeWidth: 0 }}
                     activeDot={{ r: 5 }}
                     animationDuration={600}
                   />
@@ -331,7 +328,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
         <Card className="lg:col-span-5 bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
           <CardHeader className="p-5 pb-2">
             <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Target className="w-4 h-4 text-pink-600" />
+              <Target className="w-4 h-4 text-[#FF2AFF]" />
               Progresso da Meta de Lucro
             </CardTitle>
             <CardDescription className="text-xs text-slate-500 mt-0.5">
@@ -355,16 +352,13 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
                       dataKey="value"
                       stroke="none"
                     >
-                      <Cell fill={profitProgress.gaugeColor} />
+                      <Cell fill="#FF2AFF" />
                       <Cell fill="#e2e8f0" />
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span
-                    className="text-4xl font-extrabold tabular-nums"
-                    style={{ color: profitProgress.gaugeColor }}
-                  >
+                  <span className="text-4xl font-extrabold tabular-nums text-[#FF2AFF]">
                     {formatPercent(validProfitPercent, 0)}
                   </span>
                   <span className="text-xs text-slate-400 font-medium mt-1">da meta de lucro</span>

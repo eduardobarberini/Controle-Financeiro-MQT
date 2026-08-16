@@ -9,103 +9,103 @@
 
 @layer base {
   :root {
-    /* MQT Negócios Digitais — pink + purple palette */
+    /* Vibrant #6D49F2 -> #FF2AFF palette */
     --background: 0 0% 100%;
-    --foreground: 263 50% 18%;
+    --foreground: 253 86% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 263 50% 18%;
+    --card-foreground: 253 86% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 263 50% 18%;
+    --popover-foreground: 253 86% 12%;
 
-    --primary: 283 81% 55%;
+    --primary: 253 86% 62%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 320 70% 97%;
-    --secondary-foreground: 283 60% 35%;
+    --secondary: 300 100% 97%;
+    --secondary-foreground: 253 86% 50%;
 
-    --muted: 320 60% 97%;
-    --muted-foreground: 263 16% 46%;
+    --muted: 300 80% 97%;
+    --muted-foreground: 253 25% 46%;
 
-    --accent: 325 80% 96%;
-    --accent-foreground: 283 60% 35%;
+    --accent: 300 100% 96%;
+    --accent-foreground: 253 86% 50%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 318 45% 92%;
-    --input: 318 45% 92%;
-    --ring: 283 81% 55%;
+    --border: 300 60% 92%;
+    --input: 300 60% 92%;
+    --ring: 253 86% 62%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 276 60% 12%;
+    --sidebar-background: 253 86% 12%;
 
-    --sidebar-foreground: 320 40% 88%;
+    --sidebar-foreground: 300 60% 92%;
 
-    --sidebar-primary: 329 81% 60%;
+    --sidebar-primary: 300 100% 58%;
 
     --sidebar-primary-foreground: 0 0% 100%;
 
-    --sidebar-accent: 283 60% 22%;
+    --sidebar-accent: 253 86% 22%;
 
-    --sidebar-accent-foreground: 320 60% 92%;
+    --sidebar-accent-foreground: 300 100% 95%;
 
-    --sidebar-border: 280 40% 22%;
+    --sidebar-border: 253 60% 22%;
 
-    --sidebar-ring: 329 81% 60%;
+    --sidebar-ring: 300 100% 58%;
 
-    --chart-1: 283 81% 55%;
-    --chart-2: 329 81% 60%;
-    --chart-3: 258 90% 66%;
-    --chart-4: 339 75% 55%;
-    --chart-5: 270 70% 50%;
+    --chart-1: 253 86% 62%;
+    --chart-2: 300 100% 58%;
+    --chart-3: 275 90% 66%;
+    --chart-4: 310 90% 60%;
+    --chart-5: 253 80% 50%;
   }
 
   .dark {
-    /* Dark mode consistent with the pink + purple palette */
-    --background: 276 55% 8%;
-    --foreground: 320 40% 92%;
+    /* Dark mode consistent with #6D49F2 -> #FF2AFF palette */
+    --background: 253 70% 8%;
+    --foreground: 300 60% 92%;
 
-    --card: 276 50% 11%;
-    --card-foreground: 320 40% 92%;
+    --card: 253 65% 11%;
+    --card-foreground: 300 60% 92%;
 
-    --popover: 276 50% 11%;
-    --popover-foreground: 320 40% 92%;
+    --popover: 253 65% 11%;
+    --popover-foreground: 300 60% 92%;
 
-    --primary: 329 81% 60%;
+    --primary: 300 100% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 276 40% 18%;
-    --secondary-foreground: 320 40% 92%;
+    --secondary: 253 50% 18%;
+    --secondary-foreground: 300 60% 92%;
 
-    --muted: 276 40% 18%;
-    --muted-foreground: 280 20% 65%;
+    --muted: 253 50% 18%;
+    --muted-foreground: 253 30% 68%;
 
-    --accent: 283 50% 24%;
-    --accent-foreground: 320 60% 92%;
+    --accent: 253 60% 24%;
+    --accent-foreground: 300 80% 92%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 280 35% 24%;
-    --input: 280 35% 24%;
-    --ring: 329 81% 60%;
-    --sidebar-background: 276 60% 10%;
-    --sidebar-foreground: 320 40% 92%;
-    --sidebar-primary: 329 81% 60%;
+    --border: 253 45% 24%;
+    --input: 253 45% 24%;
+    --ring: 300 100% 58%;
+    --sidebar-background: 253 86% 10%;
+    --sidebar-foreground: 300 60% 92%;
+    --sidebar-primary: 300 100% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 283 50% 22%;
-    --sidebar-accent-foreground: 320 60% 92%;
-    --sidebar-border: 280 40% 22%;
-    --sidebar-ring: 329 81% 60%;
+    --sidebar-accent: 253 60% 22%;
+    --sidebar-accent-foreground: 300 80% 92%;
+    --sidebar-border: 253 45% 22%;
+    --sidebar-ring: 300 100% 58%;
 
-    --chart-1: 283 81% 60%;
-    --chart-2: 329 81% 65%;
-    --chart-3: 258 90% 70%;
-    --chart-4: 339 75% 60%;
-    --chart-5: 270 70% 55%;
+    --chart-1: 253 86% 65%;
+    --chart-2: 300 100% 65%;
+    --chart-3: 275 90% 70%;
+    --chart-4: 310 90% 65%;
+    --chart-5: 253 80% 58%;
   }
 
   /* NEVER REMOVE THIS */
@@ -116,6 +116,27 @@
 }
 
 @layer utilities {
+  /* Custom gradient classes for brand theme */
+  .bg-gradient-brand {
+    background-image: linear-gradient(135deg, #6d49f2 0%, #ff2aff 100%);
+  }
+
+  .bg-gradient-brand-subtle {
+    background-image: linear-gradient(
+      135deg,
+      rgba(109, 73, 242, 0.08) 0%,
+      rgba(255, 42, 255, 0.08) 100%
+    );
+  }
+
+  .bg-gradient-brand-sidebar {
+    background-image: linear-gradient(180deg, #180b38 0%, #2a1254 45%, #4c0e52 100%);
+  }
+
+  .bg-gradient-brand-auth {
+    background-image: linear-gradient(135deg, #1a0b36 0%, #351563 50%, #5b0e5a 100%);
+  }
+
   /* KEEP ALL THE ANIMATIONS CLASSES THAT ARE USED BELOW */
   @keyframes accordion-down {
     from {
