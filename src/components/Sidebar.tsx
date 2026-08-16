@@ -63,8 +63,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
       </div>
 
       {/* Nav List */}
-      <div className="flex-1 overflow-y-auto px-3 py-4">
-        <nav className="space-y-1">
+      <div className="flex-1 overflow-y-auto px-3 py-5">
+        <nav className="space-y-2">
           {navItems.map((item) => {
             const Icon = item.icon
             return (
@@ -73,15 +73,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
                 to={item.to}
                 onClick={onItemClick}
                 className={({ isActive }) =>
-                  `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+                  `group relative flex items-center gap-3 pl-3.5 pr-3 py-2.5 rounded-lg text-xs font-medium tracking-wide transition-all duration-150 ${
                     isActive
-                      ? 'bg-gradient-to-r from-[#6D49F2]/30 to-[#FF2AFF]/30 text-white border-l-4 border-[#FF2AFF] shadow-sm font-semibold'
-                      : 'text-slate-300 hover:text-white hover:bg-[#6D49F2]/20'
+                      ? 'bg-white/[0.07] text-white font-semibold shadow-xs'
+                      : 'text-slate-300/80 hover:text-white hover:bg-white/[0.04]'
                   }`
                 }
               >
-                <Icon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" />
-                <span>{item.label}</span>
+                {({ isActive }) => (
+                  <>
+                    {/* Indicador sutil na esquerda: linha vertical de 3px com degradê da marca */}
+                    {isActive && (
+                      <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-gradient-to-b from-[#6D49F2] to-[#FF2AFF]" />
+                    )}
+                    <Icon
+                      className={`w-4 h-4 shrink-0 transition-colors duration-150 ${
+                        isActive ? 'text-[#FF2AFF]' : 'text-slate-400 group-hover:text-slate-200'
+                      }`}
+                    />
+                    <span>{item.label}</span>
+                  </>
+                )}
               </NavLink>
             )
           })}
