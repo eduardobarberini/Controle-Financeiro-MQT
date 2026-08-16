@@ -22,6 +22,7 @@ import {
   Repeat,
   Percent,
   DollarSign,
+  Calculator,
 } from 'lucide-react'
 import {
   AlertDialog,
@@ -320,14 +321,35 @@ export default function Renovacoes() {
   const totals = useMemo(() => {
     let totalStudents = 0,
       totalRenewals = 0,
-      totalRevenue = 0
+      totalRevenue = 0,
+      monthsWithDataCount = 0
+
     rows.forEach((row) => {
-      totalStudents += num(row.studentsStr)
-      totalRenewals += num(row.renewalsStr)
-      totalRevenue += num(row.revenueStr)
+      const students = num(row.studentsStr)
+      const renewals = num(row.renewalsStr)
+      const revenue = num(row.revenueStr)
+
+      totalStudents += students
+      totalRenewals += renewals
+      totalRevenue += revenue
+
+      // Meses com dados: onde 'Alunas a Renovar' > 0 ou 'Faturamento' > 0
+      if (students > 0 || revenue > 0) {
+        monthsWithDataCount++
+      }
     })
+
     const rate = totalStudents > 0 ? (totalRenewals / totalStudents) * 100 : null
-    return { totalStudents, totalRenewals, totalRevenue, rate }
+    const monthlyAverageRevenue = monthsWithDataCount > 0 ? totalRevenue / monthsWithDataCount : 0
+
+    return {
+      totalStudents,
+      totalRenewals,
+      totalRevenue,
+      rate,
+      monthsWithDataCount,
+      monthlyAverageRevenue,
+    }
   }, [rows])
 
   return (
@@ -347,13 +369,13 @@ export default function Renovacoes() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Alunas a Renovar */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {/* Alunas a Renovar (Total) */}
         <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
           <CardContent className="p-5 flex flex-col justify-between h-full">
             <div className="flex items-start justify-between gap-2 mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Alunas a Renovar
+                Alunas a Renovar (Total)
               </span>
               <div className="p-2 rounded-xl border bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20 shrink-0">
                 <Users className="w-4 h-4" />
@@ -370,12 +392,12 @@ export default function Renovacoes() {
           </CardContent>
         </Card>
 
-        {/* Renovações */}
+        {/* Renovações (Total) */}
         <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
           <CardContent className="p-5 flex flex-col justify-between h-full">
             <div className="flex items-start justify-between gap-2 mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Renovações
+                Renovações (Total)
               </span>
               <div className="p-2 rounded-xl border bg-[#FF2AFF]/10 text-[#FF2AFF] border-[#FF2AFF]/20 shrink-0">
                 <Repeat className="w-4 h-4" />
@@ -416,12 +438,12 @@ export default function Renovacoes() {
           </CardContent>
         </Card>
 
-        {/* Faturamento Renovação */}
+        {/* Faturamento Total com Renovação */}
         <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
           <CardContent className="p-5 flex flex-col justify-between h-full">
             <div className="flex items-start justify-between gap-2 mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Faturamento Renovação
+                Faturamento Total com Renovação
               </span>
               <div className="p-2 rounded-xl border bg-[#FF2AFF]/10 text-[#FF2AFF] border-[#FF2AFF]/20 shrink-0">
                 <DollarSign className="w-4 h-4" />
@@ -434,6 +456,31 @@ export default function Renovacoes() {
             </div>
             <div className="mt-2 pt-2 border-t border-slate-100 min-h-[32px] flex flex-col justify-center">
               <div className="text-xs text-slate-500 truncate">Soma do ano de {selectedYear}</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Média Mensal em Renovação */}
+        <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+          <CardContent className="p-5 flex flex-col justify-between h-full">
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Média Mensal em Renovação
+              </span>
+              <div className="p-2 rounded-xl border bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20 shrink-0">
+                <Calculator className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="my-1">
+              <div className="text-3xl font-bold tracking-tight text-slate-900 tabular-nums">
+                {formatCurrency(totals.monthlyAverageRevenue)}
+              </div>
+            </div>
+            <div className="mt-2 pt-2 border-t border-slate-100 min-h-[32px] flex flex-col justify-center">
+              <div className="text-xs text-slate-500 truncate">
+                Faturamento ÷ {totals.monthsWithDataCount}{' '}
+                {totals.monthsWithDataCount === 1 ? 'mês com dados' : 'meses com dados'}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -759,8 +806,12 @@ export default function Renovacoes() {
             do ano nos cards superiores.
           </p>
           <p>
-            • <strong>Faturamento Renovação</strong> = soma anual dos valores informados por mês,
-            formatada em R$.
+            • <strong>Faturamento Total com Renovação</strong> = soma anual dos valores informados
+            por mês, formatada em R$.
+          </p>
+          <p>
+            • <strong>Média Mensal em Renovação</strong> = Faturamento Total ÷ quantidade de meses
+            com dados (onde Alunas a Renovar ou Faturamento &gt; 0).
           </p>
         </div>
       </div>
