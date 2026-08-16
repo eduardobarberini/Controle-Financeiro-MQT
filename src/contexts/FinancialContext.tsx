@@ -22,6 +22,7 @@ interface FinancialContextType {
     taxMetaRate?: number,
     salesTaxRate?: number,
     profitMarginGoal?: number | null,
+    renewalRateGoal?: number | null,
   ) => Promise<GoalsRecord>
 }
 
@@ -85,6 +86,7 @@ export const FinancialProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     taxMetaRate?: number,
     salesTaxRate?: number,
     profitMarginGoal?: number | null,
+    renewalRateGoal?: number | null,
   ) => {
     setIsSaving(true)
     try {
@@ -95,6 +97,7 @@ export const FinancialProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         taxMetaRate,
         salesTaxRate,
         profitMarginGoal,
+        renewalRateGoal,
       )
       await fetchData()
       return saved

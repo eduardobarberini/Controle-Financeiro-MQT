@@ -19,6 +19,7 @@ export interface GoalsRecord extends RecordModel {
   annual_profit_goal: number
   profit_margin_goal?: number | null
   min_margin_goal?: number | null
+  renewal_rate_goal?: number | null
   tax_meta_rate?: number | null
   sales_tax_rate?: number | null
 }

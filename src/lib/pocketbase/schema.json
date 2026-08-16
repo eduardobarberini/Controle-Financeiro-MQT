@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-16T03:18:52.468Z",
+  "generatedAt": "2026-08-16T03:24:31.903Z",
   "collections": [
     {
       "name": "users",
@@ -176,6 +176,12 @@
         },
         {
           "name": "profit_margin_goal",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "renewal_rate_goal",
           "type": "number",
           "required": false,
           "system": false

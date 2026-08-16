@@ -36,6 +36,7 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
   const [revenueGoalStr, setRevenueGoalStr] = useState<string>('')
   const [profitGoalStr, setProfitGoalStr] = useState<string>('')
   const [profitMarginGoalStr, setProfitMarginGoalStr] = useState<string>('')
+  const [renewalRateGoalStr, setRenewalRateGoalStr] = useState<string>('')
   const [taxMetaRateStr, setTaxMetaRateStr] = useState<string>('')
   const [salesTaxRateStr, setSalesTaxRateStr] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
@@ -48,6 +49,11 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
       setProfitMarginGoalStr(
         goals?.profit_margin_goal !== undefined && goals?.profit_margin_goal !== null
           ? String(goals.profit_margin_goal)
+          : '',
+      )
+      setRenewalRateGoalStr(
+        goals?.renewal_rate_goal !== undefined && goals?.renewal_rate_goal !== null
+          ? String(goals.renewal_rate_goal)
           : '',
       )
       setTaxMetaRateStr(
@@ -75,6 +81,7 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
     const rev = parseFloat(revenueGoalStr)
     const prof = parseFloat(profitGoalStr)
     const margin = parseFloat(profitMarginGoalStr)
+    const renewalRate = parseFloat(renewalRateGoalStr)
     const taxMeta = parseFloat(taxMetaRateStr)
     const salesTax = parseFloat(salesTaxRateStr)
 
@@ -86,6 +93,12 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
     }
     if (profitMarginGoalStr !== '' && (isNaN(margin) || margin <= 0 || margin > 100)) {
       errs.margin = 'A Meta de Margem de Lucro deve ser um percentual válido (ex: 30).'
+    }
+    if (
+      renewalRateGoalStr !== '' &&
+      (isNaN(renewalRate) || renewalRate <= 0 || renewalRate > 100)
+    ) {
+      errs.renewalRate = 'A Meta de Taxa de Renovação deve ser um percentual válido (ex: 70).'
     }
     if (isNaN(taxMeta) || taxMeta < 0) {
       errs.taxMeta = 'A alíquota de Imposto Meta não pode ser negativa.'
@@ -105,12 +118,13 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
     const rev = parseFloat(revenueGoalStr)
     const prof = parseFloat(profitGoalStr)
     const margin = profitMarginGoalStr !== '' ? parseFloat(profitMarginGoalStr) : null
+    const renewalRate = renewalRateGoalStr !== '' ? parseFloat(renewalRateGoalStr) : null
     const taxMeta = parseFloat(taxMetaRateStr)
     const salesTax = parseFloat(salesTaxRateStr)
 
     try {
       setIsSubmitting(true)
-      await saveGoalsData(rev, prof, taxMeta, salesTax, margin)
+      await saveGoalsData(rev, prof, taxMeta, salesTax, margin, renewalRate)
       toast({
         title: 'Metas e alíquotas salvas com sucesso',
         description: `Configurações para o ano de ${selectedYear} atualizadas.`,
@@ -147,7 +161,7 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Meta de Faturamento */}
             <div className="space-y-2">
               <Label
@@ -241,6 +255,36 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                 <p className="text-[11px] text-rose-500 mt-1">{errors.margin}</p>
               ) : (
                 <p className="text-[10px] text-slate-400">Meta KPI Principal</p>
+              )}
+            </div>
+
+            {/* Meta de Taxa de Renovação (%) */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="renewalRateGoal"
+                className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5"
+              >
+                <Percent className="w-3.5 h-3.5 text-[#6D49F2]" />
+                Taxa de Renovação (%)
+              </Label>
+              <div className="relative">
+                <Input
+                  id="renewalRateGoal"
+                  type="text"
+                  inputMode="decimal"
+                  value={renewalRateGoalStr}
+                  onChange={(e) => handleInputChange(setRenewalRateGoalStr, e.target.value)}
+                  placeholder="70"
+                  className="h-11 pr-7 text-xs font-semibold tabular-nums text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-[#6D49F2] rounded-xl"
+                />
+                <span className="absolute right-3 top-3 text-xs text-slate-400 font-semibold pointer-events-none">
+                  %
+                </span>
+              </div>
+              {errors.renewalRate ? (
+                <p className="text-[11px] text-rose-500 mt-1">{errors.renewalRate}</p>
+              ) : (
+                <p className="text-[10px] text-slate-400">Meta Card Renovações</p>
               )}
             </div>
           </div>

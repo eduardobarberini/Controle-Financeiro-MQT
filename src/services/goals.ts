@@ -25,6 +25,7 @@ export const goalsService = {
     taxMetaRate?: number,
     salesTaxRate?: number,
     profitMarginGoal?: number | null,
+    renewalRateGoal?: number | null,
   ): Promise<GoalsRecord> {
     const userId = pb.authStore.record?.id
     if (!userId) throw new Error('Usuário não autenticado')
@@ -36,6 +37,10 @@ export const goalsService = {
     const cleanMarginGoal =
       profitMarginGoal !== undefined && profitMarginGoal !== null
         ? Number(profitMarginGoal) || 0
+        : null
+    const cleanRenewalRateGoal =
+      renewalRateGoal !== undefined && renewalRateGoal !== null
+        ? Number(renewalRateGoal) || 0
         : null
 
     // 1. Check if record already exists using safe parameterized filter with requestKey: null
@@ -58,6 +63,7 @@ export const goalsService = {
       tax_meta_rate: cleanTaxMeta,
       sales_tax_rate: cleanSalesTax,
       profit_margin_goal: cleanMarginGoal,
+      renewal_rate_goal: cleanRenewalRateGoal,
     }
 
     if (existing) {

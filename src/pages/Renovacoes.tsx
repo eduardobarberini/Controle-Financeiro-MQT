@@ -36,6 +36,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { useRenewals } from '@/hooks/use-renewals'
+import { useFinancial } from '@/contexts/FinancialContext'
 import { toast } from '@/hooks/use-toast'
 import {
   MONTH_NAMES_PT,
@@ -150,6 +151,7 @@ const ReadOnlyCell: React.FC<{
 
 export default function Renovacoes() {
   const { selectedYear, records, isLoading, save } = useRenewals()
+  const { goals } = useFinancial()
   const [rows, setRows] = useState<RowState[]>([])
 
   // Build rows from records (12 months, gaps filled with empty).
@@ -415,28 +417,70 @@ export default function Renovacoes() {
         </Card>
 
         {/* % Taxa de Renovação */}
-        <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
-          <CardContent className="p-5 flex flex-col justify-between h-full">
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                % Taxa de Renovação
-              </span>
-              <div className="p-2 rounded-xl border bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20 shrink-0">
-                <Percent className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="my-1">
-              <div className="text-3xl font-bold tracking-tight text-slate-900 tabular-nums">
-                {formatPercent(totals.rate, 1)}
-              </div>
-            </div>
-            <div className="mt-2 pt-2 border-t border-slate-100 min-h-[32px] flex flex-col justify-center">
-              <div className="text-xs text-slate-500 truncate">
-                Média anual (renovações ÷ alunas)
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {(() => {
+          const renewalGoal = goals?.renewal_rate_goal
+          const currentRate = totals.rate
+          const hasGoal = renewalGoal !== undefined && renewalGoal !== null && renewalGoal > 0
+          const isBelowGoal = hasGoal && currentRate !== null && currentRate < renewalGoal
+
+          const cardBgClass = hasGoal
+            ? isBelowGoal
+              ? 'bg-rose-50 border-rose-200/80'
+              : 'bg-emerald-50 border-emerald-200/80'
+            : 'bg-white border-slate-200/90'
+
+          const textClass = hasGoal
+            ? isBelowGoal
+              ? 'text-rose-900'
+              : 'text-emerald-900'
+            : 'text-slate-900'
+
+          const subtitleClass = hasGoal
+            ? isBelowGoal
+              ? 'text-rose-600/90 border-rose-200/60'
+              : 'text-emerald-600/90 border-emerald-200/60'
+            : 'text-slate-500 border-slate-100'
+
+          const labelClass = hasGoal
+            ? isBelowGoal
+              ? 'text-rose-700'
+              : 'text-emerald-700'
+            : 'text-slate-500'
+
+          return (
+            <Card
+              className={`${cardBgClass} shadow-sm rounded-2xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}
+            >
+              <CardContent className="p-5 flex flex-col justify-between h-full">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <span className={`text-xs font-semibold uppercase tracking-wider ${labelClass}`}>
+                    % Taxa de Renovação
+                  </span>
+                  <div className="p-2 rounded-xl border bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20 shrink-0">
+                    <Percent className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="my-1">
+                  <div className={`text-3xl font-bold tracking-tight ${textClass} tabular-nums`}>
+                    {formatPercent(totals.rate, 1)}
+                  </div>
+                </div>
+                <div
+                  className={`mt-2 pt-2 border-t ${subtitleClass} min-h-[32px] flex flex-col justify-center`}
+                >
+                  <div className="text-xs truncate flex items-center justify-between gap-1">
+                    <span>Média anual (renovações ÷ alunas)</span>
+                    {hasGoal && (
+                      <span className="font-semibold shrink-0">
+                        Meta: {formatPercent(renewalGoal, 0)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })()}
 
         {/* Faturamento Total com Renovação */}
         <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
