@@ -10,7 +10,18 @@ import {
   Tooltip,
   Legend,
 } from 'recharts'
-import { CalendarDays, Save, Loader2, Check, Info, TrendingUp, Trash2 } from 'lucide-react'
+import {
+  CalendarDays,
+  Save,
+  Loader2,
+  Check,
+  Info,
+  TrendingUp,
+  Trash2,
+  Wallet,
+  Percent,
+} from 'lucide-react'
+import { KpiCard } from '@/components/dashboard/KpiCard'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -329,27 +340,77 @@ export default function Mensal() {
     [rows, selectedYear],
   )
 
-  // Annual totals
-  const totals = useMemo(() => {
-    let revenue = 0,
-      adsMeta = 0,
-      variable = 0,
-      fixed = 0,
-      totalCosts = 0,
-      profit = 0
-    rows.forEach((row) => {
+  // Monthly KPI metrics (averages of registered/filled months)
+  const monthlyKpis = useMemo(() => {
+    // Filter months that have any revenue or investment or non-zero data registered
+    const registeredRows = rows.filter((row) => {
       const c = computeRow(row)
-      revenue += c.revenue
-      adsMeta += c.adsMeta
-      variable += c.totalVariable
-      fixed += c.fixedCosts
-      totalCosts += c.totalCosts
-      profit += c.netProfit
+      return (
+        c.revenue > 0 ||
+        c.adsMeta > 0 ||
+        c.fixedCosts > 0 ||
+        c.salesCommission > 0 ||
+        c.otherVariable > 0
+      )
     })
-    const roas = adsMeta > 0 ? revenue / adsMeta : null
-    const margin = revenue > 0 ? (profit / revenue) * 100 : null
-    return { revenue, adsMeta, variable, fixed, totalCosts, profit, roas, margin }
-  }, [rows])
+
+    const count = registeredRows.length
+
+    if (count === 0) {
+      return {
+        avgRevenue: null,
+        avgCosts: null,
+        avgProfit: null,
+        averageMargin: null,
+        registeredMonthsCount: 0,
+        targetPercent: null,
+      }
+    }
+
+    let totalRev = 0
+    let totalCst = 0
+    let totalPrf = 0
+
+    registeredRows.forEach((row) => {
+      const c = computeRow(row)
+      totalRev += c.revenue
+      totalCst += c.totalCosts
+      totalPrf += c.netProfit
+    })
+
+    const avgRevenue = totalRev / count
+    const avgCosts = totalCst / count
+    const avgProfit = totalPrf / count
+
+    // Margin calculated from totals realized: (totalProfit / totalRevenue) * 100
+    const averageMargin = totalRev > 0 ? (totalPrf / totalRev) * 100 : null
+
+    // Meta de margem vinda do FinancialContext (goals.profit_margin_goal)
+    const profitMarginGoal =
+      goals?.profit_margin_goal !== undefined && goals?.profit_margin_goal !== null
+        ? Number(goals.profit_margin_goal)
+        : null
+
+    const targetPercent =
+      profitMarginGoal !== null && profitMarginGoal > 0 && averageMargin !== null
+        ? (averageMargin / profitMarginGoal) * 100
+        : null
+
+    return {
+      avgRevenue,
+      avgCosts,
+      avgProfit,
+      averageMargin,
+      registeredMonthsCount: count,
+      targetPercent,
+    }
+  }, [rows, goals, taxMetaRate, salesTaxRate])
+
+  const profitMarginGoal =
+    goals?.profit_margin_goal !== undefined && goals?.profit_margin_goal !== null
+      ? Number(goals.profit_margin_goal)
+      : null
+  const hasMarginGoal = profitMarginGoal !== null && profitMarginGoal > 0
 
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-300">
@@ -365,6 +426,66 @@ export default function Mensal() {
             Totais, Lucro, ROAS e Margem calculam automaticamente em tempo real.
           </p>
         </div>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* 1. Média Faturamento */}
+        <KpiCard
+          title="Média Faturamento"
+          value={monthlyKpis.avgRevenue}
+          formatType="currency"
+          icon={TrendingUp}
+          subtext={
+            monthlyKpis.registeredMonthsCount > 0
+              ? `Média de ${monthlyKpis.registeredMonthsCount} ${monthlyKpis.registeredMonthsCount === 1 ? 'mês registrado' : 'meses registrados'}`
+              : 'Nenhum mês registrado'
+          }
+          iconBgColor="bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20"
+        />
+
+        {/* 2. Média Custos */}
+        <KpiCard
+          title="Média Custos"
+          value={monthlyKpis.avgCosts}
+          formatType="currency"
+          icon={Wallet}
+          subtext="Média dos custos fixos + variáveis"
+          iconBgColor="bg-rose-50 text-rose-600 border-rose-200"
+        />
+
+        {/* 3. Média Lucro Líquido */}
+        <KpiCard
+          title="Média Lucro Líquido"
+          value={monthlyKpis.avgProfit}
+          formatType="currency"
+          icon={TrendingUp}
+          subtext={
+            monthlyKpis.registeredMonthsCount > 0
+              ? `Média de ${monthlyKpis.registeredMonthsCount} ${monthlyKpis.registeredMonthsCount === 1 ? 'mês registrado' : 'meses registrados'}`
+              : 'Nenhum mês registrado'
+          }
+          iconBgColor="bg-[#FF2AFF]/10 text-[#FF2AFF] border-[#FF2AFF]/20"
+        />
+
+        {/* 4. Margem Lucro % */}
+        <KpiCard
+          title="Margem Lucro %"
+          value={monthlyKpis.averageMargin}
+          formatType="percent"
+          icon={Percent}
+          statusMode="targetComparison"
+          targetPercent={monthlyKpis.targetPercent}
+          showProgressBar={hasMarginGoal}
+          subtext={
+            hasMarginGoal
+              ? `Meta: ${formatPercent(profitMarginGoal, 1)}`
+              : monthlyKpis.registeredMonthsCount > 0
+                ? 'Margem média dos meses registrados'
+                : 'Nenhum mês registrado'
+          }
+          iconBgColor="bg-amber-50 text-amber-600 border-amber-200"
+        />
       </div>
 
       {/* Chart */}
