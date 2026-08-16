@@ -1,16 +1,19 @@
 import React, { useState } from 'react'
 import { Outlet, useLocation, Navigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCompany } from '@/contexts/CompanyContext'
 import { useFinancial } from '@/contexts/FinancialContext'
 import { Sidebar } from '@/components/Sidebar'
 import { YearSelector } from '@/components/YearSelector'
-import { COMPANY_NAME } from '@/types/financial'
 import { Menu, LogOut, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Link } from 'react-router-dom'
+import { Settings } from 'lucide-react'
 
 export default function Layout() {
   const { isAuthenticated, isLoading, user, logout } = useAuth()
+  const { companyName } = useCompany()
   const { selectedYear, setSelectedYear } = useFinancial()
   const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -74,7 +77,7 @@ export default function Layout() {
                   Dashboard Financeiro
                 </h1>
                 <span className="hidden sm:inline-block text-[11px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200/60">
-                  {COMPANY_NAME}
+                  {companyName}
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 hidden sm:block">
@@ -96,15 +99,23 @@ export default function Layout() {
               >
                 {getUserInitials()}
               </div>
+              <Link
+                to="/configuracoes"
+                title="Configurações"
+                className="hidden sm:flex items-center gap-1.5 text-xs text-slate-600 hover:text-purple-700 hover:bg-purple-50 px-2.5 py-1.5 rounded-lg transition-colors"
+              >
+                <Settings className="h-3.5 w-3.5" />
+                <span>Configurações</span>
+              </Link>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={logout}
                 className="hidden sm:flex items-center gap-1.5 text-xs text-slate-600 hover:text-rose-600 hover:bg-rose-50"
               >
-                <LogOut className="w-3.5 h-3.5" />
+                <LogOut className="h-3.5 w-3.5" />
                 <span>Sair</span>
-              </Button>
+              </Button>{' '}
             </div>
           </div>
         </header>
@@ -118,7 +129,7 @@ export default function Layout() {
           {/* Global Footer */}
           <footer className="max-w-[1280px] mx-auto border-t border-slate-200/80 pt-4 pb-8 mt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
             <div>
-              <span className="font-semibold text-slate-700">Financeiro</span> • {COMPANY_NAME} •{' '}
+              <span className="font-semibold text-slate-700">Financeiro</span> • {companyName} •{' '}
               {selectedYear}
             </div>
             <div className="text-slate-500">Sistema expansível de gestão empresarial</div>

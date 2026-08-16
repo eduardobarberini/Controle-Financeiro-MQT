@@ -1,7 +1,7 @@
 import React from 'react'
-import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Landmark, LogOut, CalendarDays } from 'lucide-react'
-import { COMPANY_NAME } from '@/types/financial'
+import { NavLink, Link } from 'react-router-dom'
+import { LayoutDashboard, Landmark, LogOut, CalendarDays, Settings, UserCog } from 'lucide-react'
+import { useCompany } from '@/contexts/CompanyContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 
@@ -11,10 +11,12 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
   const { user, logout } = useAuth()
+  const { companyName, logoUrl } = useCompany()
 
   const navItems = [
     { to: '/dashboard', label: 'Controle Anual', icon: LayoutDashboard },
     { to: '/mensal', label: 'Controle Mensal', icon: CalendarDays },
+    { to: '/configuracoes', label: 'Configurações', icon: Settings },
   ]
 
   const getUserInitials = () => {
@@ -37,8 +39,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
       {/* Brand Header */}
       <div className="p-5 border-b border-purple-400/20">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 to-purple-500 flex items-center justify-center text-white shadow-md shadow-pink-950/50 border border-pink-300/30 shrink-0">
-            <Landmark className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 to-purple-500 flex items-center justify-center text-white shadow-md shadow-pink-950/50 border border-pink-300/30 shrink-0 overflow-hidden">
+            {logoUrl ? (
+              <img src={logoUrl} alt={companyName} className="w-full h-full object-contain" />
+            ) : (
+              <Landmark className="w-5 h-5" />
+            )}
           </div>
           <div className="min-w-0">
             <h1 className="text-sm font-bold text-white tracking-tight truncate leading-tight">
@@ -46,7 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
             </h1>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="text-xs text-pink-200 font-semibold tracking-wide truncate">
-                {COMPANY_NAME}
+                {companyName}
               </span>
             </div>
           </div>
@@ -80,7 +86,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
       </div>
 
       {/* User Mini Profile & Logout */}
-      <div className="p-3 border-t border-purple-400/20 bg-purple-950/40">
+      <div className="p-3 border-t border-purple-400/20 bg-purple-950/40 space-y-2">
         <div className="flex items-center justify-between p-2 rounded-xl bg-purple-900/50 border border-purple-400/20">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-lg bg-pink-500/40 border border-pink-300/30 flex items-center justify-center text-xs font-bold text-pink-50 shrink-0">
@@ -103,6 +109,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
             <LogOut className="h-4 w-4" />
           </Button>
         </div>
+        <Link
+          to="/configuracoes"
+          onClick={onItemClick}
+          className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11px] font-semibold text-purple-200/80 hover:text-white hover:bg-purple-500/30 transition-colors"
+        >
+          <UserCog className="w-3 h-3" />
+          <span>Editar perfil</span>
+        </Link>
       </div>
     </aside>
   )

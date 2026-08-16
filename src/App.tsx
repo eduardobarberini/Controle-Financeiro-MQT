@@ -3,6 +3,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { Toaster as Sonner } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { CompanyProvider } from '@/contexts/CompanyContext'
 import { FinancialProvider } from '@/contexts/FinancialContext'
 
 import Layout from './components/Layout'
@@ -12,30 +13,34 @@ import Mensal from './pages/Mensal'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import NotFound from './pages/NotFound'
+import Configuracoes from './pages/Configuracoes'
 
 const App = () => (
   <BrowserRouter>
     <TooltipProvider>
       <AuthProvider>
-        <FinancialProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            {/* Public Auth Routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
+        <CompanyProvider>
+          <FinancialProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              {/* Public Auth Routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
 
-            {/* Protected App Routes wrapped in Layout */}
-            <Route element={<Layout />}>
-              <Route path="/" element={<Index />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/mensal" element={<Mensal />} />
-            </Route>
+              {/* Protected App Routes wrapped in Layout */}
+              <Route element={<Layout />}>
+                <Route path="/" element={<Index />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/mensal" element={<Mensal />} />
+                <Route path="/configuracoes" element={<Configuracoes />} />
+              </Route>
 
-            {/* Catch-all */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </FinancialProvider>
+              {/* Catch-all */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </FinancialProvider>
+        </CompanyProvider>
       </AuthProvider>
     </TooltipProvider>
   </BrowserRouter>

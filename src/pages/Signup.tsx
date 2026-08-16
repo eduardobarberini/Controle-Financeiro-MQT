@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Landmark, Lock, Mail, User, ArrowRight, Loader2 } from 'lucide-react'
-import { COMPANY_NAME } from '@/types/financial'
+import { useCompany } from '@/contexts/CompanyContext'
 
 export default function Signup() {
   const [name, setName] = useState('')
@@ -25,6 +25,7 @@ export default function Signup() {
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const { signup } = useAuth()
+  const { companyName, logoUrl } = useCompany()
   const navigate = useNavigate()
 
   const validate = () => {
@@ -56,7 +57,7 @@ export default function Signup() {
       await signup(name.trim(), email.trim(), password)
       toast({
         title: 'Conta criada com sucesso!',
-        description: `Bem-vindo ao ${COMPANY_NAME}.`,
+        description: `Bem-vindo ao ${companyName}.`,
       })
       navigate('/dashboard')
     } catch (err: unknown) {
@@ -80,11 +81,15 @@ export default function Signup() {
 
       <div className="w-full max-w-md relative z-10 animate-in fade-in-50 duration-500">
         <div className="flex flex-col items-center mb-8 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-500 flex items-center justify-center text-white shadow-xl shadow-pink-900/40 mb-3 border border-pink-300/30">
-            <Landmark className="w-7 h-7" />
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-500 flex items-center justify-center text-white shadow-xl shadow-pink-900/40 mb-3 border border-pink-300/30 overflow-hidden">
+            {logoUrl ? (
+              <img src={logoUrl} alt={companyName} className="w-full h-full object-contain" />
+            ) : (
+              <Landmark className="w-7 h-7" />
+            )}
           </div>{' '}
           <h1 className="text-2xl font-bold tracking-tight text-white">Criar Nova Conta</h1>
-          <p className="text-sm text-slate-400 mt-1 font-medium">{COMPANY_NAME}</p>
+          <p className="text-sm text-slate-400 mt-1 font-medium">{companyName}</p>
         </div>
 
         <Card className="border-slate-800 bg-slate-900/90 backdrop-blur-xl text-slate-100 shadow-2xl rounded-2xl">
@@ -209,9 +214,7 @@ export default function Signup() {
           </form>
         </Card>
 
-        <p className="text-center text-xs text-slate-500 mt-6">
-          Financeiro • {COMPANY_NAME} • 2026
-        </p>
+        <p className="text-center text-xs text-slate-500 mt-6">Financeiro • {companyName} • 2026</p>
       </div>
     </div>
   )
