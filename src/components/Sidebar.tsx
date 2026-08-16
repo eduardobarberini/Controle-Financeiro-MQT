@@ -39,9 +39,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
       {/* Brand Header */}
       <div className="p-5 border-b border-purple-400/20">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 to-purple-500 flex items-center justify-center text-white shadow-md shadow-pink-950/50 border border-pink-300/30 shrink-0 overflow-hidden">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 to-purple-500 flex items-center justify-center text-white shrink-0 overflow-hidden">
             {logoUrl ? (
-              <img src={logoUrl} alt={companyName} className="w-full h-full object-contain" />
+              <img
+                src={logoUrl}
+                alt={companyName}
+                className="w-full h-full object-contain border-0 outline-none shadow-none"
+              />
             ) : (
               <Landmark className="w-5 h-5" />
             )}

@@ -296,7 +296,7 @@ export default function Configuracoes() {
                       <img
                         src={logoPreview}
                         alt="Preview logo"
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-contain border-0 outline-none shadow-none"
                       />
                     ) : (
                       <div className="flex flex-col items-center justify-center text-slate-400">

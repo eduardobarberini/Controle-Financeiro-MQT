@@ -81,9 +81,13 @@ export default function Signup() {
 
       <div className="w-full max-w-md relative z-10 animate-in fade-in-50 duration-500">
         <div className="flex flex-col items-center mb-8 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-500 flex items-center justify-center text-white shadow-xl shadow-pink-900/40 mb-3 border border-pink-300/30 overflow-hidden">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-500 flex items-center justify-center text-white shadow-xl shadow-purple-950/40 mb-3 shrink-0 overflow-hidden">
             {logoUrl ? (
-              <img src={logoUrl} alt={companyName} className="w-full h-full object-contain" />
+              <img
+                src={logoUrl}
+                alt={companyName}
+                className="w-full h-full object-contain border-0 outline-none shadow-none"
+              />
             ) : (
               <Landmark className="w-7 h-7" />
             )}

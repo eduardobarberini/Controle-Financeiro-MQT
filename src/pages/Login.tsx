@@ -66,9 +66,13 @@ export default function Login() {
 
       <div className="w-full max-w-md relative z-10 animate-in fade-in-50 duration-500">
         <div className="flex flex-col items-center mb-8 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-500 flex items-center justify-center text-white shadow-xl shadow-pink-900/40 mb-3 border border-pink-300/30 overflow-hidden">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-500 flex items-center justify-center text-white shadow-xl shadow-purple-950/40 mb-3 shrink-0 overflow-hidden">
             {logoUrl ? (
-              <img src={logoUrl} alt={companyName} className="w-full h-full object-contain" />
+              <img
+                src={logoUrl}
+                alt={companyName}
+                className="w-full h-full object-contain border-0 outline-none shadow-none"
+              />
             ) : (
               <Landmark className="w-7 h-7" />
             )}
@@ -76,7 +80,6 @@ export default function Login() {
           <h1 className="text-2xl font-bold tracking-tight text-white">Controle Financeiro</h1>
           <p className="text-sm text-slate-400 mt-1 font-medium">{companyName}</p>
         </div>
-
         <Card className="border-slate-800 bg-slate-900/90 backdrop-blur-xl text-slate-100 shadow-2xl rounded-2xl">
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-xl font-semibold tracking-tight text-white">
