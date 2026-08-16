@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-16T00:43:07.576Z",
+  "generatedAt": "2026-08-16T00:51:19.748Z",
   "collections": [
     {
       "name": "users",
@@ -296,6 +296,73 @@
         }
       ],
       "indexes": ["CREATE UNIQUE INDEX idx_company_settings_user ON company_settings (user)"]
+    },
+    {
+      "name": "renewals",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && user.id = @request.auth.id",
+        "view": "@request.auth.id != '' && user.id = @request.auth.id",
+        "create": "@request.auth.id != '' && user = @request.auth.id",
+        "update": "@request.auth.id != '' && user.id = @request.auth.id",
+        "delete": "@request.auth.id != '' && user.id = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "user",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "year",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "month",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "students_to_renew",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "renewals",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "renewal_revenue",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_renewals_user_year_month ON renewals (user, year, month)"
+      ]
     }
   ]
 }
