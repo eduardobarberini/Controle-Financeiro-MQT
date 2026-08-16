@@ -34,7 +34,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
   }
 
   return (
-    <aside className="w-[248px] bg-gradient-to-b from-[#180B38] via-[#2A1254] to-[#4C0E52] text-slate-100 flex flex-col h-full border-r border-[#6D49F2]/30 select-none">
+    <aside className="w-[248px] bg-gray-900 text-slate-100 flex flex-col h-full border-r border-[#6D49F2]/30 select-none">
       {/* Brand Header */}
       <div className="p-5 border-b border-purple-400/20">
         <div className="flex items-center gap-3">
