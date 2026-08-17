@@ -430,7 +430,7 @@ export default function LancamentoPago() {
 
           <KpiCard
             title="Conv. Order Bump"
-            value={dashboardKpis.conversaoBump}
+            value={dashboardKpis.conversaoBump * 100}
             formatType="percent"
             decimals={2}
             icon={Percent}
