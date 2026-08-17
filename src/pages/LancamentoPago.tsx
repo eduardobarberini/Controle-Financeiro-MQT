@@ -250,11 +250,11 @@ export default function LancamentoPago() {
       faturamentoTotal: calc.totalRevenue,
       investimentoTrafego: calc.trafficInvestment,
       roasGeral: calc.overallRoas,
+      saldoCaptacao: calc.captureBalance,
       totalIngressos: calc.totalTicketSales,
       conversaoBump: calc.bumpConversion,
     }
   }, [calc])
-
   // Save current launch
   const handleSave = async () => {
     if (!form.batch.trim()) {
@@ -372,57 +372,71 @@ export default function LancamentoPago() {
         </div>
       </div>
 
-      {/* Top Dashboard KPI Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {/* Faturamento Total */}
-        <KpiCard
-          title="Faturamento Total"
-          value={dashboardKpis.faturamentoTotal}
-          formatType="currency"
-          icon={DollarSign}
-          subtext="Ingressos + Order Bumps"
-          iconBgColor="bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20"
-        />
+      {/* Top Dashboard KPI Grid - Organised in 2 Rows */}
+      <div className="space-y-4">
+        {/* Row 1 (Featured / Larger Cards): Faturamento Total, Investimento Tráfego, ROAS Geral */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <KpiCard
+            title="Faturamento Total"
+            value={dashboardKpis.faturamentoTotal}
+            formatType="currency"
+            icon={DollarSign}
+            subtext="Ingressos + Order Bumps"
+            iconBgColor="bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20"
+          />
 
-        {/* Investimento Tráfego */}
-        <KpiCard
-          title="Invest. Tráfego"
-          value={dashboardKpis.investimentoTrafego}
-          formatType="currency"
-          icon={TrendingUp}
-          subtext="Custo total em anúncios"
-          iconBgColor="bg-[#FF2AFF]/10 text-[#FF2AFF] border-[#FF2AFF]/20"
-        />
+          <KpiCard
+            title="Invest. Tráfego"
+            value={dashboardKpis.investimentoTrafego}
+            formatType="currency"
+            icon={TrendingUp}
+            subtext="Custo total em anúncios"
+            iconBgColor="bg-[#FF2AFF]/10 text-[#FF2AFF] border-[#FF2AFF]/20"
+          />
 
-        {/* ROAS Geral */}
-        <KpiCard
-          title="ROAS Geral"
-          value={dashboardKpis.roasGeral}
-          formatType="roas"
-          icon={Percent}
-          subtext="Faturamento / Investimento"
-          iconBgColor="bg-emerald-50 text-emerald-600 border-emerald-200"
-        />
+          <KpiCard
+            title="ROAS Geral"
+            value={dashboardKpis.roasGeral}
+            formatType="roas"
+            icon={Percent}
+            subtext="Faturamento / Investimento"
+            iconBgColor="bg-emerald-50 text-emerald-600 border-emerald-200"
+          />
+        </div>
 
-        {/* Total Ingressos */}
-        <KpiCard
-          title="Total Ingressos"
-          value={dashboardKpis.totalIngressos}
-          formatType="raw"
-          icon={Ticket}
-          subtext="Vendas totais de ingresso"
-          iconBgColor="bg-sky-50 text-sky-600 border-sky-200"
-        />
+        {/* Row 2 (Secondary Cards): Saldo da Captação, Total Ingressos, Conversão Order Bump */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <KpiCard
+            title="Saldo da Captação"
+            value={dashboardKpis.saldoCaptacao}
+            formatType="currency"
+            icon={DollarSign}
+            subtext="Faturamento - Investimento"
+            iconBgColor={
+              dashboardKpis.saldoCaptacao >= 0
+                ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                : 'bg-rose-50 text-rose-600 border-rose-200'
+            }
+          />
 
-        {/* Conversão Order Bump */}
-        <KpiCard
-          title="Conv. Order Bump"
-          value={dashboardKpis.conversaoBump}
-          formatType="percent"
-          icon={Percent}
-          subtext="Bumps / Ingressos Totais"
-          iconBgColor="bg-amber-50 text-amber-600 border-amber-200"
-        />
+          <KpiCard
+            title="Total Ingressos"
+            value={dashboardKpis.totalIngressos}
+            formatType="raw"
+            icon={Ticket}
+            subtext="Vendas totais de ingresso"
+            iconBgColor="bg-sky-50 text-sky-600 border-sky-200"
+          />
+
+          <KpiCard
+            title="Conv. Order Bump"
+            value={dashboardKpis.conversaoBump}
+            formatType="percent"
+            icon={Percent}
+            subtext="Bumps / Ingressos Totais"
+            iconBgColor="bg-amber-50 text-amber-600 border-amber-200"
+          />
+        </div>
       </div>
 
       {/* Vertical Form Module */}
