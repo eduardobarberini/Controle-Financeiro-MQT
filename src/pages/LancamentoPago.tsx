@@ -440,290 +440,280 @@ export default function LancamentoPago() {
         </div>
       </div>
 
-      {/* Vertical Form Module */}
+      {/* Vertical Form Module - 3 Distinct Cards */}
       {loading ? (
-        <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl p-16 flex flex-col items-center justify-center gap-3 text-slate-400">
+        <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl p-16 flex flex-col items-center justify-center gap-3 text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin text-[#6D49F2]" />
           <p className="text-sm text-slate-500 font-medium">Carregando dados do lançamento...</p>
         </Card>
       ) : (
         <div className="w-full space-y-6">
-          {/* Main Card Container */}
-          <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
-            {/* Table Vertical Container */}
-            <div className="divide-y divide-slate-100">
-              {/* SECTION 1: VENDA DE INGRESSOS */}
-              <div>
-                <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
-                  Venda de Ingressos
-                </div>
+          {/* BLOCK 1: VENDA DE INGRESSOS */}
+          <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
+            <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
+              VENDA DE INGRESSOS
+            </div>
 
-                <div className="p-4 sm:p-6 space-y-2.5">
-                  {/* Dias Captação */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                    <span className="font-bold text-sm text-slate-800">Dias Captação</span>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={form.capture_days}
-                      onChange={(e) => handleChange('capture_days', e.target.value)}
-                      className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                    />
-                  </div>
+            <div className="p-4 sm:p-6 space-y-2.5">
+              {/* Dias Captação */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                <span className="font-bold text-sm text-slate-800">Dias Captação</span>
+                <Input
+                  type="number"
+                  min={1}
+                  value={form.capture_days}
+                  onChange={(e) => handleChange('capture_days', e.target.value)}
+                  className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                />
+              </div>
 
-                  {/* Turma (MANUAL TEXT INPUT match image style) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                    <span className="font-medium text-sm text-slate-700">Turma</span>
-                    <div className="relative">
-                      <Input
-                        type="text"
-                        placeholder='ex: "S1 - 23/08/2026"'
-                        value={form.batch}
-                        onChange={(e) => handleChange('batch', e.target.value)}
-                        className="bg-white border-slate-200 text-slate-900 font-bold text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Ticket Ingresso */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                    <span className="font-medium text-sm text-slate-700">Ticket Ingresso</span>
-                    <div className="relative">
-                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
-                        R$
-                      </span>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min={0}
-                        value={form.ticket_ticket}
-                        onChange={(e) => handleChange('ticket_ticket', e.target.value)}
-                        className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Investimento Tráfego */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                    <span className="font-medium text-sm text-slate-700">Investimento Tráfego</span>
-                    <div className="relative">
-                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
-                        R$
-                      </span>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min={0}
-                        value={form.traffic_investment}
-                        onChange={(e) => handleChange('traffic_investment', e.target.value)}
-                        className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Tráfego Diário (CALCULATED - READ ONLY) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
-                    <span className="font-medium text-xs text-slate-500">Tráfego Diário</span>
-                    <div className="text-right font-bold tabular-nums text-xs text-slate-700">
-                      {formatCalculatedCurrency(calc.dailyTraffic)}
-                    </div>
-                  </div>
-
-                  {/* CAC (CALCULATED - READ ONLY) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
-                    <span className="font-medium text-xs text-slate-500">CAC</span>
-                    <div className="text-right font-bold tabular-nums text-xs text-slate-700">
-                      {formatCalculatedCurrency(calc.cac)}
-                    </div>
-                  </div>
-
-                  {/* Vendas Totais Ingresso */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                    <span className="font-medium text-sm text-slate-700">
-                      Vendas Totais Ingresso
-                    </span>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={form.total_ticket_sales}
-                      onChange={(e) => handleChange('total_ticket_sales', e.target.value)}
-                      className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                    />
-                  </div>
-
-                  {/* Média Vendas / Dia Ingresso (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
-                    <span className="font-bold text-sm text-amber-950">
-                      Média Vendas / Dia Ingresso
-                    </span>
-                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
-                      {formatCalculatedNumber(calc.avgSalesPerDay, 0)}
-                    </div>
-                  </div>
-
-                  {/* Reembolso */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                    <span className="font-medium text-sm text-slate-700">Reembolso</span>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={form.ticket_refunds}
-                      onChange={(e) => handleChange('ticket_refunds', e.target.value)}
-                      className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                    />
-                  </div>
-
-                  {/* Taxa Reembolso (CALCULATED - READ ONLY) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
-                    <span className="font-medium text-xs text-slate-500">Taxa Reembolso</span>
-                    <div className="text-right font-bold tabular-nums text-xs text-slate-700">
-                      {formatCalculatedPercent(calc.ticketRefundRate)}
-                    </div>
-                  </div>
-
-                  {/* Faturamento Ingressos (CALCULATED - READ ONLY) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
-                    <span className="font-semibold text-xs text-slate-700">
-                      Faturamento Ingressos
-                    </span>
-                    <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
-                      {formatCurrency(calc.ticketRevenue)}
-                    </div>
-                  </div>
-
-                  {/* ROAS Venda Ingresso (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
-                    <span className="font-bold text-sm text-amber-950">ROAS Venda Ingresso</span>
-                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
-                      {formatCalculatedNumber(calc.ticketRoas, 2)}
-                    </div>
-                  </div>
+              {/* Turma */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                <span className="font-medium text-sm text-slate-700">Turma</span>
+                <div className="relative">
+                  <Input
+                    type="text"
+                    placeholder='ex: "S1 - 23/08/2026"'
+                    value={form.batch}
+                    onChange={(e) => handleChange('batch', e.target.value)}
+                    className="bg-white border-slate-200 text-slate-900 font-bold text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                  />
                 </div>
               </div>
 
-              {/* SECTION 2: ORDER BUMP */}
-              <div>
-                <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
-                  Order Bump
-                </div>
-
-                <div className="p-4 sm:p-6 space-y-2.5">
-                  {/* Conversão Order Bump (CALCULATED - READ ONLY) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
-                    <span className="font-bold text-xs text-[#6D49F2]">Conversão Order Bump</span>
-                    <div className="text-right font-bold tabular-nums text-xs text-[#FF2AFF]">
-                      {formatCalculatedPercent(calc.bumpConversion)}
-                    </div>
-                  </div>
-
-                  {/* Ticket Order Bump */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                    <span className="font-medium text-sm text-slate-700">Ticket Order Bump</span>
-                    <div className="relative">
-                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
-                        R$
-                      </span>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min={0}
-                        value={form.bump_ticket}
-                        onChange={(e) => handleChange('bump_ticket', e.target.value)}
-                        className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Vendas Order Bump */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                    <span className="font-medium text-sm text-slate-700">Vendas Order Bump</span>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={form.bump_sales}
-                      onChange={(e) => handleChange('bump_sales', e.target.value)}
-                      className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                    />
-                  </div>
-
-                  {/* Reembolso */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                    <span className="font-medium text-sm text-slate-700">Reembolso</span>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={form.bump_refunds}
-                      onChange={(e) => handleChange('bump_refunds', e.target.value)}
-                      className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                    />
-                  </div>
-
-                  {/* Taxa Reembolso (CALCULATED - READ ONLY) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
-                    <span className="font-medium text-xs text-slate-500">Taxa Reembolso</span>
-                    <div className="text-right font-bold tabular-nums text-xs text-slate-700">
-                      {formatCalculatedPercent(calc.bumpRefundRate)}
-                    </div>
-                  </div>
-
-                  {/* Faturamento Order Bump (CALCULATED - READ ONLY) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
-                    <span className="font-bold text-xs text-slate-700">Faturamento Order Bump</span>
-                    <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
-                      {formatCurrency(calc.bumpRevenue)}
-                    </div>
-                  </div>
+              {/* Ticket Ingresso */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                <span className="font-medium text-sm text-slate-700">Ticket Ingresso</span>
+                <div className="relative">
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
+                    R$
+                  </span>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    value={form.ticket_ticket}
+                    onChange={(e) => handleChange('ticket_ticket', e.target.value)}
+                    className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                  />
                 </div>
               </div>
 
-              {/* SECTION 3: RESULTADO INGRESSOS + ORDER BUMPS */}
-              <div>
-                <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
-                  Resultado Ingressos + Order Bumps
+              {/* Investimento Tráfego */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                <span className="font-medium text-sm text-slate-700">Investimento Tráfego</span>
+                <div className="relative">
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
+                    R$
+                  </span>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    value={form.traffic_investment}
+                    onChange={(e) => handleChange('traffic_investment', e.target.value)}
+                    className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                  />
                 </div>
+              </div>
 
-                <div className="p-4 sm:p-6 space-y-2.5">
-                  {/* Faturamento Total */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-emerald-50/80 px-3.5 rounded-xl border border-emerald-200/90">
-                    <span className="font-bold text-xs text-emerald-900">Faturamento Total</span>
-                    <div className="text-right font-bold tabular-nums text-sm text-emerald-700">
-                      {formatCurrency(calc.totalRevenue)}
-                    </div>
-                  </div>
+              {/* Tráfego Diário (CALCULATED - READ ONLY) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                <span className="font-medium text-xs text-slate-500">Tráfego Diário</span>
+                <div className="text-right font-bold tabular-nums text-xs text-slate-700">
+                  {formatCalculatedCurrency(calc.dailyTraffic)}
+                </div>
+              </div>
 
-                  {/* Ticket Médio (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
-                    <span className="font-bold text-sm text-amber-950">Ticket Médio</span>
-                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
-                      {formatCalculatedCurrency(calc.averageTicket)}
-                    </div>
-                  </div>
+              {/* CAC (CALCULATED - READ ONLY) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                <span className="font-medium text-xs text-slate-500">CAC</span>
+                <div className="text-right font-bold tabular-nums text-xs text-slate-700">
+                  {formatCalculatedCurrency(calc.cac)}
+                </div>
+              </div>
 
-                  {/* Saldo da Captação (CALCULATED - SOFT PASTEL HIGHLIGHT WITH CONDITIONAL COLOR) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
-                    <span className="font-bold text-sm text-amber-950">Saldo da Captação</span>
-                    <div
-                      className={`text-center sm:text-right font-bold tabular-nums text-base ${
-                        calc.captureBalance >= 0 ? 'text-emerald-700' : 'text-rose-600'
-                      }`}
-                    >
-                      {formatCurrency(calc.captureBalance)}
-                    </div>
-                  </div>
+              {/* Vendas Totais Ingresso */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                <span className="font-medium text-sm text-slate-700">Vendas Totais Ingresso</span>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.total_ticket_sales}
+                  onChange={(e) => handleChange('total_ticket_sales', e.target.value)}
+                  className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                />
+              </div>
 
-                  {/* ROAS Geral (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
-                    <span className="font-bold text-sm text-amber-950">ROAS</span>
-                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
-                      {formatCalculatedNumber(calc.overallRoas, 2)}
-                    </div>
-                  </div>
+              {/* Média Vendas / Dia Ingresso (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
+                <span className="font-bold text-sm text-amber-950">
+                  Média Vendas / Dia Ingresso
+                </span>
+                <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
+                  {formatCalculatedNumber(calc.avgSalesPerDay, 0)}
+                </div>
+              </div>
+
+              {/* Reembolso */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                <span className="font-medium text-sm text-slate-700">Reembolso</span>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.ticket_refunds}
+                  onChange={(e) => handleChange('ticket_refunds', e.target.value)}
+                  className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                />
+              </div>
+
+              {/* Taxa Reembolso (CALCULATED - READ ONLY) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                <span className="font-medium text-xs text-slate-500">Taxa Reembolso</span>
+                <div className="text-right font-bold tabular-nums text-xs text-slate-700">
+                  {formatCalculatedPercent(calc.ticketRefundRate)}
+                </div>
+              </div>
+
+              {/* Faturamento Ingressos (CALCULATED - READ ONLY) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
+                <span className="font-semibold text-xs text-slate-700">Faturamento Ingressos</span>
+                <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
+                  {formatCurrency(calc.ticketRevenue)}
+                </div>
+              </div>
+
+              {/* ROAS Venda Ingresso (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
+                <span className="font-bold text-sm text-amber-950">ROAS Venda Ingresso</span>
+                <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
+                  {formatCalculatedNumber(calc.ticketRoas, 2)}
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* BLOCK 2: ORDER BUMP */}
+          <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
+            <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
+              ORDER BUMP
+            </div>
+
+            <div className="p-4 sm:p-6 space-y-2.5">
+              {/* Conversão Order Bump (CALCULATED - READ ONLY) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
+                <span className="font-bold text-xs text-[#6D49F2]">Conversão Order Bump</span>
+                <div className="text-right font-bold tabular-nums text-xs text-[#FF2AFF]">
+                  {formatCalculatedPercent(calc.bumpConversion)}
+                </div>
+              </div>
+
+              {/* Ticket Order Bump */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                <span className="font-medium text-sm text-slate-700">Ticket Order Bump</span>
+                <div className="relative">
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
+                    R$
+                  </span>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    value={form.bump_ticket}
+                    onChange={(e) => handleChange('bump_ticket', e.target.value)}
+                    className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                  />
+                </div>
+              </div>
+
+              {/* Vendas Order Bump */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                <span className="font-medium text-sm text-slate-700">Vendas Order Bump</span>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.bump_sales}
+                  onChange={(e) => handleChange('bump_sales', e.target.value)}
+                  className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                />
+              </div>
+
+              {/* Reembolso */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                <span className="font-medium text-sm text-slate-700">Reembolso</span>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.bump_refunds}
+                  onChange={(e) => handleChange('bump_refunds', e.target.value)}
+                  className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                />
+              </div>
+
+              {/* Taxa Reembolso (CALCULATED - READ ONLY) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                <span className="font-medium text-xs text-slate-500">Taxa Reembolso</span>
+                <div className="text-right font-bold tabular-nums text-xs text-slate-700">
+                  {formatCalculatedPercent(calc.bumpRefundRate)}
+                </div>
+              </div>
+
+              {/* Faturamento Order Bump (CALCULATED - READ ONLY) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
+                <span className="font-bold text-xs text-slate-700">Faturamento Order Bump</span>
+                <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
+                  {formatCurrency(calc.bumpRevenue)}
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* BLOCK 3: RESULTADO INGRESSOS + ORDER BUMPS */}
+          <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
+            <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
+              RESULTADO INGRESSOS + ORDER BUMPS
+            </div>
+
+            <div className="p-4 sm:p-6 space-y-2.5">
+              {/* Faturamento Total */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-emerald-50/80 px-3.5 rounded-xl border border-emerald-200/90">
+                <span className="font-bold text-xs text-emerald-900">Faturamento Total</span>
+                <div className="text-right font-bold tabular-nums text-sm text-emerald-700">
+                  {formatCurrency(calc.totalRevenue)}
+                </div>
+              </div>
+
+              {/* Ticket Médio (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
+                <span className="font-bold text-sm text-amber-950">Ticket Médio</span>
+                <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
+                  {formatCalculatedCurrency(calc.averageTicket)}
+                </div>
+              </div>
+
+              {/* Saldo da Captação (CALCULATED - SOFT PASTEL HIGHLIGHT WITH CONDITIONAL COLOR) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
+                <span className="font-bold text-sm text-amber-950">Saldo da Captação</span>
+                <div
+                  className={`text-center sm:text-right font-bold tabular-nums text-base ${
+                    calc.captureBalance >= 0 ? 'text-emerald-700' : 'text-rose-600'
+                  }`}
+                >
+                  {formatCurrency(calc.captureBalance)}
+                </div>
+              </div>
+
+              {/* ROAS Geral (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
+                <span className="font-bold text-sm text-amber-950">ROAS</span>
+                <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
+                  {formatCalculatedNumber(calc.overallRoas, 2)}
                 </div>
               </div>
             </div>
 
-            {/* Bottom Action Bar */}
-            <div className="p-4 sm:p-6 bg-slate-50/80 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Bottom Action Bar inside or attached to the bottom section */}
+            <div className="p-4 sm:p-6 bg-slate-50/80 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="text-xs text-slate-500 font-medium">
                 Lançamento selecionado:{' '}
                 <span className="font-bold text-[#6D49F2]">{form.batch || 'Sem nome'}</span>
