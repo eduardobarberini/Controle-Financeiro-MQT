@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-16T03:24:31.903Z",
+  "generatedAt": "2026-08-17T13:19:46.572Z",
   "collections": [
     {
       "name": "users",
@@ -381,6 +381,96 @@
       "indexes": [
         "CREATE UNIQUE INDEX idx_renewals_user_year_month ON renewals (user, year, month)"
       ]
+    },
+    {
+      "name": "paid_launches",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && user = @request.auth.id",
+        "view": "@request.auth.id != '' && user = @request.auth.id",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && user = @request.auth.id",
+        "delete": "@request.auth.id != '' && user = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "user",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "capture_days",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "batch",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["Semana 1", "Semana 2", "Semana 3", "Semana 4"]
+        },
+        {
+          "name": "ticket_ticket",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "traffic_investment",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "total_ticket_sales",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ticket_refunds",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "bump_ticket",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "bump_sales",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "bump_refunds",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE INDEX idx_paid_launches_user ON paid_launches (user)"]
     }
   ]
 }

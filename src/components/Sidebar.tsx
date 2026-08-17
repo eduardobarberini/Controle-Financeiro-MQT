@@ -1,6 +1,6 @@
 import React from 'react'
 import { NavLink, Link } from 'react-router-dom'
-import { BarChart3, Landmark, LogOut, CalendarDays, UserCog, RefreshCw } from 'lucide-react'
+import { BarChart3, Landmark, LogOut, CalendarDays, UserCog, RefreshCw, Rocket } from 'lucide-react'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -17,6 +17,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
     { to: '/dashboard', label: 'Controle Anual', icon: BarChart3 },
     { to: '/mensal', label: 'Controle Mensal', icon: CalendarDays },
     { to: '/renovacoes', label: 'Renovações', icon: RefreshCw },
+    { to: '/lancamento-pago', label: 'Lançamento Pago', icon: Rocket },
   ]
 
   const getUserInitials = () => {
