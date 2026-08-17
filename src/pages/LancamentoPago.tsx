@@ -432,6 +432,7 @@ export default function LancamentoPago() {
             title="Conv. Order Bump"
             value={dashboardKpis.conversaoBump}
             formatType="percent"
+            decimals={2}
             icon={Percent}
             subtext="Bumps / Ingressos Totais"
             iconBgColor="bg-amber-50 text-amber-600 border-amber-200"

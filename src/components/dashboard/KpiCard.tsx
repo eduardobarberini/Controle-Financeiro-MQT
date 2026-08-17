@@ -7,6 +7,7 @@ interface KpiCardProps {
   title: string
   value: number | null
   formatType: 'currency' | 'percent' | 'roas' | 'raw'
+  decimals?: number
   rawString?: string
   icon: LucideIcon
   subtext?: string
@@ -22,6 +23,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
   title,
   value,
   formatType,
+  decimals,
   rawString,
   icon: Icon,
   subtext,
@@ -69,7 +71,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
       case 'currency':
         return formatCurrency(displayValue)
       case 'percent':
-        return formatPercent(displayValue, 1)
+        return formatPercent(displayValue, decimals ?? 1)
       case 'roas':
         return formatRoas(displayValue)
       default:
