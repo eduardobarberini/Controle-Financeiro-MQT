@@ -430,7 +430,7 @@ export default function LancamentoPago() {
 
           <KpiCard
             title="Conv. Order Bump"
-            value={dashboardKpis.conversaoBump * 100}
+            value={dashboardKpis.conversaoBump}
             formatType="percent"
             decimals={2}
             icon={Percent}
@@ -447,7 +447,7 @@ export default function LancamentoPago() {
           <p className="text-sm text-slate-500 font-medium">Carregando dados do lançamento...</p>
         </Card>
       ) : (
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="w-full space-y-6">
           {/* Main Card Container */}
           <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
             {/* Table Vertical Container */}
