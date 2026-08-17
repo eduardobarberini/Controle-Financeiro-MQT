@@ -6,11 +6,10 @@ import {
   TrendingUp,
   Ticket,
   Percent,
-  AlertCircle,
   Loader2,
-  CheckCircle2,
   Calendar,
 } from 'lucide-react'
+import { KpiCard } from '@/components/dashboard/KpiCard'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,16 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { paidLaunchesService } from '@/services/paidLaunches'
 import type { PaidLaunchRecord, PaidLaunchInput } from '@/types/paidLaunches'
@@ -132,7 +121,7 @@ export default function LancamentoPago() {
           bump_refunds: current.bump_refunds,
         })
       } else {
-        // Sample baseline data matching the image formulas
+        // Sample baseline data
         setForm({ ...DEFAULT_FORM, batch: selectedBatch, id: undefined })
       }
     } catch (err) {
@@ -295,34 +284,34 @@ export default function LancamentoPago() {
   }
 
   return (
-    <div className="space-y-8 pb-16 animate-in fade-in-50 duration-300">
+    <div className="space-y-6 animate-in fade-in-50 duration-300">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-purple-900/40 pb-5">
-        <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] text-white shadow-lg shadow-[#6D49F2]/25">
-            <Rocket className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-              Lançamento Pago
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-300 mt-0.5">
-              Gestão vertical de performance de ingressos e order bumps por semana de captação.
-            </p>
-          </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+            <Rocket className="w-6 h-6 text-[#6D49F2]" />
+            Lançamento Pago
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Gestão vertical de performance de ingressos e order bumps por semana de captação.
+          </p>
         </div>
 
         {/* Turma Switcher in Header */}
-        <div className="flex items-center gap-2 bg-[#180B38] border border-[#6D49F2]/40 p-1.5 rounded-xl">
-          <Calendar className="w-4 h-4 text-[#FF2AFF] ml-2" />
-          <span className="text-xs font-semibold text-slate-300">Turma:</span>
+        <div className="flex items-center gap-2 bg-white border border-slate-200/90 shadow-2xs p-1.5 rounded-xl">
+          <Calendar className="w-4 h-4 text-[#6D49F2] ml-2" />
+          <span className="text-xs font-semibold text-slate-600">Turma:</span>
           <Select value={selectedBatch} onValueChange={(val: BatchType) => handleBatchChange(val)}>
-            <SelectTrigger className="w-[140px] h-9 bg-[#2A1254] border-[#6D49F2]/50 text-white font-bold text-xs focus:ring-[#FF2AFF]">
+            <SelectTrigger className="w-[140px] h-9 bg-slate-50/80 border-slate-200 text-slate-900 font-bold text-xs focus:ring-[#6D49F2] rounded-lg">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-[#1D0E42] border-[#6D49F2]/60 text-white">
+            <SelectContent className="bg-white border-slate-200 text-slate-900 rounded-xl">
               {BATCH_OPTIONS.map((opt) => (
-                <SelectItem key={opt} value={opt} className="focus:bg-[#6D49F2]/40">
+                <SelectItem
+                  key={opt}
+                  value={opt}
+                  className="focus:bg-[#6D49F2]/10 focus:text-[#6D49F2] font-medium text-xs"
+                >
                   {opt}
                 </SelectItem>
               ))}
@@ -331,146 +320,107 @@ export default function LancamentoPago() {
         </div>
       </div>
 
-      {/* Dashboard KPI Top Bar */}
+      {/* Top Dashboard KPI Grid (Using clean KpiCards matching /mensal) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Faturamento Total */}
-        <Card className="bg-[#180B38]/80 border-[#6D49F2]/30 text-white shadow-xl relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#6D49F2] to-[#FF2AFF]" />
-          <CardContent className="p-4 flex flex-col justify-between h-full">
-            <div className="flex items-center justify-between text-slate-300">
-              <span className="text-[11px] font-bold tracking-wider uppercase">
-                Faturamento Total
-              </span>
-              <DollarSign className="w-4 h-4 text-[#FF2AFF]" />
-            </div>
-            <div className="mt-2">
-              <div className="text-xl font-extrabold text-white tracking-tight">
-                {formatCurrency(dashboardKpis.faturamentoTotal)}
-              </div>
-              <p className="text-[10px] text-slate-400 mt-0.5">Ingressos + Order Bumps</p>
-            </div>
-          </CardContent>
-        </Card>
+        <KpiCard
+          title="Faturamento Total"
+          value={dashboardKpis.faturamentoTotal}
+          formatType="currency"
+          icon={DollarSign}
+          subtext="Ingressos + Order Bumps"
+          iconBgColor="bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20"
+        />
 
         {/* Investimento Tráfego */}
-        <Card className="bg-[#180B38]/80 border-[#6D49F2]/30 text-white shadow-xl relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-500 to-indigo-500" />
-          <CardContent className="p-4 flex flex-col justify-between h-full">
-            <div className="flex items-center justify-between text-slate-300">
-              <span className="text-[11px] font-bold tracking-wider uppercase">
-                Invest. Tráfego
-              </span>
-              <TrendingUp className="w-4 h-4 text-purple-400" />
-            </div>
-            <div className="mt-2">
-              <div className="text-xl font-extrabold text-white tracking-tight">
-                {formatCurrency(dashboardKpis.investimentoTrafego)}
-              </div>
-              <p className="text-[10px] text-slate-400 mt-0.5">Custo total em anúncios</p>
-            </div>
-          </CardContent>
-        </Card>
+        <KpiCard
+          title="Invest. Tráfego"
+          value={dashboardKpis.investimentoTrafego}
+          formatType="currency"
+          icon={TrendingUp}
+          subtext="Custo total em anúncios"
+          iconBgColor="bg-[#FF2AFF]/10 text-[#FF2AFF] border-[#FF2AFF]/20"
+        />
 
         {/* ROAS Geral */}
-        <Card className="bg-[#180B38]/80 border-[#6D49F2]/30 text-white shadow-xl relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-emerald-400 to-teal-500" />
-          <CardContent className="p-4 flex flex-col justify-between h-full">
-            <div className="flex items-center justify-between text-slate-300">
-              <span className="text-[11px] font-bold tracking-wider uppercase">ROAS Geral</span>
-              <Percent className="w-4 h-4 text-emerald-400" />
-            </div>
-            <div className="mt-2">
-              <div className="text-xl font-extrabold text-white tracking-tight">
-                {formatCalculatedNumber(dashboardKpis.roasGeral)}
-              </div>
-              <p className="text-[10px] text-slate-400 mt-0.5">Faturamento / Investimento</p>
-            </div>
-          </CardContent>
-        </Card>
+        <KpiCard
+          title="ROAS Geral"
+          value={dashboardKpis.roasGeral}
+          formatType="roas"
+          icon={Percent}
+          subtext="Faturamento / Investimento"
+          iconBgColor="bg-emerald-50 text-emerald-600 border-emerald-200"
+        />
 
         {/* Total Ingressos */}
-        <Card className="bg-[#180B38]/80 border-[#6D49F2]/30 text-white shadow-xl relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-cyan-400 to-blue-500" />
-          <CardContent className="p-4 flex flex-col justify-between h-full">
-            <div className="flex items-center justify-between text-slate-300">
-              <span className="text-[11px] font-bold tracking-wider uppercase">
-                Total Ingressos
-              </span>
-              <Ticket className="w-4 h-4 text-cyan-400" />
-            </div>
-            <div className="mt-2">
-              <div className="text-xl font-extrabold text-white tracking-tight">
-                {dashboardKpis.totalIngressos.toLocaleString('pt-BR')}
-              </div>
-              <p className="text-[10px] text-slate-400 mt-0.5">Vendas totais de ingresso</p>
-            </div>
-          </CardContent>
-        </Card>
+        <KpiCard
+          title="Total Ingressos"
+          value={dashboardKpis.totalIngressos}
+          formatType="raw"
+          icon={Ticket}
+          subtext="Vendas totais de ingresso"
+          iconBgColor="bg-sky-50 text-sky-600 border-sky-200"
+        />
 
         {/* Conversão Order Bump */}
-        <Card className="bg-[#180B38]/80 border-[#6D49F2]/30 text-white shadow-xl relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#FF2AFF] to-rose-500" />
-          <CardContent className="p-4 flex flex-col justify-between h-full">
-            <div className="flex items-center justify-between text-slate-300">
-              <span className="text-[11px] font-bold tracking-wider uppercase">
-                Conv. Order Bump
-              </span>
-              <TrendingUp className="w-4 h-4 text-[#FF2AFF]" />
-            </div>
-            <div className="mt-2">
-              <div className="text-xl font-extrabold text-white tracking-tight">
-                {formatPercent(dashboardKpis.conversaoBump)}
-              </div>
-              <p className="text-[10px] text-slate-400 mt-0.5">Bumps / Ingressos Totais</p>
-            </div>
-          </CardContent>
-        </Card>
+        <KpiCard
+          title="Conv. Order Bump"
+          value={dashboardKpis.conversaoBump}
+          formatType="percent"
+          icon={Percent}
+          subtext="Bumps / Ingressos Totais"
+          iconBgColor="bg-amber-50 text-amber-600 border-amber-200"
+        />
       </div>
 
       {/* Vertical Form Module */}
       {loading ? (
-        <div className="p-16 flex flex-col items-center justify-center gap-3 text-slate-400 bg-[#180B38]/60 rounded-2xl border border-[#6D49F2]/30">
-          <Loader2 className="w-8 h-8 animate-spin text-[#FF2AFF]" />
-          <p className="text-sm">Carregando dados do lançamento...</p>
-        </div>
+        <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl p-16 flex flex-col items-center justify-center gap-3 text-slate-400">
+          <Loader2 className="w-8 h-8 animate-spin text-[#6D49F2]" />
+          <p className="text-sm text-slate-500 font-medium">Carregando dados do lançamento...</p>
+        </Card>
       ) : (
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Main Card Container */}
-          <div className="bg-[#180B38]/90 border border-[#6D49F2]/40 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl">
+          <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
             {/* Table Vertical Container */}
-            <div className="divide-y divide-[#6D49F2]/30">
+            <div className="divide-y divide-slate-100">
               {/* SECTION 1: VENDA DE INGRESSOS */}
               <div>
-                <div className="bg-[#000000] text-white px-6 py-3 font-extrabold text-sm uppercase tracking-wider text-center border-b border-[#6D49F2]/30">
+                <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
                   Venda de Ingressos
                 </div>
 
-                <div className="p-4 sm:p-6 space-y-2">
+                <div className="p-4 sm:p-6 space-y-2.5">
                   {/* Dias Captação */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-purple-900/30">
-                    <span className="font-extrabold text-sm text-white">Dias Captação</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                    <span className="font-bold text-sm text-slate-800">Dias Captação</span>
                     <Input
                       type="number"
                       min={1}
                       value={form.capture_days}
                       onChange={(e) => handleChange('capture_days', e.target.value)}
-                      className="bg-[#230F4E] border-[#6D49F2]/50 text-white font-mono text-center font-bold text-sm h-10 focus:border-[#FF2AFF]"
+                      className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
                     />
                   </div>
 
                   {/* Turma */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-purple-900/30">
-                    <span className="font-semibold text-sm text-slate-200">Turma</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                    <span className="font-medium text-sm text-slate-700">Turma</span>
                     <Select
                       value={form.batch}
                       onValueChange={(val: BatchType) => handleBatchChange(val)}
                     >
-                      <SelectTrigger className="bg-[#230F4E] border-[#6D49F2]/50 text-white font-bold text-sm h-10 focus:ring-[#FF2AFF]">
+                      <SelectTrigger className="bg-white border-slate-200 text-slate-900 font-semibold text-xs h-9 rounded-lg focus:ring-[#6D49F2] shadow-2xs">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-[#1D0E42] border-[#6D49F2]/60 text-white">
+                      <SelectContent className="bg-white border-slate-200 text-slate-900 rounded-xl">
                         {BATCH_OPTIONS.map((opt) => (
-                          <SelectItem key={opt} value={opt} className="focus:bg-[#6D49F2]/40">
+                          <SelectItem
+                            key={opt}
+                            value={opt}
+                            className="focus:bg-[#6D49F2]/10 focus:text-[#6D49F2] font-medium text-xs"
+                          >
                             {opt}
                           </SelectItem>
                         ))}
@@ -479,10 +429,10 @@ export default function LancamentoPago() {
                   </div>
 
                   {/* Ticket Ingresso */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-purple-900/30">
-                    <span className="font-semibold text-sm text-slate-200">Ticket Ingresso</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                    <span className="font-medium text-sm text-slate-700">Ticket Ingresso</span>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
                         R$
                       </span>
                       <Input
@@ -491,18 +441,16 @@ export default function LancamentoPago() {
                         min={0}
                         value={form.ticket_ticket}
                         onChange={(e) => handleChange('ticket_ticket', e.target.value)}
-                        className="pl-9 bg-[#230F4E] border-[#6D49F2]/50 text-white font-mono font-bold text-sm h-10 focus:border-[#FF2AFF]"
+                        className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
                       />
                     </div>
                   </div>
 
                   {/* Investimento Tráfego */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-purple-900/30">
-                    <span className="font-semibold text-sm text-slate-200">
-                      Investimento Tráfego
-                    </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                    <span className="font-medium text-sm text-slate-700">Investimento Tráfego</span>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
                         R$
                       </span>
                       <Input
@@ -511,30 +459,30 @@ export default function LancamentoPago() {
                         min={0}
                         value={form.traffic_investment}
                         onChange={(e) => handleChange('traffic_investment', e.target.value)}
-                        className="pl-9 bg-[#230F4E] border-[#6D49F2]/50 text-white font-mono font-bold text-sm h-10 focus:border-[#FF2AFF]"
+                        className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
                       />
                     </div>
                   </div>
 
-                  {/* Tráfego Diário (CALCULATED - LOCKED) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-[#2D1658]/40 px-3 rounded-lg border border-[#6D49F2]/20">
-                    <span className="font-medium text-xs text-purple-200">Tráfego Diário</span>
-                    <div className="text-right font-mono font-bold text-sm text-purple-100">
+                  {/* Tráfego Diário (CALCULATED - READ ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                    <span className="font-medium text-xs text-slate-500">Tráfego Diário</span>
+                    <div className="text-right font-bold tabular-nums text-xs text-slate-700">
                       {formatCalculatedCurrency(calc.dailyTraffic)}
                     </div>
                   </div>
 
-                  {/* CAC (CALCULATED - LOCKED) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-[#2D1658]/40 px-3 rounded-lg border border-[#6D49F2]/20">
-                    <span className="font-medium text-xs text-purple-200">CAC</span>
-                    <div className="text-right font-mono font-bold text-sm text-purple-100">
+                  {/* CAC (CALCULATED - READ ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                    <span className="font-medium text-xs text-slate-500">CAC</span>
+                    <div className="text-right font-bold tabular-nums text-xs text-slate-700">
                       {formatCalculatedCurrency(calc.cac)}
                     </div>
                   </div>
 
                   {/* Vendas Totais Ingresso */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-purple-900/30">
-                    <span className="font-semibold text-sm text-slate-200">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                    <span className="font-medium text-sm text-slate-700">
                       Vendas Totais Ingresso
                     </span>
                     <Input
@@ -542,54 +490,54 @@ export default function LancamentoPago() {
                       min={0}
                       value={form.total_ticket_sales}
                       onChange={(e) => handleChange('total_ticket_sales', e.target.value)}
-                      className="bg-[#230F4E] border-[#6D49F2]/50 text-white font-mono text-center font-bold text-sm h-10 focus:border-[#FF2AFF]"
+                      className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
                     />
                   </div>
 
-                  {/* Média Vendas / Dia Ingresso (CALCULATED - HIGHLIGHTED LIKE EXCEL IMAGE) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-[#F8C498] px-3 rounded-lg border border-amber-600/30">
-                    <span className="font-extrabold text-sm text-slate-900">
+                  {/* Média Vendas / Dia Ingresso (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
+                    <span className="font-bold text-sm text-amber-950">
                       Média Vendas / Dia Ingresso
                     </span>
-                    <div className="text-center sm:text-right font-mono font-extrabold text-base text-slate-950">
+                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
                       {formatCalculatedNumber(calc.avgSalesPerDay, 0)}
                     </div>
                   </div>
 
                   {/* Reembolso */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-purple-900/30">
-                    <span className="font-semibold text-sm text-slate-200">Reembolso</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                    <span className="font-medium text-sm text-slate-700">Reembolso</span>
                     <Input
                       type="number"
                       min={0}
                       value={form.ticket_refunds}
                       onChange={(e) => handleChange('ticket_refunds', e.target.value)}
-                      className="bg-[#230F4E] border-[#6D49F2]/50 text-white font-mono text-center font-bold text-sm h-10 focus:border-[#FF2AFF]"
+                      className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
                     />
                   </div>
 
-                  {/* Taxa Reembolso (CALCULATED - LOCKED) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-[#2D1658]/40 px-3 rounded-lg border border-[#6D49F2]/20">
-                    <span className="font-medium text-xs text-purple-200">Taxa Reembolso</span>
-                    <div className="text-right font-mono font-bold text-sm text-purple-100">
+                  {/* Taxa Reembolso (CALCULATED - READ ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                    <span className="font-medium text-xs text-slate-500">Taxa Reembolso</span>
+                    <div className="text-right font-bold tabular-nums text-xs text-slate-700">
                       {formatCalculatedPercent(calc.ticketRefundRate)}
                     </div>
                   </div>
 
-                  {/* Faturamento Ingressos (CALCULATED - LOCKED) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-[#2D1658]/60 px-3 rounded-lg border border-[#6D49F2]/30">
-                    <span className="font-bold text-xs text-slate-100">Faturamento Ingressos</span>
-                    <div className="text-right font-mono font-bold text-sm text-[#FF2AFF]">
+                  {/* Faturamento Ingressos (CALCULATED - READ ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
+                    <span className="font-semibold text-xs text-slate-700">
+                      Faturamento Ingressos
+                    </span>
+                    <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
                       {formatCurrency(calc.ticketRevenue)}
                     </div>
                   </div>
 
-                  {/* ROAS Venda Ingresso (CALCULATED - HIGHLIGHTED LIKE EXCEL IMAGE) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-[#F8C498] px-3 rounded-lg border border-amber-600/30">
-                    <span className="font-extrabold text-sm text-slate-900">
-                      ROAS Venda Ingresso
-                    </span>
-                    <div className="text-center sm:text-right font-mono font-extrabold text-base text-slate-950">
+                  {/* ROAS Venda Ingresso (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
+                    <span className="font-bold text-sm text-amber-950">ROAS Venda Ingresso</span>
+                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
                       {formatCalculatedNumber(calc.ticketRoas, 2)}
                     </div>
                   </div>
@@ -598,24 +546,24 @@ export default function LancamentoPago() {
 
               {/* SECTION 2: ORDER BUMP */}
               <div>
-                <div className="bg-[#000000] text-white px-6 py-3 font-extrabold text-sm uppercase tracking-wider text-center border-b border-[#6D49F2]/30">
+                <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
                   Order Bump
                 </div>
 
-                <div className="p-4 sm:p-6 space-y-2">
-                  {/* Conversão Order Bump (CALCULATED - LOCKED) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-[#2D1658]/40 px-3 rounded-lg border border-[#6D49F2]/20">
-                    <span className="font-bold text-xs text-[#FF2AFF]">Conversão Order Bump</span>
-                    <div className="text-right font-mono font-extrabold text-sm text-[#FF2AFF]">
+                <div className="p-4 sm:p-6 space-y-2.5">
+                  {/* Conversão Order Bump (CALCULATED - READ ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
+                    <span className="font-bold text-xs text-[#6D49F2]">Conversão Order Bump</span>
+                    <div className="text-right font-bold tabular-nums text-xs text-[#FF2AFF]">
                       {formatCalculatedPercent(calc.bumpConversion)}
                     </div>
                   </div>
 
                   {/* Ticket Order Bump */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-purple-900/30">
-                    <span className="font-semibold text-sm text-slate-200">Ticket Order Bump</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                    <span className="font-medium text-sm text-slate-700">Ticket Order Bump</span>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
                         R$
                       </span>
                       <Input
@@ -624,49 +572,47 @@ export default function LancamentoPago() {
                         min={0}
                         value={form.bump_ticket}
                         onChange={(e) => handleChange('bump_ticket', e.target.value)}
-                        className="pl-9 bg-[#230F4E] border-[#6D49F2]/50 text-white font-mono font-bold text-sm h-10 focus:border-[#FF2AFF]"
+                        className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
                       />
                     </div>
                   </div>
 
                   {/* Vendas Order Bump */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-purple-900/30">
-                    <span className="font-semibold text-sm text-slate-200">Vendas Order Bump</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                    <span className="font-medium text-sm text-slate-700">Vendas Order Bump</span>
                     <Input
                       type="number"
                       min={0}
                       value={form.bump_sales}
                       onChange={(e) => handleChange('bump_sales', e.target.value)}
-                      className="bg-[#230F4E] border-[#6D49F2]/50 text-white font-mono text-center font-bold text-sm h-10 focus:border-[#FF2AFF]"
+                      className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
                     />
                   </div>
 
                   {/* Reembolso */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-purple-900/30">
-                    <span className="font-semibold text-sm text-slate-200">Reembolso</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                    <span className="font-medium text-sm text-slate-700">Reembolso</span>
                     <Input
                       type="number"
                       min={0}
                       value={form.bump_refunds}
                       onChange={(e) => handleChange('bump_refunds', e.target.value)}
-                      className="bg-[#230F4E] border-[#6D49F2]/50 text-white font-mono text-center font-bold text-sm h-10 focus:border-[#FF2AFF]"
+                      className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
                     />
                   </div>
 
-                  {/* Taxa Reembolso (CALCULATED - LOCKED) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-[#2D1658]/40 px-3 rounded-lg border border-[#6D49F2]/20">
-                    <span className="font-medium text-xs text-purple-200">Taxa Reembolso</span>
-                    <div className="text-right font-mono font-bold text-sm text-purple-100">
+                  {/* Taxa Reembolso (CALCULATED - READ ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                    <span className="font-medium text-xs text-slate-500">Taxa Reembolso</span>
+                    <div className="text-right font-bold tabular-nums text-xs text-slate-700">
                       {formatCalculatedPercent(calc.bumpRefundRate)}
                     </div>
                   </div>
 
-                  {/* Faturamento Order Bump (CALCULATED - LOCKED) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-[#2D1658]/60 px-3 rounded-lg border border-[#6D49F2]/30">
-                    <span className="font-bold text-xs text-purple-200">
-                      Faturamento Order Bump
-                    </span>
-                    <div className="text-right font-mono font-bold text-sm text-purple-200">
+                  {/* Faturamento Order Bump (CALCULATED - READ ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
+                    <span className="font-bold text-xs text-slate-700">Faturamento Order Bump</span>
+                    <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
                       {formatCurrency(calc.bumpRevenue)}
                     </div>
                   </div>
@@ -675,43 +621,43 @@ export default function LancamentoPago() {
 
               {/* SECTION 3: RESULTADO INGRESSOS + ORDER BUMPS */}
               <div>
-                <div className="bg-[#000000] text-white px-6 py-3 font-extrabold text-sm uppercase tracking-wider text-center border-b border-[#6D49F2]/30">
+                <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
                   Resultado Ingressos + Order Bumps
                 </div>
 
                 <div className="p-4 sm:p-6 space-y-2.5">
                   {/* Faturamento Total */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-[#1A3129]/60 px-3 rounded-lg border border-emerald-500/30">
-                    <span className="font-bold text-xs text-emerald-300">Faturamento Total</span>
-                    <div className="text-right font-mono font-extrabold text-base text-emerald-300">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-emerald-50/80 px-3.5 rounded-xl border border-emerald-200/90">
+                    <span className="font-bold text-xs text-emerald-900">Faturamento Total</span>
+                    <div className="text-right font-bold tabular-nums text-sm text-emerald-700">
                       {formatCurrency(calc.totalRevenue)}
                     </div>
                   </div>
 
-                  {/* Ticket Médio (HIGHLIGHTED LIKE EXCEL IMAGE) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-[#F8C498] px-3 rounded-lg border border-amber-600/30">
-                    <span className="font-extrabold text-sm text-slate-900">Ticket Médio</span>
-                    <div className="text-center sm:text-right font-mono font-extrabold text-base text-slate-950">
+                  {/* Ticket Médio (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
+                    <span className="font-bold text-sm text-amber-950">Ticket Médio</span>
+                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
                       {formatCalculatedCurrency(calc.averageTicket)}
                     </div>
                   </div>
 
-                  {/* Saldo da Captação (HIGHLIGHTED LIKE EXCEL IMAGE WITH CONDITIONAL COLOR) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-[#F8C498] px-3 rounded-lg border border-amber-600/30">
-                    <span className="font-extrabold text-sm text-slate-900">Saldo da Captação</span>
+                  {/* Saldo da Captação (CALCULATED - SOFT PASTEL HIGHLIGHT WITH CONDITIONAL COLOR) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
+                    <span className="font-bold text-sm text-amber-950">Saldo da Captação</span>
                     <div
-                      className={`text-center sm:text-right font-mono font-extrabold text-base ${
-                        calc.captureBalance >= 0 ? 'text-emerald-900' : 'text-rose-700'
+                      className={`text-center sm:text-right font-bold tabular-nums text-base ${
+                        calc.captureBalance >= 0 ? 'text-emerald-700' : 'text-rose-600'
                       }`}
                     >
                       {formatCurrency(calc.captureBalance)}
                     </div>
                   </div>
 
-                  {/* ROAS Geral (HIGHLIGHTED LIKE EXCEL IMAGE) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-[#F8C498] px-3 rounded-lg border border-amber-600/30">
-                    <span className="font-extrabold text-sm text-slate-900">ROAS</span>
-                    <div className="text-center sm:text-right font-mono font-extrabold text-base text-slate-950">
+                  {/* ROAS Geral (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
+                    <span className="font-bold text-sm text-amber-950">ROAS</span>
+                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
                       {formatCalculatedNumber(calc.overallRoas, 2)}
                     </div>
                   </div>
@@ -720,30 +666,30 @@ export default function LancamentoPago() {
             </div>
 
             {/* Bottom Save Action Button */}
-            <div className="p-4 sm:p-6 bg-[#13072E] border-t border-[#6D49F2]/40 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-xs text-slate-400">
+            <div className="p-4 sm:p-6 bg-slate-50/80 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-xs text-slate-500 font-medium">
                 Lançamento selecionado:{' '}
-                <span className="font-bold text-[#FF2AFF]">{form.batch}</span>
+                <span className="font-bold text-[#6D49F2]">{form.batch}</span>
               </div>
               <Button
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full sm:w-auto px-8 py-6 bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] hover:opacity-90 text-white font-bold text-sm shadow-xl shadow-[#6D49F2]/30 rounded-xl flex items-center justify-center gap-2.5 transition-all"
+                className="w-full sm:w-auto px-8 py-5 bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all"
               >
                 {saving ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                     <span>Salvando...</span>
                   </>
                 ) : (
                   <>
-                    <Save className="w-5 h-5" />
+                    <Save className="w-4 h-4" />
                     <span>Salvar Lançamento</span>
                   </>
                 )}
               </Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
     </div>
