@@ -8,9 +8,11 @@ import {
   Percent,
   Loader2,
   Calendar,
+  Plus,
+  Trash2,
 } from 'lucide-react'
 import { KpiCard } from '@/components/dashboard/KpiCard'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -24,13 +26,10 @@ import { useToast } from '@/hooks/use-toast'
 import { paidLaunchesService } from '@/services/paidLaunches'
 import type { PaidLaunchRecord, PaidLaunchInput } from '@/types/paidLaunches'
 
-type BatchType = 'Semana 1' | 'Semana 2' | 'Semana 3' | 'Semana 4'
-const BATCH_OPTIONS: BatchType[] = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4']
-
 interface FormState {
   id?: string
   capture_days: string | number
-  batch: BatchType
+  batch: string
   ticket_ticket: string | number
   traffic_investment: string | number
   total_ticket_sales: string | number
@@ -78,8 +77,8 @@ const formatCalculatedNumber = (val: number, decimals = 2): string => {
 }
 
 const DEFAULT_FORM: FormState = {
+  batch: 'S1 - 23/08/2026',
   capture_days: 7,
-  batch: 'Semana 1',
   ticket_ticket: 29.9,
   traffic_investment: 120546,
   total_ticket_sales: 3041,
@@ -93,36 +92,38 @@ export default function LancamentoPago() {
   const { toast } = useToast()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [records, setRecords] = useState<PaidLaunchRecord[]>([])
-  const [selectedBatch, setSelectedBatch] = useState<BatchType>('Semana 1')
+  const [selectedLaunchId, setSelectedLaunchId] = useState<string>('new')
   const [form, setForm] = useState<FormState>(DEFAULT_FORM)
 
   // Load all records from backend
-  const loadData = async () => {
+  const loadData = async (preferredId?: string) => {
     setLoading(true)
     try {
       const data = await paidLaunchesService.getAll()
       setRecords(data)
 
-      // Find record matching currently selected batch
-      const current = data.find((r) => r.batch === selectedBatch) || data[0]
-      if (current) {
-        setSelectedBatch(current.batch)
+      if (data.length > 0) {
+        // Find preferred or first record
+        const target = preferredId ? data.find((r) => r.id === preferredId) || data[0] : data[0]
+
+        setSelectedLaunchId(target.id)
         setForm({
-          id: current.id,
-          capture_days: current.capture_days,
-          batch: current.batch,
-          ticket_ticket: current.ticket_ticket,
-          traffic_investment: current.traffic_investment,
-          total_ticket_sales: current.total_ticket_sales,
-          ticket_refunds: current.ticket_refunds,
-          bump_ticket: current.bump_ticket,
-          bump_sales: current.bump_sales,
-          bump_refunds: current.bump_refunds,
+          id: target.id,
+          capture_days: target.capture_days,
+          batch: target.batch,
+          ticket_ticket: target.ticket_ticket,
+          traffic_investment: target.traffic_investment,
+          total_ticket_sales: target.total_ticket_sales,
+          ticket_refunds: target.ticket_refunds,
+          bump_ticket: target.bump_ticket,
+          bump_sales: target.bump_sales,
+          bump_refunds: target.bump_refunds,
         })
       } else {
-        // Sample baseline data
-        setForm({ ...DEFAULT_FORM, batch: selectedBatch, id: undefined })
+        setSelectedLaunchId('new')
+        setForm(DEFAULT_FORM)
       }
     } catch (err) {
       console.error(err)
@@ -140,38 +141,56 @@ export default function LancamentoPago() {
     loadData()
   }, [])
 
-  // When changing batch selector, load matching existing record or prepare blank form for that batch
-  const handleBatchChange = (newBatch: BatchType) => {
-    setSelectedBatch(newBatch)
-    const existing = records.find((r) => r.batch === newBatch)
-    if (existing) {
-      setForm({
-        id: existing.id,
-        capture_days: existing.capture_days,
-        batch: existing.batch,
-        ticket_ticket: existing.ticket_ticket,
-        traffic_investment: existing.traffic_investment,
-        total_ticket_sales: existing.total_ticket_sales,
-        ticket_refunds: existing.ticket_refunds,
-        bump_ticket: existing.bump_ticket,
-        bump_sales: existing.bump_sales,
-        bump_refunds: existing.bump_refunds,
-      })
-    } else {
+  // When changing launch selector in the header / controller
+  const handleSelectLaunch = (id: string) => {
+    setSelectedLaunchId(id)
+    if (id === 'new') {
       setForm({
         ...DEFAULT_FORM,
-        batch: newBatch,
         id: undefined,
+        batch: `Turma ${records.length + 1}`,
       })
+    } else {
+      const found = records.find((r) => r.id === id)
+      if (found) {
+        setForm({
+          id: found.id,
+          capture_days: found.capture_days,
+          batch: found.batch,
+          ticket_ticket: found.ticket_ticket,
+          traffic_investment: found.traffic_investment,
+          total_ticket_sales: found.total_ticket_sales,
+          ticket_refunds: found.ticket_refunds,
+          bump_ticket: found.bump_ticket,
+          bump_sales: found.bump_sales,
+          bump_refunds: found.bump_refunds,
+        })
+      }
     }
   }
 
   // Handle single field input changes
   const handleChange = (field: keyof FormState, value: string | number) => {
-    setForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }))
+    setForm((prev) => {
+      const updated = { ...prev, [field]: value }
+
+      // If user typed in 'batch' manually, check if it matches an existing record's batch name
+      if (field === 'batch' && typeof value === 'string') {
+        const matchingRecord = records.find(
+          (r) => r.batch.trim().toLowerCase() === value.trim().toLowerCase(),
+        )
+        if (matchingRecord && matchingRecord.id !== prev.id) {
+          // Keep user's input string intact while linking the existing ID
+          return {
+            ...matchingRecord,
+            batch: value,
+            id: matchingRecord.id,
+          }
+        }
+      }
+
+      return updated
+    })
   }
 
   // Calculations for current active vertical form
@@ -238,11 +257,20 @@ export default function LancamentoPago() {
 
   // Save current launch
   const handleSave = async () => {
+    if (!form.batch.trim()) {
+      toast({
+        title: 'Nome da Turma é obrigatório',
+        description: 'Digite um identificador para a turma do lançamento (ex: "S1 - 23/08/2026").',
+        variant: 'destructive',
+      })
+      return
+    }
+
     setSaving(true)
     try {
       const payload: PaidLaunchInput = {
         capture_days: Number(form.capture_days) || 0,
-        batch: form.batch,
+        batch: form.batch.trim(),
         ticket_ticket: Number(form.ticket_ticket) || 0,
         traffic_investment: Number(form.traffic_investment) || 0,
         total_ticket_sales: Number(form.total_ticket_sales) || 0,
@@ -254,22 +282,12 @@ export default function LancamentoPago() {
 
       const savedRec = await paidLaunchesService.save(form.id, payload)
 
-      // Update records array
-      setRecords((prev) => {
-        const idx = prev.findIndex((r) => r.batch === form.batch)
-        if (idx >= 0) {
-          const updated = [...prev]
-          updated[idx] = savedRec
-          return updated
-        }
-        return [...prev, savedRec]
-      })
-
-      setForm((prev) => ({ ...prev, id: savedRec.id }))
+      // Reload data and keep active saved launch selected
+      await loadData(savedRec.id)
 
       toast({
         title: 'Lançamento Salvo',
-        description: `Os dados da ${form.batch} foram salvos com sucesso!`,
+        description: `Os dados de "${savedRec.batch}" foram salvos com sucesso!`,
       })
     } catch (err) {
       console.error(err)
@@ -283,6 +301,31 @@ export default function LancamentoPago() {
     }
   }
 
+  // Delete launch
+  const handleDelete = async () => {
+    if (!form.id) return
+    if (!confirm(`Tem certeza que deseja excluir o lançamento "${form.batch}"?`)) return
+
+    setDeleting(true)
+    try {
+      await paidLaunchesService.delete(form.id)
+      toast({
+        title: 'Lançamento excluído',
+        description: `O lançamento "${form.batch}" foi removido.`,
+      })
+      await loadData()
+    } catch (err) {
+      console.error(err)
+      toast({
+        title: 'Erro ao excluir',
+        description: 'Não foi possível excluir o lançamento.',
+        variant: 'destructive',
+      })
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-300">
       {/* Header */}
@@ -293,34 +336,43 @@ export default function LancamentoPago() {
             Lançamento Pago
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Gestão vertical de performance de ingressos e order bumps por semana de captação.
+            Gestão vertical de performance de ingressos e order bumps por lançamento.
           </p>
         </div>
 
-        {/* Turma Switcher in Header */}
+        {/* Launch Switcher Dropdown in Header */}
         <div className="flex items-center gap-2 bg-white border border-slate-200/90 shadow-2xs p-1.5 rounded-xl">
-          <Calendar className="w-4 h-4 text-[#6D49F2] ml-2" />
-          <span className="text-xs font-semibold text-slate-600">Turma:</span>
-          <Select value={selectedBatch} onValueChange={(val: BatchType) => handleBatchChange(val)}>
-            <SelectTrigger className="w-[140px] h-9 bg-slate-50/80 border-slate-200 text-slate-900 font-bold text-xs focus:ring-[#6D49F2] rounded-lg">
-              <SelectValue />
+          <Calendar className="w-4 h-4 text-[#6D49F2] ml-2 shrink-0" />
+          <span className="text-xs font-semibold text-slate-600 shrink-0">Lançamento:</span>
+          <Select value={selectedLaunchId} onValueChange={handleSelectLaunch}>
+            <SelectTrigger className="w-[180px] sm:w-[220px] h-9 bg-slate-50/80 border-slate-200 text-slate-900 font-bold text-xs focus:ring-[#6D49F2] rounded-lg truncate">
+              <SelectValue placeholder="Selecione um lançamento" />
             </SelectTrigger>
             <SelectContent className="bg-white border-slate-200 text-slate-900 rounded-xl">
-              {BATCH_OPTIONS.map((opt) => (
+              {records.map((r) => (
                 <SelectItem
-                  key={opt}
-                  value={opt}
+                  key={r.id}
+                  value={r.id}
                   className="focus:bg-[#6D49F2]/10 focus:text-[#6D49F2] font-medium text-xs"
                 >
-                  {opt}
+                  {r.batch}
                 </SelectItem>
               ))}
+              <SelectItem
+                value="new"
+                className="focus:bg-[#6D49F2]/10 focus:text-[#6D49F2] font-bold text-xs text-[#6D49F2]"
+              >
+                <span className="flex items-center gap-1">
+                  <Plus className="w-3.5 h-3.5" />
+                  Novo Lançamento...
+                </span>
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      {/* Top Dashboard KPI Grid (Using clean KpiCards matching /mensal) */}
+      {/* Top Dashboard KPI Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Faturamento Total */}
         <KpiCard
@@ -404,28 +456,18 @@ export default function LancamentoPago() {
                     />
                   </div>
 
-                  {/* Turma */}
+                  {/* Turma (MANUAL TEXT INPUT match image style) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
                     <span className="font-medium text-sm text-slate-700">Turma</span>
-                    <Select
-                      value={form.batch}
-                      onValueChange={(val: BatchType) => handleBatchChange(val)}
-                    >
-                      <SelectTrigger className="bg-white border-slate-200 text-slate-900 font-semibold text-xs h-9 rounded-lg focus:ring-[#6D49F2] shadow-2xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-slate-200 text-slate-900 rounded-xl">
-                        {BATCH_OPTIONS.map((opt) => (
-                          <SelectItem
-                            key={opt}
-                            value={opt}
-                            className="focus:bg-[#6D49F2]/10 focus:text-[#6D49F2] font-medium text-xs"
-                          >
-                            {opt}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="relative">
+                      <Input
+                        type="text"
+                        placeholder='ex: "S1 - 23/08/2026"'
+                        value={form.batch}
+                        onChange={(e) => handleChange('batch', e.target.value)}
+                        className="bg-white border-slate-200 text-slate-900 font-bold text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                      />
+                    </div>
                   </div>
 
                   {/* Ticket Ingresso */}
@@ -665,29 +707,49 @@ export default function LancamentoPago() {
               </div>
             </div>
 
-            {/* Bottom Save Action Button */}
+            {/* Bottom Action Bar */}
             <div className="p-4 sm:p-6 bg-slate-50/80 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="text-xs text-slate-500 font-medium">
                 Lançamento selecionado:{' '}
-                <span className="font-bold text-[#6D49F2]">{form.batch}</span>
+                <span className="font-bold text-[#6D49F2]">{form.batch || 'Sem nome'}</span>
+                {form.id ? ' (Salvo no BD)' : ' (Novo)'}
               </div>
-              <Button
-                onClick={handleSave}
-                disabled={saving}
-                className="w-full sm:w-auto px-8 py-5 bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all"
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Salvando...</span>
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4" />
-                    <span>Salvar Lançamento</span>
-                  </>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                {form.id && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleDelete}
+                    disabled={deleting || saving}
+                    className="border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 font-semibold text-xs rounded-xl h-11 px-4 transition-all"
+                  >
+                    {deleting ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </Button>
                 )}
-              </Button>
+
+                <Button
+                  onClick={handleSave}
+                  disabled={saving || deleting}
+                  className="w-full sm:w-auto px-8 h-11 bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Salvando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      <span>Salvar Lançamento</span>
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </Card>
         </div>

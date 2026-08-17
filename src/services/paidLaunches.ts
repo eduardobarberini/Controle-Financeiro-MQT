@@ -10,7 +10,7 @@ export const paidLaunchesService = {
     try {
       const records = await pb.collection<PaidLaunchRecord>('paid_launches').getFullList({
         filter: `user = "${userId}"`,
-        sort: 'created',
+        sort: '-created',
       })
       return records
     } catch (err) {

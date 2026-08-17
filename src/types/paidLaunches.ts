@@ -2,7 +2,7 @@ export interface PaidLaunchRecord {
   id: string
   user: string
   capture_days: number
-  batch: 'Semana 1' | 'Semana 2' | 'Semana 3' | 'Semana 4'
+  batch: string
   ticket_ticket: number
   traffic_investment: number
   total_ticket_sales: number
@@ -16,7 +16,7 @@ export interface PaidLaunchRecord {
 
 export interface PaidLaunchInput {
   capture_days: number
-  batch: 'Semana 1' | 'Semana 2' | 'Semana 3' | 'Semana 4'
+  batch: string
   ticket_ticket: number
   traffic_investment: number
   total_ticket_sales: number

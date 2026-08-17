@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T13:33:00.455Z",
+  "generatedAt": "2026-08-17T13:40:00.464Z",
   "collections": [
     {
       "name": "users",
@@ -407,13 +407,6 @@
           "system": false
         },
         {
-          "name": "batch",
-          "type": "select",
-          "required": true,
-          "system": false,
-          "selectValues": ["Semana 1", "Semana 2", "Semana 3", "Semana 4"]
-        },
-        {
           "name": "ticket_ticket",
           "type": "number",
           "required": false,
@@ -468,6 +461,12 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "batch",
+          "type": "text",
+          "required": true,
+          "system": false
         }
       ],
       "indexes": ["CREATE INDEX idx_paid_launches_user ON paid_launches (user)"]
