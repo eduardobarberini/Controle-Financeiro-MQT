@@ -58,23 +58,8 @@ const DEFAULT_DAYS: DailyEntry[] = [
 
 const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
   {
-    dayLabel: 'Seg',
-    dateLabel: '',
-    card_pix_sales: '',
-    card_pix_revenue: '',
-    boleto_sales: '',
-    boleto_revenue: '',
-  },
-  {
-    dayLabel: 'Ter',
-    dateLabel: '',
-    card_pix_sales: '',
-    card_pix_revenue: '',
-    boleto_sales: '',
-    boleto_revenue: '',
-  },
-  {
-    dayLabel: 'Qua',
+    isPrimeiraHora: true,
+    dayLabel: 'Primeira Hora',
     dateLabel: '',
     card_pix_sales: '',
     card_pix_revenue: '',
@@ -83,7 +68,7 @@ const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
   },
   {
     dayLabel: 'Qui',
-    dateLabel: '',
+    dateLabel: '20/8',
     card_pix_sales: '',
     card_pix_revenue: '',
     boleto_sales: '',
@@ -91,7 +76,7 @@ const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
   },
   {
     dayLabel: 'Sex',
-    dateLabel: '',
+    dateLabel: '21/8',
     card_pix_sales: '',
     card_pix_revenue: '',
     boleto_sales: '',
@@ -99,7 +84,7 @@ const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
   },
   {
     dayLabel: 'Sáb',
-    dateLabel: '',
+    dateLabel: '22/8',
     card_pix_sales: '',
     card_pix_revenue: '',
     boleto_sales: '',
@@ -107,7 +92,23 @@ const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
   },
   {
     dayLabel: 'Dom',
-    dateLabel: '',
+    dateLabel: '23/8',
+    card_pix_sales: '',
+    card_pix_revenue: '',
+    boleto_sales: '',
+    boleto_revenue: '',
+  },
+  {
+    dayLabel: 'Seg',
+    dateLabel: '24/8',
+    card_pix_sales: '',
+    card_pix_revenue: '',
+    boleto_sales: '',
+    boleto_revenue: '',
+  },
+  {
+    dayLabel: 'Ter',
+    dateLabel: '25/8',
     card_pix_sales: '',
     card_pix_revenue: '',
     boleto_sales: '',
@@ -444,11 +445,15 @@ export default function LancamentoPago() {
     let calculatedBoletoSales = 0
     let calculatedBoletoRevenue = 0
 
-    const dailyCalculatedTotals = dailySales.map((day) => {
+    const ingressosDays = form.daily_data || []
+
+    const dailyCalculatedTotals = dailySales.map((day, idx) => {
       const cardPixSales = Number(day.card_pix_sales) || 0
       const cardPixRevenue = Number(day.card_pix_revenue) || 0
       const boletoSales = Number(day.boleto_sales) || 0
       const boletoRevenue = Number(day.boleto_revenue) || 0
+
+      const totalSales = cardPixSales + boletoSales
       const totalRevenue = cardPixRevenue + boletoRevenue
 
       calculatedCardPixSales += cardPixSales
@@ -456,12 +461,40 @@ export default function LancamentoPago() {
       calculatedBoletoSales += boletoSales
       calculatedBoletoRevenue += boletoRevenue
 
+      // Corresponding ingressos sold for calculating % Conversão Desafio / Plataforma per column
+      // Note: "Primeira Hora" column uses total ingressos sold or sum/matching day if applicable,
+      // but for daily columns (or Primeira Hora) we map appropriately.
+      // If day is Primeira Hora, ingressos reference can be total ingressos sold or matching day 0.
+      // Standard practice: if day.isPrimeiraHora, compare with total ingressos sold (or matching day ticket sales if available).
+      // Let's get ingressos for that specific index or total.
+      let dayIngressos = 0
+      if (day.isPrimeiraHora) {
+        // Primeira hora compares against total ticket sales or day 0
+        dayIngressos = dailyCalculated?.totalTicketSales || 0
+      } else {
+        // Map normal days (offset by 1 if Primeira Hora is index 0, or find matching day label / index)
+        // If daily_data has entries, map by index or label.
+        // Let's find matching day in daily_data by dayLabel or index fallback:
+        const normalDays = dailySales.filter((d) => !d.isPrimeiraHora)
+        const normalIdx = normalDays.indexOf(day)
+        if (normalIdx >= 0 && normalIdx < ingressosDays.length) {
+          dayIngressos = Number(ingressosDays[normalIdx]?.ticket_sales) || 0
+        } else {
+          dayIngressos = Number(ingressosDays[idx]?.ticket_sales) || 0
+        }
+      }
+
+      const conversionRate = dayIngressos > 0 ? totalSales / dayIngressos : 0
+
       return {
         cardPixSales,
         cardPixRevenue,
         boletoSales,
         boletoRevenue,
+        totalSales,
         totalRevenue,
+        conversionRate,
+        dayIngressos,
       }
     })
 
@@ -1349,7 +1382,8 @@ export default function LancamentoPago() {
               saving={saving}
               launchBatch={form.batch}
               launchId={form.id}
-            />
+              totalTicketSales={dailyCalculated.totalTicketSales}
+            />{' '}
           </TabsContent>
 
           {/* ============ TAB 3: CONTROLE AULAS ============ */}

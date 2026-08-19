@@ -32,7 +32,8 @@ export interface CommercialSale {
 export type CommercialSales = CommercialSale[]
 
 export interface UpsellDailyEntry {
-  dayLabel?: string // e.g. 'Qui', 'Sex', 'Sáb', 'Dom', 'Seg', 'Ter', 'Qua'
+  isPrimeiraHora?: boolean // Indicates special 'Primeira Hora' column
+  dayLabel?: string // e.g. 'Primeira Hora', 'Qui', 'Sex', 'Sáb', 'Dom', 'Seg', 'Ter'
   dateLabel?: string // e.g. '20/8', '21/8', etc.
   card_pix_sales: number | string // Manual: Vendas Cartão / PIX
   card_pix_revenue: number | string // Manual: Faturamento Cartão / PIX

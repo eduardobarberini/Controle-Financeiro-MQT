@@ -27,13 +27,17 @@ interface UpsellPlatformTabProps {
       cardPixRevenue: number
       boletoSales: number
       boletoRevenue: number
+      totalSales: number
       totalRevenue: number
+      conversionRate: number
+      dayIngressos: number
     }[]
   }
   onSave: () => Promise<void>
   saving: boolean
   launchBatch: string
   launchId?: string
+  totalTicketSales?: number
 }
 
 export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
@@ -213,46 +217,63 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
         </div>
 
         <div className="p-4 sm:p-6 overflow-x-auto">
-          <table className="w-full text-xs border-collapse min-w-[760px]">
+          <table className="w-full text-xs border-collapse min-w-[800px] border border-slate-900">
             <thead>
-              <tr className="bg-[#FAF8FF] border-b border-slate-200">
-                <th className="p-3 text-left font-bold text-white bg-slate-900 w-52 text-sm">
+              <tr className="border-b border-slate-900">
+                <th className="p-3 text-center font-bold text-white bg-black min-w-[220px] text-sm border-r border-slate-900">
                   Controle Diário Vendas
                 </th>
-                {dailySalesList.map((day, idx) => (
-                  <th
-                    key={idx}
-                    className="p-2 text-center font-bold text-slate-800 bg-[#FEDEB5] border-l border-slate-300/80 min-w-[100px]"
-                  >
-                    <div className="flex items-center justify-center gap-1">
-                      <input
-                        type="text"
-                        value={day.dayLabel || ''}
-                        onChange={(e) => onChangeDailyField(idx, 'dayLabel', e.target.value)}
-                        className="w-10 text-center font-bold text-slate-900 bg-transparent border-b border-dashed border-slate-500 focus:outline-none focus:border-[#6D49F2]"
-                        placeholder="Dia"
-                      />
-                    </div>
-                    <div className="text-[11px] text-slate-600 font-medium mt-0.5">
-                      <input
-                        type="text"
-                        value={day.dateLabel || ''}
-                        onChange={(e) => onChangeDailyField(idx, 'dateLabel', e.target.value)}
-                        className="w-12 text-center text-slate-700 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2]"
-                        placeholder="Data"
-                      />
-                    </div>
-                  </th>
-                ))}
+                {dailySalesList.map((day, idx) => {
+                  const isPrimeiraHora =
+                    day.isPrimeiraHora ||
+                    (idx === 0 && day.dayLabel?.toLowerCase().includes('primeira'))
+                  if (isPrimeiraHora) {
+                    return (
+                      <th
+                        key={idx}
+                        className="p-3 text-center font-bold text-white bg-[#2E7D32] border-r border-slate-900 min-w-[120px] text-sm"
+                      >
+                        Primeira Hora
+                      </th>
+                    )
+                  }
+                  return (
+                    <th
+                      key={idx}
+                      className="p-2 text-center font-bold text-slate-900 bg-[#FCE4D6] border-r border-slate-900 min-w-[110px]"
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        <input
+                          type="text"
+                          value={day.dayLabel || ''}
+                          onChange={(e) => onChangeDailyField(idx, 'dayLabel', e.target.value)}
+                          className="w-12 text-center font-bold text-slate-900 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2]"
+                          placeholder="Dia"
+                        />
+                      </div>
+                      <div className="text-[11px] text-slate-800 font-medium mt-0.5">
+                        <input
+                          type="text"
+                          value={day.dateLabel || ''}
+                          onChange={(e) => onChangeDailyField(idx, 'dateLabel', e.target.value)}
+                          className="w-12 text-center text-slate-800 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2]"
+                          placeholder="Data"
+                        />
+                      </div>
+                    </th>
+                  )
+                })}
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-300">
               {/* Vendas Cartão / PIX */}
-              <tr className="hover:bg-slate-50/50 transition-colors">
-                <td className="p-2.5 font-medium text-slate-700">Vendas Cartão / PIX</td>
+              <tr className="bg-white hover:bg-slate-50/50 transition-colors">
+                <td className="p-2.5 font-medium text-slate-900 border-r border-slate-900">
+                  Vendas Cartão / PIX
+                </td>
                 {dailySalesList.map((day, idx) => (
-                  <td key={idx} className="p-1.5 border-l border-slate-200 text-center">
+                  <td key={idx} className="p-1.5 border-r border-slate-900 text-center">
                     <Input
                       type="number"
                       min={0}
@@ -266,10 +287,12 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
               </tr>
 
               {/* Faturamento Cartão / PIX */}
-              <tr className="hover:bg-slate-50/50 transition-colors">
-                <td className="p-2.5 font-medium text-slate-700">Faturamento Cartão / PIX</td>
+              <tr className="bg-slate-50/40 hover:bg-slate-50 transition-colors">
+                <td className="p-2.5 font-medium text-slate-900 border-r border-slate-900">
+                  Faturamento Cartão / PIX
+                </td>
                 {dailySalesList.map((day, idx) => (
-                  <td key={idx} className="p-1.5 border-l border-slate-200 text-center">
+                  <td key={idx} className="p-1.5 border-r border-slate-900 text-center">
                     <div className="relative">
                       <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">
                         R$
@@ -291,10 +314,12 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
               </tr>
 
               {/* Vendas Boleto Parcelado */}
-              <tr className="hover:bg-slate-50/50 transition-colors">
-                <td className="p-2.5 font-medium text-slate-700">Vendas Boleto Parcelado</td>
+              <tr className="bg-white hover:bg-slate-50/50 transition-colors">
+                <td className="p-2.5 font-medium text-slate-900 border-r border-slate-900">
+                  Vendas Boleto Parcelado
+                </td>
                 {dailySalesList.map((day, idx) => (
-                  <td key={idx} className="p-1.5 border-l border-slate-200 text-center">
+                  <td key={idx} className="p-1.5 border-r border-slate-900 text-center">
                     <Input
                       type="number"
                       min={0}
@@ -308,10 +333,12 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
               </tr>
 
               {/* Faturamento Boleto Parcelado */}
-              <tr className="hover:bg-slate-50/50 transition-colors">
-                <td className="p-2.5 font-medium text-slate-700">Faturamento Boleto Parcelado</td>
+              <tr className="bg-slate-50/40 hover:bg-slate-50 transition-colors">
+                <td className="p-2.5 font-medium text-slate-900 border-r border-slate-900">
+                  Faturamento Boleto Parcelado
+                </td>
                 {dailySalesList.map((day, idx) => (
-                  <td key={idx} className="p-1.5 border-l border-slate-200 text-center">
+                  <td key={idx} className="p-1.5 border-r border-slate-900 text-center">
                     <div className="relative">
                       <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">
                         R$
@@ -330,20 +357,52 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                 ))}
               </tr>
 
-              {/* Faturamento Total (Green Background as shown in the image) */}
-              <tr className="bg-[#C6E0B4] font-bold text-slate-900 border-t-2 border-slate-900">
-                <td className="p-3 text-slate-950 font-bold text-sm">Faturamento Total</td>
+              {/* Vendas Totais (Calculated row - Light Green #C6E0B4) */}
+              <tr className="bg-[#C6E0B4] border-t-2 border-slate-900 text-slate-950 font-bold">
+                <td className="p-2.5 font-bold text-slate-950 border-r border-slate-900 text-xs">
+                  Vendas Totais
+                </td>
                 {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
                   <td
                     key={idx}
-                    className="p-2.5 border-l border-slate-800 text-center tabular-nums text-slate-950 font-extrabold text-xs"
+                    className="p-2 border-r border-slate-900 text-center tabular-nums text-slate-950 font-bold text-xs"
+                  >
+                    {calcDay.totalSales}
+                  </td>
+                ))}
+              </tr>
+
+              {/* % Conversão Desafio / Plataforma (Calculated row - Light Green #C6E0B4) */}
+              <tr className="bg-[#C6E0B4] text-slate-950 font-bold">
+                <td className="p-2.5 font-bold text-slate-950 border-r border-slate-900 text-xs">
+                  % Conversão Desafio / Plataforma
+                </td>
+                {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
+                  <td
+                    key={idx}
+                    className="p-2 border-r border-slate-900 text-center tabular-nums text-slate-950 font-bold text-xs"
+                  >
+                    {formatCalculatedPercent(calcDay.conversionRate)}
+                  </td>
+                ))}
+              </tr>
+
+              {/* Faturamento Total (Calculated row - Orange #ED7D31) */}
+              <tr className="bg-[#ED7D31] font-bold text-white border-t border-slate-900">
+                <td className="p-2.5 text-slate-950 font-bold text-xs border-r border-slate-900">
+                  Faturamento Total
+                </td>
+                {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
+                  <td
+                    key={idx}
+                    className="p-2 border-r border-slate-900 text-center tabular-nums text-slate-950 font-extrabold text-xs"
                   >
                     {formatCurrency(calcDay.totalRevenue)}
                   </td>
                 ))}
               </tr>
             </tbody>
-          </table>
+          </table>{' '}
         </div>
 
         {/* Action Bar */}
