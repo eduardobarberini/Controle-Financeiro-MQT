@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19T12:28:55.524Z",
+  "generatedAt": "2026-08-19T12:44:34.793Z",
   "collections": [
     {
       "name": "users",
@@ -482,6 +482,12 @@
         },
         {
           "name": "commercial_sales",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "upsell_platform",
           "type": "json",
           "required": false,
           "system": false

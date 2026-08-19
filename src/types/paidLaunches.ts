@@ -31,6 +31,17 @@ export interface CommercialSale {
 
 export type CommercialSales = CommercialSale[]
 
+/** Upsell platform entry within a paid launch. */
+export interface UpsellPlatformItem {
+  client: string
+  product: string
+  value: number | string
+  date: string // YYYY-MM-DD
+  notes: string
+}
+
+export type UpsellPlatform = UpsellPlatformItem[]
+
 export interface PaidLaunchRecord {
   id: string
   user: string
@@ -46,6 +57,7 @@ export interface PaidLaunchRecord {
   daily_data?: DailyData
   class_sessions?: ClassSessions
   commercial_sales?: CommercialSales
+  upsell_platform?: UpsellPlatform
   created: string
   updated: string
 }
@@ -63,4 +75,5 @@ export interface PaidLaunchInput {
   daily_data?: DailyData
   class_sessions?: ClassSessions
   commercial_sales?: CommercialSales
+  upsell_platform?: UpsellPlatform
 }

@@ -4,6 +4,7 @@ import type {
   PaidLaunchInput,
   ClassSessions,
   CommercialSales,
+  UpsellPlatform,
 } from '@/types/paidLaunches'
 
 export const paidLaunchesService = {
@@ -59,10 +60,14 @@ export const paidLaunchesService = {
     }
   },
 
-  /** Partially update only the JSON array fields (class_sessions / commercial_sales). */
+  /** Partially update only the JSON array fields (class_sessions / commercial_sales / upsell_platform). */
   async saveArrays(
     id: string,
-    data: { class_sessions?: ClassSessions; commercial_sales?: CommercialSales },
+    data: {
+      class_sessions?: ClassSessions
+      commercial_sales?: CommercialSales
+      upsell_platform?: UpsellPlatform
+    },
   ): Promise<PaidLaunchRecord> {
     return await pb.collection<PaidLaunchRecord>('paid_launches').update(id, data)
   },

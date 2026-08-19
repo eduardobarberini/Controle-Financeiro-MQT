@@ -17,6 +17,7 @@ import { KpiCard } from '@/components/dashboard/KpiCard'
 import { DailySalesChart } from '@/components/dashboard/DailySalesChart'
 import { ControleAulasTab } from '@/components/launch/ControleAulasTab'
 import { VendasComercialTab } from '@/components/launch/VendasComercialTab'
+import { UpsellPlatformTab } from '@/components/launch/UpsellPlatformTab'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,6 +37,7 @@ import type {
   DailyEntry,
   ClassSessions,
   CommercialSales,
+  UpsellPlatform,
 } from '@/types/paidLaunches'
 import {
   formatCurrency,
@@ -66,6 +68,7 @@ interface FormState {
   daily_data: DailyEntry[]
   class_sessions: ClassSessions
   commercial_sales: CommercialSales
+  upsell_platform: UpsellPlatform
 }
 
 const DEFAULT_FORM: FormState = {
@@ -78,6 +81,7 @@ const DEFAULT_FORM: FormState = {
   daily_data: DEFAULT_DAYS,
   class_sessions: [],
   commercial_sales: [],
+  upsell_platform: [],
 }
 
 export default function LancamentoPago() {
@@ -116,6 +120,7 @@ export default function LancamentoPago() {
               : DEFAULT_DAYS,
           class_sessions: Array.isArray(target.class_sessions) ? target.class_sessions : [],
           commercial_sales: Array.isArray(target.commercial_sales) ? target.commercial_sales : [],
+          upsell_platform: Array.isArray(target.upsell_platform) ? target.upsell_platform : [],
         })
       } else {
         setSelectedLaunchId('new')
@@ -163,6 +168,7 @@ export default function LancamentoPago() {
               : DEFAULT_DAYS,
           class_sessions: Array.isArray(found.class_sessions) ? found.class_sessions : [],
           commercial_sales: Array.isArray(found.commercial_sales) ? found.commercial_sales : [],
+          upsell_platform: Array.isArray(found.upsell_platform) ? found.upsell_platform : [],
         })
       }
     }
@@ -194,6 +200,9 @@ export default function LancamentoPago() {
               : [],
             commercial_sales: Array.isArray(matchingRecord.commercial_sales)
               ? matchingRecord.commercial_sales
+              : [],
+            upsell_platform: Array.isArray(matchingRecord.upsell_platform)
+              ? matchingRecord.upsell_platform
               : [],
           }
         }
@@ -376,6 +385,7 @@ export default function LancamentoPago() {
         daily_data: form.daily_data,
         class_sessions: form.class_sessions,
         commercial_sales: form.commercial_sales,
+        upsell_platform: form.upsell_platform,
       }
 
       const savedRec = await paidLaunchesService.save(form.id, payload)
@@ -424,7 +434,7 @@ export default function LancamentoPago() {
     }
   }
 
-  // ---- New tabs (Controle Aulas / Vendas Comercial) handlers ----
+  // ---- New tabs (Controle Aulas / Vendas Comercial / Upsell Plataforma) handlers ----
 
   const handleClassSessionsChange = (sessions: ClassSessions) => {
     setForm((prev) => ({ ...prev, class_sessions: sessions }))
@@ -434,13 +444,19 @@ export default function LancamentoPago() {
     setForm((prev) => ({ ...prev, commercial_sales: sales }))
   }
 
-  // Persist ONLY the JSON arrays (class_sessions / commercial_sales) for the current launch
-  const handleSaveArrays = async (key: 'class_sessions' | 'commercial_sales') => {
+  const handleUpsellPlatformChange = (items: UpsellPlatform) => {
+    setForm((prev) => ({ ...prev, upsell_platform: items }))
+  }
+
+  // Persist ONLY the JSON arrays (class_sessions / commercial_sales / upsell_platform) for the current launch
+  const handleSaveArrays = async (
+    key: 'class_sessions' | 'commercial_sales' | 'upsell_platform',
+  ) => {
     if (!form.id) {
       toast({
         title: 'Salve o lançamento primeiro',
         description:
-          'Salve o lançamento na aba "Resultado Semanal" para poder gravar as aulas/vendas comerciais.',
+          'Salve o lançamento na aba "Resultado Semanal" para poder gravar os registros.',
         variant: 'destructive',
       })
       return
@@ -448,9 +464,14 @@ export default function LancamentoPago() {
 
     setSavingArrays(true)
     try {
-      const payload: { class_sessions?: ClassSessions; commercial_sales?: CommercialSales } = {}
+      const payload: {
+        class_sessions?: ClassSessions
+        commercial_sales?: CommercialSales
+        upsell_platform?: UpsellPlatform
+      } = {}
       if (key === 'class_sessions') payload.class_sessions = form.class_sessions || []
       if (key === 'commercial_sales') payload.commercial_sales = form.commercial_sales || []
+      if (key === 'upsell_platform') payload.upsell_platform = form.upsell_platform || []
 
       const updated = await paidLaunchesService.saveArrays(form.id, payload)
 
@@ -463,13 +484,22 @@ export default function LancamentoPago() {
         commercial_sales: Array.isArray(updated.commercial_sales)
           ? (updated.commercial_sales as CommercialSales)
           : prev.commercial_sales,
+        upsell_platform: Array.isArray(updated.upsell_platform)
+          ? (updated.upsell_platform as UpsellPlatform)
+          : prev.upsell_platform,
       }))
 
       // Update cached records list too
       setRecords((prev) => prev.map((r) => (r.id === updated.id ? updated : r)))
 
+      const titleMap = {
+        class_sessions: 'Aulas salvas',
+        commercial_sales: 'Vendas salvas',
+        upsell_platform: 'Upsells salvos',
+      }
+
       toast({
-        title: key === 'class_sessions' ? 'Aulas salvas' : 'Vendas salvas',
+        title: titleMap[key],
         description: `Os dados foram salvos para "${updated.batch}".`,
       })
     } catch (err) {
@@ -562,6 +592,12 @@ export default function LancamentoPago() {
               className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
             >
               Vendas Comercial
+            </TabsTrigger>
+            <TabsTrigger
+              value="upsell"
+              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
+            >
+              Upsell Plataforma
             </TabsTrigger>
           </TabsList>
 
@@ -1377,6 +1413,18 @@ export default function LancamentoPago() {
               sales={form.commercial_sales}
               onChange={handleCommercialSalesChange}
               onSave={() => handleSaveArrays('commercial_sales')}
+              saving={savingArrays}
+              launchBatch={form.batch}
+              launchId={form.id}
+            />
+          </TabsContent>
+
+          {/* ============ TAB 5: UPSELL PLATAFORMA ============ */}
+          <TabsContent value="upsell" className="mt-6 focus:outline-none">
+            <UpsellPlatformTab
+              upsellData={form.upsell_platform}
+              onChange={handleUpsellPlatformChange}
+              onSave={() => handleSaveArrays('upsell_platform')}
               saving={savingArrays}
               launchBatch={form.batch}
               launchId={form.id}
