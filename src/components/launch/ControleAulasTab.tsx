@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Save, Loader2 } from 'lucide-react'
+import { UniqueViewersChart } from '@/components/launch/UniqueViewersChart'
 import type { ClassSession } from '@/types/paidLaunches'
 
 interface ControleAulasTabProps {
@@ -47,6 +48,9 @@ export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
           className="w-36 h-9 font-semibold text-slate-900 border-slate-300 focus-visible:ring-[#6D49F2]"
         />
       </div>
+
+      {/* Chart: Espectadores Únicos por Aula */}
+      <UniqueViewersChart sessions={sessions} studentsInChallenge={studentsInChallenge} />
 
       {/* Table */}
       <div className="overflow-x-auto">
