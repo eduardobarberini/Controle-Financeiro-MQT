@@ -15,9 +15,6 @@ import {
 } from 'lucide-react'
 import { KpiCard } from '@/components/dashboard/KpiCard'
 import { DailySalesChart } from '@/components/dashboard/DailySalesChart'
-import { ControleAulasTab } from '@/components/launch/ControleAulasTab'
-import { VendasComercialTab } from '@/components/launch/VendasComercialTab'
-import { UpsellPlatformTab } from '@/components/launch/UpsellPlatformTab'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -89,7 +86,6 @@ export default function LancamentoPago() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [savingArrays, setSavingArrays] = useState(false)
   const [records, setRecords] = useState<PaidLaunchRecord[]>([])
   const [selectedLaunchId, setSelectedLaunchId] = useState<string>('new')
   const [form, setForm] = useState<FormState>(DEFAULT_FORM)
@@ -434,86 +430,6 @@ export default function LancamentoPago() {
     }
   }
 
-  // ---- New tabs (Controle Aulas / Vendas Comercial / Upsell Plataforma) handlers ----
-
-  const handleClassSessionsChange = (sessions: ClassSessions) => {
-    setForm((prev) => ({ ...prev, class_sessions: sessions }))
-  }
-
-  const handleCommercialSalesChange = (sales: CommercialSales) => {
-    setForm((prev) => ({ ...prev, commercial_sales: sales }))
-  }
-
-  const handleUpsellPlatformChange = (items: UpsellPlatform) => {
-    setForm((prev) => ({ ...prev, upsell_platform: items }))
-  }
-
-  // Persist ONLY the JSON arrays (class_sessions / commercial_sales / upsell_platform) for the current launch
-  const handleSaveArrays = async (
-    key: 'class_sessions' | 'commercial_sales' | 'upsell_platform',
-  ) => {
-    if (!form.id) {
-      toast({
-        title: 'Salve o lançamento primeiro',
-        description:
-          'Salve o lançamento na aba "Venda de Ingressos" para poder gravar os registros.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    setSavingArrays(true)
-    try {
-      const payload: {
-        class_sessions?: ClassSessions
-        commercial_sales?: CommercialSales
-        upsell_platform?: UpsellPlatform
-      } = {}
-      if (key === 'class_sessions') payload.class_sessions = form.class_sessions || []
-      if (key === 'commercial_sales') payload.commercial_sales = form.commercial_sales || []
-      if (key === 'upsell_platform') payload.upsell_platform = form.upsell_platform || []
-
-      const updated = await paidLaunchesService.saveArrays(form.id, payload)
-
-      // Keep local form in sync with the returned arrays
-      setForm((prev) => ({
-        ...prev,
-        class_sessions: Array.isArray(updated.class_sessions)
-          ? (updated.class_sessions as ClassSessions)
-          : prev.class_sessions,
-        commercial_sales: Array.isArray(updated.commercial_sales)
-          ? (updated.commercial_sales as CommercialSales)
-          : prev.commercial_sales,
-        upsell_platform: Array.isArray(updated.upsell_platform)
-          ? (updated.upsell_platform as UpsellPlatform)
-          : prev.upsell_platform,
-      }))
-
-      // Update cached records list too
-      setRecords((prev) => prev.map((r) => (r.id === updated.id ? updated : r)))
-
-      const titleMap = {
-        class_sessions: 'Aulas salvas',
-        commercial_sales: 'Vendas salvas',
-        upsell_platform: 'Upsells salvos',
-      }
-
-      toast({
-        title: titleMap[key],
-        description: `Os dados foram salvos para "${updated.batch}".`,
-      })
-    } catch (err) {
-      console.error(err)
-      toast({
-        title: 'Erro ao salvar',
-        description: 'Não foi possível salvar os dados.',
-        variant: 'destructive',
-      })
-    } finally {
-      setSavingArrays(false)
-    }
-  }
-
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-300">
       {/* Header */}
@@ -566,9 +482,15 @@ export default function LancamentoPago() {
           <p className="text-sm text-slate-500 font-medium">Carregando dados do lançamento...</p>
         </Card>
       ) : (
-        <Tabs defaultValue="ingressos" className="w-full">
+        <Tabs defaultValue="consolidado" className="w-full">
           {/* Pills-style tab bar in MQT palette */}
           <TabsList className="bg-white border border-slate-200/80 shadow-xs rounded-xl p-1.5 h-auto flex flex-col sm:flex-row w-full sm:w-fit gap-1">
+            <TabsTrigger
+              value="consolidado"
+              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
+            >
+              Resultado Consolidado
+            </TabsTrigger>
             <TabsTrigger
               value="ingressos"
               className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
@@ -594,6 +516,13 @@ export default function LancamentoPago() {
               Vendas Comercial
             </TabsTrigger>
           </TabsList>
+
+          {/* ============ TAB: RESULTADO CONSOLIDADO ============ */}
+          <TabsContent value="consolidado" className="mt-6 focus:outline-none">
+            <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl p-16 flex flex-col items-center justify-center gap-3 text-slate-400">
+              <p className="text-sm text-slate-500 font-medium">Em breve</p>
+            </Card>
+          </TabsContent>
 
           {/* ============ TAB 1: VENDA DE INGRESSOS ============ */}
           <TabsContent value="ingressos" className="mt-6 space-y-6 focus:outline-none">
@@ -1206,38 +1135,23 @@ export default function LancamentoPago() {
 
           {/* ============ TAB 2: UPSELL PLATAFORMA ============ */}
           <TabsContent value="upsell" className="mt-6 focus:outline-none">
-            <UpsellPlatformTab
-              upsellData={form.upsell_platform}
-              onChange={handleUpsellPlatformChange}
-              onSave={() => handleSaveArrays('upsell_platform')}
-              saving={savingArrays}
-              launchBatch={form.batch}
-              launchId={form.id}
-            />
+            <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl p-16 flex flex-col items-center justify-center gap-3 text-slate-400">
+              <p className="text-sm text-slate-500 font-medium">Em breve</p>
+            </Card>
           </TabsContent>
 
           {/* ============ TAB 3: CONTROLE AULAS ============ */}
           <TabsContent value="aulas" className="mt-6 focus:outline-none">
-            <ControleAulasTab
-              sessions={form.class_sessions}
-              onChange={handleClassSessionsChange}
-              onSave={() => handleSaveArrays('class_sessions')}
-              saving={savingArrays}
-              launchBatch={form.batch}
-              launchId={form.id}
-            />
+            <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl p-16 flex flex-col items-center justify-center gap-3 text-slate-400">
+              <p className="text-sm text-slate-500 font-medium">Em breve</p>
+            </Card>
           </TabsContent>
 
           {/* ============ TAB 4: VENDAS COMERCIAL ============ */}
           <TabsContent value="comercial" className="mt-6 focus:outline-none">
-            <VendasComercialTab
-              sales={form.commercial_sales}
-              onChange={handleCommercialSalesChange}
-              onSave={() => handleSaveArrays('commercial_sales')}
-              saving={savingArrays}
-              launchBatch={form.batch}
-              launchId={form.id}
-            />
+            <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl p-16 flex flex-col items-center justify-center gap-3 text-slate-400">
+              <p className="text-sm text-slate-500 font-medium">Em breve</p>
+            </Card>
           </TabsContent>
         </Tabs>
       )}
