@@ -15,9 +15,12 @@ import {
 } from 'lucide-react'
 import { KpiCard } from '@/components/dashboard/KpiCard'
 import { DailySalesChart } from '@/components/dashboard/DailySalesChart'
+import { ControleAulasTab } from '@/components/launch/ControleAulasTab'
+import { VendasComercialTab } from '@/components/launch/VendasComercialTab'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import {
   Select,
   SelectContent,
@@ -27,7 +30,20 @@ import {
 } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { paidLaunchesService } from '@/services/paidLaunches'
-import type { PaidLaunchRecord, PaidLaunchInput, DailyEntry } from '@/types/paidLaunches'
+import type {
+  PaidLaunchRecord,
+  PaidLaunchInput,
+  DailyEntry,
+  ClassSessions,
+  CommercialSales,
+} from '@/types/paidLaunches'
+import {
+  formatCurrency,
+  formatPercent,
+  formatCalculatedCurrency,
+  formatCalculatedPercent,
+  formatCalculatedNumber,
+} from '@/lib/launch-format'
 
 const DEFAULT_DAYS: DailyEntry[] = [
   { dayLabel: 'Seg', dateLabel: '8/6', investment: 18201, ticket_sales: 394, bump_sales: 116 },
@@ -48,43 +64,8 @@ interface FormState {
   bump_ticket: string | number
   bump_refunds: string | number
   daily_data: DailyEntry[]
-}
-
-// Utility formatting
-const formatCurrency = (val: number): string => {
-  if (isNaN(val) || !isFinite(val)) return 'R$ 0,00'
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(val)
-}
-
-const formatPercent = (val: number): string => {
-  if (isNaN(val) || !isFinite(val)) return '0,00%'
-  return (
-    new Intl.NumberFormat('pt-BR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(val * 100) + '%'
-  )
-}
-
-const formatCalculatedCurrency = (val: number): string => {
-  if (isNaN(val) || !isFinite(val)) return 'R$ 0,00'
-  return formatCurrency(val)
-}
-
-const formatCalculatedPercent = (val: number): string => {
-  if (isNaN(val) || !isFinite(val)) return '0,00%'
-  return formatPercent(val)
-}
-
-const formatCalculatedNumber = (val: number, decimals = 2): string => {
-  if (isNaN(val) || !isFinite(val)) return '0'
-  return new Intl.NumberFormat('pt-BR', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(val)
+  class_sessions: ClassSessions
+  commercial_sales: CommercialSales
 }
 
 const DEFAULT_FORM: FormState = {
@@ -95,6 +76,8 @@ const DEFAULT_FORM: FormState = {
   bump_ticket: 19.9,
   bump_refunds: 3,
   daily_data: DEFAULT_DAYS,
+  class_sessions: [],
+  commercial_sales: [],
 }
 
 export default function LancamentoPago() {
@@ -102,6 +85,7 @@ export default function LancamentoPago() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [savingArrays, setSavingArrays] = useState(false)
   const [records, setRecords] = useState<PaidLaunchRecord[]>([])
   const [selectedLaunchId, setSelectedLaunchId] = useState<string>('new')
   const [form, setForm] = useState<FormState>(DEFAULT_FORM)
@@ -130,6 +114,8 @@ export default function LancamentoPago() {
             target.daily_data && Array.isArray(target.daily_data) && target.daily_data.length === 7
               ? target.daily_data
               : DEFAULT_DAYS,
+          class_sessions: Array.isArray(target.class_sessions) ? target.class_sessions : [],
+          commercial_sales: Array.isArray(target.commercial_sales) ? target.commercial_sales : [],
         })
       } else {
         setSelectedLaunchId('new')
@@ -175,6 +161,8 @@ export default function LancamentoPago() {
             found.daily_data && Array.isArray(found.daily_data) && found.daily_data.length === 7
               ? found.daily_data
               : DEFAULT_DAYS,
+          class_sessions: Array.isArray(found.class_sessions) ? found.class_sessions : [],
+          commercial_sales: Array.isArray(found.commercial_sales) ? found.commercial_sales : [],
         })
       }
     }
@@ -201,6 +189,12 @@ export default function LancamentoPago() {
               matchingRecord.daily_data.length === 7
                 ? matchingRecord.daily_data
                 : DEFAULT_DAYS,
+            class_sessions: Array.isArray(matchingRecord.class_sessions)
+              ? matchingRecord.class_sessions
+              : [],
+            commercial_sales: Array.isArray(matchingRecord.commercial_sales)
+              ? matchingRecord.commercial_sales
+              : [],
           }
         }
       }
@@ -380,6 +374,8 @@ export default function LancamentoPago() {
         bump_sales: calc.bumpSales,
         bump_refunds: Number(form.bump_refunds) || 0,
         daily_data: form.daily_data,
+        class_sessions: form.class_sessions,
+        commercial_sales: form.commercial_sales,
       }
 
       const savedRec = await paidLaunchesService.save(form.id, payload)
@@ -425,6 +421,66 @@ export default function LancamentoPago() {
       })
     } finally {
       setDeleting(false)
+    }
+  }
+
+  // ---- New tabs (Controle Aulas / Vendas Comercial) handlers ----
+
+  const handleClassSessionsChange = (sessions: ClassSessions) => {
+    setForm((prev) => ({ ...prev, class_sessions: sessions }))
+  }
+
+  const handleCommercialSalesChange = (sales: CommercialSales) => {
+    setForm((prev) => ({ ...prev, commercial_sales: sales }))
+  }
+
+  // Persist ONLY the JSON arrays (class_sessions / commercial_sales) for the current launch
+  const handleSaveArrays = async (key: 'class_sessions' | 'commercial_sales') => {
+    if (!form.id) {
+      toast({
+        title: 'Salve o lançamento primeiro',
+        description:
+          'Salve o lançamento na aba "Resultado Semanal" para poder gravar as aulas/vendas comerciais.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setSavingArrays(true)
+    try {
+      const payload: { class_sessions?: ClassSessions; commercial_sales?: CommercialSales } = {}
+      if (key === 'class_sessions') payload.class_sessions = form.class_sessions || []
+      if (key === 'commercial_sales') payload.commercial_sales = form.commercial_sales || []
+
+      const updated = await paidLaunchesService.saveArrays(form.id, payload)
+
+      // Keep local form in sync with the returned arrays
+      setForm((prev) => ({
+        ...prev,
+        class_sessions: Array.isArray(updated.class_sessions)
+          ? (updated.class_sessions as ClassSessions)
+          : prev.class_sessions,
+        commercial_sales: Array.isArray(updated.commercial_sales)
+          ? (updated.commercial_sales as CommercialSales)
+          : prev.commercial_sales,
+      }))
+
+      // Update cached records list too
+      setRecords((prev) => prev.map((r) => (r.id === updated.id ? updated : r)))
+
+      toast({
+        title: key === 'class_sessions' ? 'Aulas salvas' : 'Vendas salvas',
+        description: `Os dados foram salvos para "${updated.batch}".`,
+      })
+    } catch (err) {
+      console.error(err)
+      toast({
+        title: 'Erro ao salvar',
+        description: 'Não foi possível salvar os dados.',
+        variant: 'destructive',
+      })
+    } finally {
+      setSavingArrays(false)
     }
   }
 
@@ -474,611 +530,859 @@ export default function LancamentoPago() {
         </div>
       </div>
 
-      {/* Top Dashboard KPI Grid - Organised in 2 Rows */}
-      <div className="space-y-4">
-        {/* Row 1 (Featured / Larger Cards): Faturamento Total, Investimento Tráfego, ROAS Geral */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <KpiCard
-            title="Faturamento Total"
-            value={dashboardKpis.faturamentoTotal}
-            formatType="currency"
-            icon={DollarSign}
-            subtext="Ingressos + Order Bumps"
-            iconBgColor="bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20"
-          />
-
-          <KpiCard
-            title="Invest. Tráfego"
-            value={dashboardKpis.investimentoTrafego}
-            formatType="currency"
-            icon={TrendingUp}
-            subtext="Custo total em anúncios"
-            iconBgColor="bg-[#FF2AFF]/10 text-[#FF2AFF] border-[#FF2AFF]/20"
-          />
-
-          <KpiCard
-            title="ROAS Geral"
-            value={dashboardKpis.roasGeral}
-            formatType="roas"
-            icon={Percent}
-            subtext="Faturamento / Investimento"
-            iconBgColor="bg-emerald-50 text-emerald-600 border-emerald-200"
-          />
-        </div>
-
-        {/* Row 2 (Secondary Cards): Saldo da Captação, Total Ingressos, Conversão Order Bump */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <KpiCard
-            title="Saldo da Captação"
-            value={dashboardKpis.saldoCaptacao}
-            formatType="currency"
-            icon={DollarSign}
-            subtext="Faturamento - Investimento"
-            iconBgColor={
-              dashboardKpis.saldoCaptacao >= 0
-                ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
-                : 'bg-rose-50 text-rose-600 border-rose-200'
-            }
-          />
-
-          <KpiCard
-            title="Total Ingressos"
-            value={dashboardKpis.totalIngressos}
-            formatType="raw"
-            icon={Ticket}
-            subtext="Vendas totais de ingresso"
-            iconBgColor="bg-sky-50 text-sky-600 border-sky-200"
-          />
-
-          <KpiCard
-            title="Conv. Order Bump"
-            value={dashboardKpis.conversaoBump}
-            formatType="percent"
-            decimals={2}
-            icon={Percent}
-            subtext="Bumps / Ingressos Totais"
-            iconBgColor="bg-amber-50 text-amber-600 border-amber-200"
-          />
-        </div>
-      </div>
-
-      {/* Vertical Form Module - 3 Distinct Cards */}
       {loading ? (
         <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl p-16 flex flex-col items-center justify-center gap-3 text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin text-[#6D49F2]" />
           <p className="text-sm text-slate-500 font-medium">Carregando dados do lançamento...</p>
         </Card>
       ) : (
-        <div className="w-full space-y-6">
-          {/* CHART: Vendas Diárias × Conversão Order Bump */}
-          <DailySalesChart
-            days={dailyCalculated.days.map((d) => ({
-              dayLabel: d.dayLabel,
-              ticketSales: d.ticketSales,
-              bumpConversion: d.bumpConversion,
-            }))}
-          />
+        <Tabs defaultValue="semanal" className="w-full">
+          {/* Pills-style tab bar in MQT palette */}
+          <TabsList className="bg-white border border-slate-200/80 shadow-xs rounded-xl p-1.5 h-auto flex flex-col sm:flex-row w-full sm:w-fit gap-1">
+            <TabsTrigger
+              value="semanal"
+              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
+            >
+              Resultado Semanal
+            </TabsTrigger>
+            <TabsTrigger
+              value="ingressos"
+              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
+            >
+              Venda de Ingressos
+            </TabsTrigger>
+            <TabsTrigger
+              value="aulas"
+              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
+            >
+              Controle Aulas
+            </TabsTrigger>
+            <TabsTrigger
+              value="comercial"
+              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
+            >
+              Vendas Comercial
+            </TabsTrigger>
+          </TabsList>
 
-          {/* NEW SECTION: ACOMPANHAMENTO DIÁRIO (TABELA HORIZONTAL) */}
-          <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
-            <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <CalendarDays className="w-4 h-4 text-[#FF2AFF]" />
-                Acompanhamento Diário - Vendas da Semana
-              </span>
-              <span className="text-[11px] text-slate-300 font-normal normal-case">
-                Preencha Investimento, Vendas Ingresso e Order Bump por dia
-              </span>
-            </div>
+          {/* ============ TAB 1: RESULTADO SEMANAL ============ */}
+          <TabsContent value="semanal" className="mt-6 space-y-6 focus:outline-none">
+            <div className="space-y-4">
+              {/* Row 1 (Featured / Larger Cards): Faturamento Total, Investimento Tráfego, ROAS Geral */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <KpiCard
+                  title="Faturamento Total"
+                  value={dashboardKpis.faturamentoTotal}
+                  formatType="currency"
+                  icon={DollarSign}
+                  subtext="Ingressos + Order Bumps"
+                  iconBgColor="bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20"
+                />
 
-            <div className="p-4 sm:p-6 overflow-x-auto">
-              <table className="w-full text-xs border-collapse min-w-[760px]">
-                <thead>
-                  {/* Row 1: Header - Day labels and dates */}
-                  <tr className="bg-[#FAF8FF] border-b border-slate-200">
-                    <th className="p-3 text-left font-bold text-slate-800 bg-slate-900 text-white w-48 text-sm">
-                      Venda Ingressos
-                    </th>
-                    {form.daily_data.map((day, idx) => (
-                      <th
-                        key={idx}
-                        className="p-2 text-center font-bold text-slate-800 bg-[#F2EBFF] border-l border-slate-200/80 min-w-[100px]"
-                      >
-                        <div className="flex items-center justify-center gap-1">
-                          <input
-                            type="text"
-                            value={day.dayLabel || ''}
-                            onChange={(e) => handleDailyChange(idx, 'dayLabel', e.target.value)}
-                            className="w-10 text-center font-bold text-slate-900 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2]"
-                            placeholder="Dia"
-                          />
-                        </div>
-                        <div className="text-[11px] text-slate-500 font-normal mt-0.5">
-                          <input
-                            type="text"
-                            value={day.dateLabel || ''}
-                            onChange={(e) => handleDailyChange(idx, 'dateLabel', e.target.value)}
-                            className="w-12 text-center text-slate-600 bg-transparent border-b border-dashed border-slate-300 focus:outline-none focus:border-[#6D49F2]"
-                            placeholder="Data"
-                          />
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
+                <KpiCard
+                  title="Invest. Tráfego"
+                  value={dashboardKpis.investimentoTrafego}
+                  formatType="currency"
+                  icon={TrendingUp}
+                  subtext="Custo total em anúncios"
+                  iconBgColor="bg-[#FF2AFF]/10 text-[#FF2AFF] border-[#FF2AFF]/20"
+                />
 
-                <tbody className="divide-y divide-slate-100">
-                  {/* Investimento (Manual) */}
-                  <tr className="hover:bg-slate-50/50 transition-colors">
-                    <td className="p-2.5 font-medium text-slate-700">Investimento</td>
-                    {form.daily_data.map((day, idx) => (
-                      <td key={idx} className="p-1.5 border-l border-slate-100 text-center">
-                        <div className="relative">
-                          <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">
-                            R$
-                          </span>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            min={0}
-                            placeholder="0"
-                            value={day.investment}
-                            onChange={(e) => handleDailyChange(idx, 'investment', e.target.value)}
-                            className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
-                          />
-                        </div>
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* Vendas Ingresso (Manual) */}
-                  <tr className="hover:bg-slate-50/50 transition-colors">
-                    <td className="p-2.5 font-medium text-slate-700">Vendas Ingresso</td>
-                    {form.daily_data.map((day, idx) => (
-                      <td key={idx} className="p-1.5 border-l border-slate-100 text-center">
-                        <Input
-                          type="number"
-                          min={0}
-                          placeholder="0"
-                          value={day.ticket_sales}
-                          onChange={(e) => handleDailyChange(idx, 'ticket_sales', e.target.value)}
-                          className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
-                        />
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* Faturamento Ingresso (Calculado) */}
-                  <tr className="bg-slate-50/80 font-bold">
-                    <td className="p-2.5 text-slate-900">Faturamento Ingresso</td>
-                    {dailyCalculated.days.map((dayCalc, idx) => (
-                      <td
-                        key={idx}
-                        className="p-2 border-l border-slate-200/80 text-center tabular-nums text-slate-900"
-                      >
-                        {formatCurrency(dayCalc.ticketRevenue)}
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* Vendas Order Bump (Manual) */}
-                  <tr className="hover:bg-slate-50/50 transition-colors">
-                    <td className="p-2.5 font-medium text-slate-700">Vendas Order Bump</td>
-                    {form.daily_data.map((day, idx) => (
-                      <td key={idx} className="p-1.5 border-l border-slate-100 text-center">
-                        <Input
-                          type="number"
-                          min={0}
-                          placeholder="0"
-                          value={day.bump_sales}
-                          onChange={(e) => handleDailyChange(idx, 'bump_sales', e.target.value)}
-                          className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
-                        />
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* % Conversão Order Bump (Calculado) */}
-                  <tr className="hover:bg-slate-50/50 transition-colors">
-                    <td className="p-2.5 font-medium text-slate-700">% Conversão Order Bump</td>
-                    {dailyCalculated.days.map((dayCalc, idx) => (
-                      <td
-                        key={idx}
-                        className="p-2 border-l border-slate-100 text-center tabular-nums text-slate-600"
-                      >
-                        {formatPercent(dayCalc.bumpConversion)}
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* Faturamento Order Bump (Calculado) */}
-                  <tr className="hover:bg-slate-50/50 transition-colors">
-                    <td className="p-2.5 font-medium text-slate-700">Faturamento Order Bump</td>
-                    {dailyCalculated.days.map((dayCalc, idx) => (
-                      <td
-                        key={idx}
-                        className="p-2 border-l border-slate-100 text-center tabular-nums text-slate-700"
-                      >
-                        {formatCurrency(dayCalc.bumpRevenue)}
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* Faturamento Total (Calculado - Soft Pastel Green Highlight) */}
-                  <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-t border-b border-emerald-200">
-                    <td className="p-2.5 text-emerald-950">Faturamento Total</td>
-                    {dailyCalculated.days.map((dayCalc, idx) => (
-                      <td
-                        key={idx}
-                        className="p-2 border-l border-emerald-200/80 text-center tabular-nums text-emerald-900"
-                      >
-                        {formatCurrency(dayCalc.totalRevenue)}
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* Saldo Diário (Calculado - Soft Pastel Green Highlight with red text for negative) */}
-                  <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-b border-emerald-200">
-                    <td className="p-2.5 text-emerald-950">Saldo Diário</td>
-                    {dailyCalculated.days.map((dayCalc, idx) => (
-                      <td
-                        key={idx}
-                        className={`p-2 border-l border-emerald-200/80 text-center tabular-nums ${
-                          dayCalc.dailyBalance < 0
-                            ? 'text-rose-600 font-extrabold'
-                            : 'text-emerald-900'
-                        }`}
-                      >
-                        {dayCalc.dailyBalance < 0
-                          ? `-R$ ${Math.abs(dayCalc.dailyBalance).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                          : formatCurrency(dayCalc.dailyBalance)}
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* Ticket Médio (Calculado - Soft Pastel Green Highlight) */}
-                  <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-b border-emerald-200">
-                    <td className="p-2.5 text-emerald-950">Ticket Médio</td>
-                    {dailyCalculated.days.map((dayCalc, idx) => (
-                      <td
-                        key={idx}
-                        className="p-2 border-l border-emerald-200/80 text-center tabular-nums text-emerald-900"
-                      >
-                        {formatCalculatedNumber(dayCalc.averageTicket, 1)}
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* CAC (Calculado - Soft Pastel Green Highlight) */}
-                  <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-b border-emerald-200">
-                    <td className="p-2.5 text-emerald-950">CAC</td>
-                    {dailyCalculated.days.map((dayCalc, idx) => (
-                      <td
-                        key={idx}
-                        className="p-2 border-l border-emerald-200/80 text-center tabular-nums text-emerald-900"
-                      >
-                        {formatCalculatedNumber(dayCalc.cac, 1)}
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* ROAS (Calculado - Soft Pastel Pink/Red Highlight) */}
-                  <tr className="bg-[#FDE8EC] font-bold text-rose-950 border-b border-rose-200">
-                    <td className="p-2.5 text-rose-950">ROAS</td>
-                    {dailyCalculated.days.map((dayCalc, idx) => (
-                      <td
-                        key={idx}
-                        className="p-2 border-l border-rose-200/80 text-center tabular-nums text-rose-950"
-                      >
-                        {formatCalculatedNumber(dayCalc.roas, 2)}
-                      </td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </Card>
-
-          {/* BLOCK 1: VENDA DE INGRESSOS */}
-          <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
-            <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
-              VENDA DE INGRESSOS
-            </div>
-
-            <div className="p-4 sm:p-6 space-y-2.5">
-              {/* Dias Captação (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
-                <span className="font-bold text-xs text-slate-700 flex items-center gap-1.5">
-                  <Lock className="w-3 h-3 text-slate-400" />
-                  Dias Captação (calculado)
-                </span>
-                <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
-                  {calc.captureDays} {calc.captureDays === 1 ? 'dia' : 'dias'}
-                </div>
-              </div>
-
-              {/* Turma */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                <span className="font-medium text-sm text-slate-700">Turma</span>
-                <div className="relative">
-                  <Input
-                    type="text"
-                    placeholder='ex: "S1 - 23/08/2026"'
-                    value={form.batch}
-                    onChange={(e) => handleChange('batch', e.target.value)}
-                    className="bg-white border-slate-200 text-slate-900 font-bold text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                  />
-                </div>
-              </div>
-
-              {/* Ticket Ingresso */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                <span className="font-medium text-sm text-slate-700">Ticket Ingresso</span>
-                <div className="relative">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
-                    R$
-                  </span>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min={0}
-                    value={form.ticket_ticket}
-                    onChange={(e) => handleChange('ticket_ticket', e.target.value)}
-                    className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                  />
-                </div>
-              </div>
-
-              {/* Investimento Tráfego (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
-                <span className="font-medium text-xs text-slate-700 flex items-center gap-1.5">
-                  <Lock className="w-3 h-3 text-slate-400" />
-                  Investimento Tráfego (soma dos dias)
-                </span>
-                <div className="text-right font-bold tabular-nums text-xs text-slate-900">
-                  {formatCurrency(calc.trafficInvestment)}
-                </div>
-              </div>
-
-              {/* Tráfego Diário (CALCULATED - READ ONLY) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
-                <span className="font-medium text-xs text-slate-500">Tráfego Diário</span>
-                <div className="text-right font-bold tabular-nums text-xs text-slate-700">
-                  {formatCalculatedCurrency(calc.dailyTraffic)}
-                </div>
-              </div>
-
-              {/* CAC (CALCULATED - READ ONLY) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
-                <span className="font-medium text-xs text-slate-500">CAC</span>
-                <div className="text-right font-bold tabular-nums text-xs text-slate-700">
-                  {formatCalculatedCurrency(calc.cac)}
-                </div>
-              </div>
-
-              {/* Vendas Totais Ingresso (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
-                <span className="font-medium text-xs text-slate-700 flex items-center gap-1.5">
-                  <Lock className="w-3 h-3 text-slate-400" />
-                  Vendas Totais Ingresso (soma dos dias)
-                </span>
-                <div className="text-right font-bold tabular-nums text-xs text-slate-900">
-                  {calc.totalTicketSales}
-                </div>
-              </div>
-
-              {/* Média Vendas / Dia Ingresso (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
-                <span className="font-bold text-sm text-amber-950">
-                  Média Vendas / Dia Ingresso
-                </span>
-                <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
-                  {formatCalculatedNumber(calc.avgSalesPerDay, 0)}
-                </div>
-              </div>
-
-              {/* Reembolso */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                <span className="font-medium text-sm text-slate-700">Reembolso</span>
-                <Input
-                  type="number"
-                  min={0}
-                  value={form.ticket_refunds}
-                  onChange={(e) => handleChange('ticket_refunds', e.target.value)}
-                  className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                <KpiCard
+                  title="ROAS Geral"
+                  value={dashboardKpis.roasGeral}
+                  formatType="roas"
+                  icon={Percent}
+                  subtext="Faturamento / Investimento"
+                  iconBgColor="bg-emerald-50 text-emerald-600 border-emerald-200"
                 />
               </div>
 
-              {/* Taxa Reembolso (CALCULATED - READ ONLY) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
-                <span className="font-medium text-xs text-slate-500">Taxa Reembolso</span>
-                <div className="text-right font-bold tabular-nums text-xs text-slate-700">
-                  {formatCalculatedPercent(calc.ticketRefundRate)}
-                </div>
-              </div>
+              {/* Row 2 (Secondary Cards): Saldo da Captação, Total Ingressos, Conversão Order Bump */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <KpiCard
+                  title="Saldo da Captação"
+                  value={dashboardKpis.saldoCaptacao}
+                  formatType="currency"
+                  icon={DollarSign}
+                  subtext="Faturamento - Investimento"
+                  iconBgColor={
+                    dashboardKpis.saldoCaptacao >= 0
+                      ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                      : 'bg-rose-50 text-rose-600 border-rose-200'
+                  }
+                />
 
-              {/* Faturamento Ingressos (CALCULATED - READ ONLY) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
-                <span className="font-semibold text-xs text-slate-700">Faturamento Ingressos</span>
-                <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
-                  {formatCurrency(calc.ticketRevenue)}
-                </div>
-              </div>
+                <KpiCard
+                  title="Total Ingressos"
+                  value={dashboardKpis.totalIngressos}
+                  formatType="raw"
+                  icon={Ticket}
+                  subtext="Vendas totais de ingresso"
+                  iconBgColor="bg-sky-50 text-sky-600 border-sky-200"
+                />
 
-              {/* ROAS Venda Ingresso (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
-                <span className="font-bold text-sm text-amber-950">ROAS Venda Ingresso</span>
-                <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
-                  {formatCalculatedNumber(calc.ticketRoas, 2)}
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* BLOCK 2: ORDER BUMP */}
-          <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
-            <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
-              ORDER BUMP
-            </div>
-
-            <div className="p-4 sm:p-6 space-y-2.5">
-              {/* Conversão Order Bump (CALCULATED - READ ONLY) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
-                <span className="font-bold text-xs text-[#6D49F2]">Conversão Order Bump</span>
-                <div className="text-right font-bold tabular-nums text-xs text-[#FF2AFF]">
-                  {formatCalculatedPercent(calc.bumpConversion)}
-                </div>
-              </div>
-
-              {/* Ticket Order Bump */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                <span className="font-medium text-sm text-slate-700">Ticket Order Bump</span>
-                <div className="relative">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
-                    R$
-                  </span>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min={0}
-                    value={form.bump_ticket}
-                    onChange={(e) => handleChange('bump_ticket', e.target.value)}
-                    className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                  />
-                </div>
-              </div>
-
-              {/* Vendas Order Bump (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
-                <span className="font-medium text-xs text-slate-700 flex items-center gap-1.5">
-                  <Lock className="w-3 h-3 text-slate-400" />
-                  Vendas Order Bump (soma dos dias)
-                </span>
-                <div className="text-right font-bold tabular-nums text-xs text-slate-900">
-                  {calc.bumpSales}
-                </div>
-              </div>
-
-              {/* Reembolso */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                <span className="font-medium text-sm text-slate-700">Reembolso</span>
-                <Input
-                  type="number"
-                  min={0}
-                  value={form.bump_refunds}
-                  onChange={(e) => handleChange('bump_refunds', e.target.value)}
-                  className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                <KpiCard
+                  title="Conv. Order Bump"
+                  value={dashboardKpis.conversaoBump}
+                  formatType="percent"
+                  decimals={2}
+                  icon={Percent}
+                  subtext="Bumps / Ingressos Totais"
+                  iconBgColor="bg-amber-50 text-amber-600 border-amber-200"
                 />
               </div>
-
-              {/* Taxa Reembolso (CALCULATED - READ ONLY) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
-                <span className="font-medium text-xs text-slate-500">Taxa Reembolso</span>
-                <div className="text-right font-bold tabular-nums text-xs text-slate-700">
-                  {formatCalculatedPercent(calc.bumpRefundRate)}
-                </div>
-              </div>
-
-              {/* Faturamento Order Bump (CALCULATED - READ ONLY) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
-                <span className="font-bold text-xs text-slate-700">Faturamento Order Bump</span>
-                <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
-                  {formatCurrency(calc.bumpRevenue)}
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* BLOCK 3: RESULTADO INGRESSOS + ORDER BUMPS */}
-          <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
-            <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
-              RESULTADO INGRESSOS + ORDER BUMPS
             </div>
 
-            <div className="p-4 sm:p-6 space-y-2.5">
-              {/* Faturamento Total */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-emerald-50/80 px-3.5 rounded-xl border border-emerald-200/90">
-                <span className="font-bold text-xs text-emerald-900">Faturamento Total</span>
-                <div className="text-right font-bold tabular-nums text-sm text-emerald-700">
-                  {formatCurrency(calc.totalRevenue)}
-                </div>
-              </div>
+            <div className="w-full space-y-6">
+              {/* CHART: Vendas Diárias × Conversão Order Bump */}
+              <DailySalesChart
+                days={dailyCalculated.days.map((d) => ({
+                  dayLabel: d.dayLabel,
+                  ticketSales: d.ticketSales,
+                  bumpConversion: d.bumpConversion,
+                }))}
+              />
 
-              {/* Ticket Médio (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
-                <span className="font-bold text-sm text-amber-950">Ticket Médio</span>
-                <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
-                  {formatCalculatedCurrency(calc.averageTicket)}
+              {/* NEW SECTION: ACOMPANHAMENTO DIÁRIO (TABELA HORIZONTAL) */}
+              <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
+                <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <CalendarDays className="w-4 h-4 text-[#FF2AFF]" />
+                    Acompanhamento Diário - Vendas da Semana
+                  </span>
+                  <span className="text-[11px] text-slate-300 font-normal normal-case">
+                    Preencha Investimento, Vendas Ingresso e Order Bump por dia
+                  </span>
                 </div>
-              </div>
 
-              {/* Saldo da Captação (CALCULATED - SOFT PASTEL HIGHLIGHT WITH CONDITIONAL COLOR) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
-                <span className="font-bold text-sm text-amber-950">Saldo da Captação</span>
-                <div
-                  className={`text-center sm:text-right font-bold tabular-nums text-base ${
-                    calc.captureBalance >= 0 ? 'text-emerald-700' : 'text-rose-600'
-                  }`}
-                >
-                  {formatCurrency(calc.captureBalance)}
-                </div>
-              </div>
+                <div className="p-4 sm:p-6 overflow-x-auto">
+                  <table className="w-full text-xs border-collapse min-w-[760px]">
+                    <thead>
+                      {/* Row 1: Header - Day labels and dates */}
+                      <tr className="bg-[#FAF8FF] border-b border-slate-200">
+                        <th className="p-3 text-left font-bold text-slate-800 bg-slate-900 text-white w-48 text-sm">
+                          Venda Ingressos
+                        </th>
+                        {form.daily_data.map((day, idx) => (
+                          <th
+                            key={idx}
+                            className="p-2 text-center font-bold text-slate-800 bg-[#F2EBFF] border-l border-slate-200/80 min-w-[100px]"
+                          >
+                            <div className="flex items-center justify-center gap-1">
+                              <input
+                                type="text"
+                                value={day.dayLabel || ''}
+                                onChange={(e) => handleDailyChange(idx, 'dayLabel', e.target.value)}
+                                className="w-10 text-center font-bold text-slate-900 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2]"
+                                placeholder="Dia"
+                              />
+                            </div>
+                            <div className="text-[11px] text-slate-500 font-normal mt-0.5">
+                              <input
+                                type="text"
+                                value={day.dateLabel || ''}
+                                onChange={(e) =>
+                                  handleDailyChange(idx, 'dateLabel', e.target.value)
+                                }
+                                className="w-12 text-center text-slate-600 bg-transparent border-b border-dashed border-slate-300 focus:outline-none focus:border-[#6D49F2]"
+                                placeholder="Data"
+                              />
+                            </div>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
 
-              {/* ROAS Geral (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
-                <span className="font-bold text-sm text-amber-950">ROAS</span>
-                <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
-                  {formatCalculatedNumber(calc.overallRoas, 2)}
+                    <tbody className="divide-y divide-slate-100">
+                      {/* Investimento (Manual) */}
+                      <tr className="hover:bg-slate-50/50 transition-colors">
+                        <td className="p-2.5 font-medium text-slate-700">Investimento</td>
+                        {form.daily_data.map((day, idx) => (
+                          <td key={idx} className="p-1.5 border-l border-slate-100 text-center">
+                            <div className="relative">
+                              <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">
+                                R$
+                              </span>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                min={0}
+                                placeholder="0"
+                                value={day.investment}
+                                onChange={(e) =>
+                                  handleDailyChange(idx, 'investment', e.target.value)
+                                }
+                                className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                              />
+                            </div>
+                          </td>
+                        ))}
+                      </tr>
+
+                      {/* Vendas Ingresso (Manual) */}
+                      <tr className="hover:bg-slate-50/50 transition-colors">
+                        <td className="p-2.5 font-medium text-slate-700">Vendas Ingresso</td>
+                        {form.daily_data.map((day, idx) => (
+                          <td key={idx} className="p-1.5 border-l border-slate-100 text-center">
+                            <Input
+                              type="number"
+                              min={0}
+                              placeholder="0"
+                              value={day.ticket_sales}
+                              onChange={(e) =>
+                                handleDailyChange(idx, 'ticket_sales', e.target.value)
+                              }
+                              className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                            />
+                          </td>
+                        ))}
+                      </tr>
+
+                      {/* Faturamento Ingresso (Calculado) */}
+                      <tr className="bg-slate-50/80 font-bold">
+                        <td className="p-2.5 text-slate-900">Faturamento Ingresso</td>
+                        {dailyCalculated.days.map((dayCalc, idx) => (
+                          <td
+                            key={idx}
+                            className="p-2 border-l border-slate-200/80 text-center tabular-nums text-slate-900"
+                          >
+                            {formatCurrency(dayCalc.ticketRevenue)}
+                          </td>
+                        ))}
+                      </tr>
+
+                      {/* Vendas Order Bump (Manual) */}
+                      <tr className="hover:bg-slate-50/50 transition-colors">
+                        <td className="p-2.5 font-medium text-slate-700">Vendas Order Bump</td>
+                        {form.daily_data.map((day, idx) => (
+                          <td key={idx} className="p-1.5 border-l border-slate-100 text-center">
+                            <Input
+                              type="number"
+                              min={0}
+                              placeholder="0"
+                              value={day.bump_sales}
+                              onChange={(e) => handleDailyChange(idx, 'bump_sales', e.target.value)}
+                              className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                            />
+                          </td>
+                        ))}
+                      </tr>
+
+                      {/* % Conversão Order Bump (Calculado) */}
+                      <tr className="hover:bg-slate-50/50 transition-colors">
+                        <td className="p-2.5 font-medium text-slate-700">% Conversão Order Bump</td>
+                        {dailyCalculated.days.map((dayCalc, idx) => (
+                          <td
+                            key={idx}
+                            className="p-2 border-l border-slate-100 text-center tabular-nums text-slate-600"
+                          >
+                            {formatPercent(dayCalc.bumpConversion)}
+                          </td>
+                        ))}
+                      </tr>
+
+                      {/* Faturamento Order Bump (Calculado) */}
+                      <tr className="hover:bg-slate-50/50 transition-colors">
+                        <td className="p-2.5 font-medium text-slate-700">Faturamento Order Bump</td>
+                        {dailyCalculated.days.map((dayCalc, idx) => (
+                          <td
+                            key={idx}
+                            className="p-2 border-l border-slate-100 text-center tabular-nums text-slate-700"
+                          >
+                            {formatCurrency(dayCalc.bumpRevenue)}
+                          </td>
+                        ))}
+                      </tr>
+
+                      {/* Faturamento Total (Calculado - Soft Pastel Green Highlight) */}
+                      <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-t border-b border-emerald-200">
+                        <td className="p-2.5 text-emerald-950">Faturamento Total</td>
+                        {dailyCalculated.days.map((dayCalc, idx) => (
+                          <td
+                            key={idx}
+                            className="p-2 border-l border-emerald-200/80 text-center tabular-nums text-emerald-900"
+                          >
+                            {formatCurrency(dayCalc.totalRevenue)}
+                          </td>
+                        ))}
+                      </tr>
+
+                      {/* Saldo Diário (Calculado - Soft Pastel Green Highlight with red text for negative) */}
+                      <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-b border-emerald-200">
+                        <td className="p-2.5 text-emerald-950">Saldo Diário</td>
+                        {dailyCalculated.days.map((dayCalc, idx) => (
+                          <td
+                            key={idx}
+                            className={`p-2 border-l border-emerald-200/80 text-center tabular-nums ${
+                              dayCalc.dailyBalance < 0
+                                ? 'text-rose-600 font-extrabold'
+                                : 'text-emerald-900'
+                            }`}
+                          >
+                            {dayCalc.dailyBalance < 0
+                              ? `-R$ ${Math.abs(dayCalc.dailyBalance).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                              : formatCurrency(dayCalc.dailyBalance)}
+                          </td>
+                        ))}
+                      </tr>
+
+                      {/* Ticket Médio (Calculado - Soft Pastel Green Highlight) */}
+                      <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-b border-emerald-200">
+                        <td className="p-2.5 text-emerald-950">Ticket Médio</td>
+                        {dailyCalculated.days.map((dayCalc, idx) => (
+                          <td
+                            key={idx}
+                            className="p-2 border-l border-emerald-200/80 text-center tabular-nums text-emerald-900"
+                          >
+                            {formatCalculatedNumber(dayCalc.averageTicket, 1)}
+                          </td>
+                        ))}
+                      </tr>
+
+                      {/* CAC (Calculado - Soft Pastel Green Highlight) */}
+                      <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-b border-emerald-200">
+                        <td className="p-2.5 text-emerald-950">CAC</td>
+                        {dailyCalculated.days.map((dayCalc, idx) => (
+                          <td
+                            key={idx}
+                            className="p-2 border-l border-emerald-200/80 text-center tabular-nums text-emerald-900"
+                          >
+                            {formatCalculatedNumber(dayCalc.cac, 1)}
+                          </td>
+                        ))}
+                      </tr>
+
+                      {/* ROAS (Calculado - Soft Pastel Pink/Red Highlight) */}
+                      <tr className="bg-[#FDE8EC] font-bold text-rose-950 border-b border-rose-200">
+                        <td className="p-2.5 text-rose-950">ROAS</td>
+                        {dailyCalculated.days.map((dayCalc, idx) => (
+                          <td
+                            key={idx}
+                            className="p-2 border-l border-rose-200/80 text-center tabular-nums text-rose-950"
+                          >
+                            {formatCalculatedNumber(dayCalc.roas, 2)}
+                          </td>
+                        ))}
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
-              </div>
+              </Card>
+
+              {/* BLOCK 1: VENDA DE INGRESSOS */}
+              <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
+                <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
+                  VENDA DE INGRESSOS
+                </div>
+
+                <div className="p-4 sm:p-6 space-y-2.5">
+                  {/* Dias Captação (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                    <span className="font-bold text-xs text-slate-700 flex items-center gap-1.5">
+                      <Lock className="w-3 h-3 text-slate-400" />
+                      Dias Captação (calculado)
+                    </span>
+                    <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
+                      {calc.captureDays} {calc.captureDays === 1 ? 'dia' : 'dias'}
+                    </div>
+                  </div>
+
+                  {/* Turma */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                    <span className="font-medium text-sm text-slate-700">Turma</span>
+                    <div className="relative">
+                      <Input
+                        type="text"
+                        placeholder='ex: "S1 - 23/08/2026"'
+                        value={form.batch}
+                        onChange={(e) => handleChange('batch', e.target.value)}
+                        className="bg-white border-slate-200 text-slate-900 font-bold text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Ticket Ingresso */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                    <span className="font-medium text-sm text-slate-700">Ticket Ingresso</span>
+                    <div className="relative">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
+                        R$
+                      </span>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        value={form.ticket_ticket}
+                        onChange={(e) => handleChange('ticket_ticket', e.target.value)}
+                        className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Investimento Tráfego (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                    <span className="font-medium text-xs text-slate-700 flex items-center gap-1.5">
+                      <Lock className="w-3 h-3 text-slate-400" />
+                      Investimento Tráfego (soma dos dias)
+                    </span>
+                    <div className="text-right font-bold tabular-nums text-xs text-slate-900">
+                      {formatCurrency(calc.trafficInvestment)}
+                    </div>
+                  </div>
+
+                  {/* Tráfego Diário (CALCULATED - READ ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                    <span className="font-medium text-xs text-slate-500">Tráfego Diário</span>
+                    <div className="text-right font-bold tabular-nums text-xs text-slate-700">
+                      {formatCalculatedCurrency(calc.dailyTraffic)}
+                    </div>
+                  </div>
+
+                  {/* CAC (CALCULATED - READ ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                    <span className="font-medium text-xs text-slate-500">CAC</span>
+                    <div className="text-right font-bold tabular-nums text-xs text-slate-700">
+                      {formatCalculatedCurrency(calc.cac)}
+                    </div>
+                  </div>
+
+                  {/* Vendas Totais Ingresso (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                    <span className="font-medium text-xs text-slate-700 flex items-center gap-1.5">
+                      <Lock className="w-3 h-3 text-slate-400" />
+                      Vendas Totais Ingresso (soma dos dias)
+                    </span>
+                    <div className="text-right font-bold tabular-nums text-xs text-slate-900">
+                      {calc.totalTicketSales}
+                    </div>
+                  </div>
+
+                  {/* Média Vendas / Dia Ingresso (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
+                    <span className="font-bold text-sm text-amber-950">
+                      Média Vendas / Dia Ingresso
+                    </span>
+                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
+                      {formatCalculatedNumber(calc.avgSalesPerDay, 0)}
+                    </div>
+                  </div>
+
+                  {/* Reembolso */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                    <span className="font-medium text-sm text-slate-700">Reembolso</span>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={form.ticket_refunds}
+                      onChange={(e) => handleChange('ticket_refunds', e.target.value)}
+                      className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                    />
+                  </div>
+
+                  {/* Taxa Reembolso (CALCULATED - READ ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                    <span className="font-medium text-xs text-slate-500">Taxa Reembolso</span>
+                    <div className="text-right font-bold tabular-nums text-xs text-slate-700">
+                      {formatCalculatedPercent(calc.ticketRefundRate)}
+                    </div>
+                  </div>
+
+                  {/* Faturamento Ingressos (CALCULATED - READ ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
+                    <span className="font-semibold text-xs text-slate-700">
+                      Faturamento Ingressos
+                    </span>
+                    <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
+                      {formatCurrency(calc.ticketRevenue)}
+                    </div>
+                  </div>
+
+                  {/* ROAS Venda Ingresso (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
+                    <span className="font-bold text-sm text-amber-950">ROAS Venda Ingresso</span>
+                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
+                      {formatCalculatedNumber(calc.ticketRoas, 2)}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* BLOCK 2: ORDER BUMP */}
+              <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
+                <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
+                  ORDER BUMP
+                </div>
+
+                <div className="p-4 sm:p-6 space-y-2.5">
+                  {/* Conversão Order Bump (CALCULATED - READ ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
+                    <span className="font-bold text-xs text-[#6D49F2]">Conversão Order Bump</span>
+                    <div className="text-right font-bold tabular-nums text-xs text-[#FF2AFF]">
+                      {formatCalculatedPercent(calc.bumpConversion)}
+                    </div>
+                  </div>
+
+                  {/* Ticket Order Bump */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                    <span className="font-medium text-sm text-slate-700">Ticket Order Bump</span>
+                    <div className="relative">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
+                        R$
+                      </span>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        value={form.bump_ticket}
+                        onChange={(e) => handleChange('bump_ticket', e.target.value)}
+                        className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Vendas Order Bump (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                    <span className="font-medium text-xs text-slate-700 flex items-center gap-1.5">
+                      <Lock className="w-3 h-3 text-slate-400" />
+                      Vendas Order Bump (soma dos dias)
+                    </span>
+                    <div className="text-right font-bold tabular-nums text-xs text-slate-900">
+                      {calc.bumpSales}
+                    </div>
+                  </div>
+
+                  {/* Reembolso */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                    <span className="font-medium text-sm text-slate-700">Reembolso</span>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={form.bump_refunds}
+                      onChange={(e) => handleChange('bump_refunds', e.target.value)}
+                      className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                    />
+                  </div>
+
+                  {/* Taxa Reembolso (CALCULATED - READ ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                    <span className="font-medium text-xs text-slate-500">Taxa Reembolso</span>
+                    <div className="text-right font-bold tabular-nums text-xs text-slate-700">
+                      {formatCalculatedPercent(calc.bumpRefundRate)}
+                    </div>
+                  </div>
+
+                  {/* Faturamento Order Bump (CALCULATED - READ ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
+                    <span className="font-bold text-xs text-slate-700">Faturamento Order Bump</span>
+                    <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
+                      {formatCurrency(calc.bumpRevenue)}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* BLOCK 3: RESULTADO INGRESSOS + ORDER BUMPS */}
+              <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
+                <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
+                  RESULTADO INGRESSOS + ORDER BUMPS
+                </div>
+
+                <div className="p-4 sm:p-6 space-y-2.5">
+                  {/* Faturamento Total */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-emerald-50/80 px-3.5 rounded-xl border border-emerald-200/90">
+                    <span className="font-bold text-xs text-emerald-900">Faturamento Total</span>
+                    <div className="text-right font-bold tabular-nums text-sm text-emerald-700">
+                      {formatCurrency(calc.totalRevenue)}
+                    </div>
+                  </div>
+
+                  {/* Ticket Médio (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
+                    <span className="font-bold text-sm text-amber-950">Ticket Médio</span>
+                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
+                      {formatCalculatedCurrency(calc.averageTicket)}
+                    </div>
+                  </div>
+
+                  {/* Saldo da Captação (CALCULATED - SOFT PASTEL HIGHLIGHT WITH CONDITIONAL COLOR) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
+                    <span className="font-bold text-sm text-amber-950">Saldo da Captação</span>
+                    <div
+                      className={`text-center sm:text-right font-bold tabular-nums text-base ${
+                        calc.captureBalance >= 0 ? 'text-emerald-700' : 'text-rose-600'
+                      }`}
+                    >
+                      {formatCurrency(calc.captureBalance)}
+                    </div>
+                  </div>
+
+                  {/* ROAS Geral (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
+                    <span className="font-bold text-sm text-amber-950">ROAS</span>
+                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
+                      {formatCalculatedNumber(calc.overallRoas, 2)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Action Bar inside or attached to the bottom section */}
+                <div className="p-4 sm:p-6 bg-slate-50/80 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="text-xs text-slate-500 font-medium">
+                    Lançamento selecionado:{' '}
+                    <span className="font-bold text-[#6D49F2]">{form.batch || 'Sem nome'}</span>
+                    {form.id ? ' (Salvo no BD)' : ' (Novo)'}
+                  </div>
+
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    {form.id && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleDelete}
+                        disabled={deleting || saving}
+                        className="border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 font-semibold text-xs rounded-xl h-11 px-4 transition-all"
+                      >
+                        {deleting ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </Button>
+                    )}
+
+                    <Button
+                      onClick={handleSave}
+                      disabled={saving || deleting}
+                      className="w-full sm:w-auto px-8 h-11 bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all"
+                    >
+                      {saving ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Salvando...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4" />
+                          <span>Salvar Lançamento</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </Card>
             </div>
+          </TabsContent>
 
-            {/* Bottom Action Bar inside or attached to the bottom section */}
-            <div className="p-4 sm:p-6 bg-slate-50/80 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-xs text-slate-500 font-medium">
-                Lançamento selecionado:{' '}
-                <span className="font-bold text-[#6D49F2]">{form.batch || 'Sem nome'}</span>
-                {form.id ? ' (Salvo no BD)' : ' (Novo)'}
+          {/* ============ TAB 2: VENDA DE INGRESSOS (BLOCK 1 ONLY) ============ */}
+          <TabsContent value="ingressos" className="mt-6 space-y-6 focus:outline-none">
+            <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
+              <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
+                VENDA DE INGRESSOS
               </div>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                {form.id && (
+              <div className="p-4 sm:p-6 space-y-2.5">
+                {/* Dias Captação (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                  <span className="font-bold text-xs text-slate-700 flex items-center gap-1.5">
+                    <Lock className="w-3 h-3 text-slate-400" />
+                    Dias Captação (calculado)
+                  </span>
+                  <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
+                    {calc.captureDays} {calc.captureDays === 1 ? 'dia' : 'dias'}
+                  </div>
+                </div>
+
+                {/* Turma */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                  <span className="font-medium text-sm text-slate-700">Turma</span>
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder='ex: "S1 - 23/08/2026"'
+                      value={form.batch}
+                      onChange={(e) => handleChange('batch', e.target.value)}
+                      className="bg-white border-slate-200 text-slate-900 font-bold text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                    />
+                  </div>
+                </div>
+
+                {/* Ticket Ingresso */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                  <span className="font-medium text-sm text-slate-700">Ticket Ingresso</span>
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
+                      R$
+                    </span>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min={0}
+                      value={form.ticket_ticket}
+                      onChange={(e) => handleChange('ticket_ticket', e.target.value)}
+                      className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                    />
+                  </div>
+                </div>
+
+                {/* Investimento Tráfego (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                  <span className="font-medium text-xs text-slate-700 flex items-center gap-1.5">
+                    <Lock className="w-3 h-3 text-slate-400" />
+                    Investimento Tráfego (soma dos dias)
+                  </span>
+                  <div className="text-right font-bold tabular-nums text-xs text-slate-900">
+                    {formatCurrency(calc.trafficInvestment)}
+                  </div>
+                </div>
+
+                {/* Tráfego Diário (CALCULATED - READ ONLY) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                  <span className="font-medium text-xs text-slate-500">Tráfego Diário</span>
+                  <div className="text-right font-bold tabular-nums text-xs text-slate-700">
+                    {formatCalculatedCurrency(calc.dailyTraffic)}
+                  </div>
+                </div>
+
+                {/* CAC (CALCULATED - READ ONLY) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                  <span className="font-medium text-xs text-slate-500">CAC</span>
+                  <div className="text-right font-bold tabular-nums text-xs text-slate-700">
+                    {formatCalculatedCurrency(calc.cac)}
+                  </div>
+                </div>
+
+                {/* Vendas Totais Ingresso (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                  <span className="font-medium text-xs text-slate-700 flex items-center gap-1.5">
+                    <Lock className="w-3 h-3 text-slate-400" />
+                    Vendas Totais Ingresso (soma dos dias)
+                  </span>
+                  <div className="text-right font-bold tabular-nums text-xs text-slate-900">
+                    {calc.totalTicketSales}
+                  </div>
+                </div>
+
+                {/* Média Vendas / Dia Ingresso (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
+                  <span className="font-bold text-sm text-amber-950">
+                    Média Vendas / Dia Ingresso
+                  </span>
+                  <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
+                    {formatCalculatedNumber(calc.avgSalesPerDay, 0)}
+                  </div>
+                </div>
+
+                {/* Reembolso */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
+                  <span className="font-medium text-sm text-slate-700">Reembolso</span>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={form.ticket_refunds}
+                    onChange={(e) => handleChange('ticket_refunds', e.target.value)}
+                    className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                  />
+                </div>
+
+                {/* Taxa Reembolso (CALCULATED - READ ONLY) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                  <span className="font-medium text-xs text-slate-500">Taxa Reembolso</span>
+                  <div className="text-right font-bold tabular-nums text-xs text-slate-700">
+                    {formatCalculatedPercent(calc.ticketRefundRate)}
+                  </div>
+                </div>
+
+                {/* Faturamento Ingressos (CALCULATED - READ ONLY) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
+                  <span className="font-semibold text-xs text-slate-700">
+                    Faturamento Ingressos
+                  </span>
+                  <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
+                    {formatCurrency(calc.ticketRevenue)}
+                  </div>
+                </div>
+
+                {/* ROAS Venda Ingresso (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
+                  <span className="font-bold text-sm text-amber-950">ROAS Venda Ingresso</span>
+                  <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
+                    {formatCalculatedNumber(calc.ticketRoas, 2)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Action Bar — own Save / Excluir */}
+              <div className="p-4 sm:p-6 bg-slate-50/80 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-xs text-slate-500 font-medium">
+                  Lançamento selecionado:{' '}
+                  <span className="font-bold text-[#6D49F2]">{form.batch || 'Sem nome'}</span>
+                  {form.id ? ' (Salvo no BD)' : ' (Novo)'}
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  {form.id && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleDelete}
+                      disabled={deleting || saving}
+                      className="border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 font-semibold text-xs rounded-xl h-11 px-4 transition-all"
+                    >
+                      {deleting ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </Button>
+                  )}
+
                   <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleDelete}
-                    disabled={deleting || saving}
-                    className="border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 font-semibold text-xs rounded-xl h-11 px-4 transition-all"
+                    onClick={handleSave}
+                    disabled={saving || deleting}
+                    className="w-full sm:w-auto px-8 h-11 bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all"
                   >
-                    {deleting ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                    {saving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Salvando...</span>
+                      </>
                     ) : (
-                      <Trash2 className="w-4 h-4" />
+                      <>
+                        <Save className="w-4 h-4" />
+                        <span>Salvar</span>
+                      </>
                     )}
                   </Button>
-                )}
-
-                <Button
-                  onClick={handleSave}
-                  disabled={saving || deleting}
-                  className="w-full sm:w-auto px-8 h-11 bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all"
-                >
-                  {saving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Salvando...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4" />
-                      <span>Salvar Lançamento</span>
-                    </>
-                  )}
-                </Button>
+                </div>
               </div>
-            </div>
-          </Card>
-        </div>
+            </Card>
+          </TabsContent>
+
+          {/* ============ TAB 3: CONTROLE AULAS ============ */}
+          <TabsContent value="aulas" className="mt-6 focus:outline-none">
+            <ControleAulasTab
+              sessions={form.class_sessions}
+              onChange={handleClassSessionsChange}
+              onSave={() => handleSaveArrays('class_sessions')}
+              saving={savingArrays}
+              launchBatch={form.batch}
+              launchId={form.id}
+            />
+          </TabsContent>
+
+          {/* ============ TAB 4: VENDAS COMERCIAL ============ */}
+          <TabsContent value="comercial" className="mt-6 focus:outline-none">
+            <VendasComercialTab
+              sales={form.commercial_sales}
+              onChange={handleCommercialSalesChange}
+              onSave={() => handleSaveArrays('commercial_sales')}
+              saving={savingArrays}
+              launchBatch={form.batch}
+              launchId={form.id}
+            />
+          </TabsContent>
+        </Tabs>
       )}
     </div>
   )

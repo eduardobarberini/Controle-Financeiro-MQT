@@ -8,6 +8,29 @@ export interface DailyEntry {
 
 export type DailyData = DailyEntry[] // array of 7 days (Seg..Dom)
 
+/** A single delivered class within a paid launch. */
+export interface ClassSession {
+  date: string // YYYY-MM-DD
+  topic: string
+  attendees: number | string
+  revenue: number | string
+  notes: string
+}
+
+export type ClassSessions = ClassSession[]
+
+/** Commercial/enterprise sales pipeline entry within a paid launch. */
+export interface CommercialSale {
+  client: string
+  product: string
+  value: number | string
+  status: 'Prospecto' | 'Negociação' | 'Fechado' | 'Perdido'
+  close_date: string // YYYY-MM-DD
+  notes: string
+}
+
+export type CommercialSales = CommercialSale[]
+
 export interface PaidLaunchRecord {
   id: string
   user: string
@@ -21,6 +44,8 @@ export interface PaidLaunchRecord {
   bump_sales: number
   bump_refunds: number
   daily_data?: DailyData
+  class_sessions?: ClassSessions
+  commercial_sales?: CommercialSales
   created: string
   updated: string
 }
@@ -36,4 +61,6 @@ export interface PaidLaunchInput {
   bump_sales: number
   bump_refunds: number
   daily_data?: DailyData
+  class_sessions?: ClassSessions
+  commercial_sales?: CommercialSales
 }

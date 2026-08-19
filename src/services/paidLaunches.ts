@@ -1,5 +1,10 @@
 import pb from '@/lib/pocketbase/client'
-import type { PaidLaunchRecord, PaidLaunchInput } from '@/types/paidLaunches'
+import type {
+  PaidLaunchRecord,
+  PaidLaunchInput,
+  ClassSessions,
+  CommercialSales,
+} from '@/types/paidLaunches'
 
 export const paidLaunchesService = {
   /** List all paid launch records for current user. */
@@ -52,5 +57,13 @@ export const paidLaunchesService = {
       console.error('paidLaunchesService.delete error:', err)
       throw err
     }
+  },
+
+  /** Partially update only the JSON array fields (class_sessions / commercial_sales). */
+  async saveArrays(
+    id: string,
+    data: { class_sessions?: ClassSessions; commercial_sales?: CommercialSales },
+  ): Promise<PaidLaunchRecord> {
+    return await pb.collection<PaidLaunchRecord>('paid_launches').update(id, data)
   },
 }

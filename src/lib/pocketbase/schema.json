@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19T12:17:02.333Z",
+  "generatedAt": "2026-08-19T12:28:55.524Z",
   "collections": [
     {
       "name": "users",
@@ -470,6 +470,18 @@
         },
         {
           "name": "daily_data",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "class_sessions",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "commercial_sales",
           "type": "json",
           "required": false,
           "system": false
