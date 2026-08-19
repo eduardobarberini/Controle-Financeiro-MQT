@@ -582,6 +582,12 @@ export default function LancamentoPago() {
               Venda de Ingressos
             </TabsTrigger>
             <TabsTrigger
+              value="upsell"
+              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
+            >
+              Upsell Plataforma
+            </TabsTrigger>
+            <TabsTrigger
               value="aulas"
               className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
             >
@@ -592,12 +598,6 @@ export default function LancamentoPago() {
               className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
             >
               Vendas Comercial
-            </TabsTrigger>
-            <TabsTrigger
-              value="upsell"
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
-            >
-              Upsell Plataforma
             </TabsTrigger>
           </TabsList>
 
@@ -1395,7 +1395,19 @@ export default function LancamentoPago() {
             </Card>
           </TabsContent>
 
-          {/* ============ TAB 3: CONTROLE AULAS ============ */}
+          {/* ============ TAB 3: UPSELL PLATAFORMA ============ */}
+          <TabsContent value="upsell" className="mt-6 focus:outline-none">
+            <UpsellPlatformTab
+              upsellData={form.upsell_platform}
+              onChange={handleUpsellPlatformChange}
+              onSave={() => handleSaveArrays('upsell_platform')}
+              saving={savingArrays}
+              launchBatch={form.batch}
+              launchId={form.id}
+            />
+          </TabsContent>
+
+          {/* ============ TAB 4: CONTROLE AULAS ============ */}
           <TabsContent value="aulas" className="mt-6 focus:outline-none">
             <ControleAulasTab
               sessions={form.class_sessions}
@@ -1407,24 +1419,12 @@ export default function LancamentoPago() {
             />
           </TabsContent>
 
-          {/* ============ TAB 4: VENDAS COMERCIAL ============ */}
+          {/* ============ TAB 5: VENDAS COMERCIAL ============ */}
           <TabsContent value="comercial" className="mt-6 focus:outline-none">
             <VendasComercialTab
               sales={form.commercial_sales}
               onChange={handleCommercialSalesChange}
               onSave={() => handleSaveArrays('commercial_sales')}
-              saving={savingArrays}
-              launchBatch={form.batch}
-              launchId={form.id}
-            />
-          </TabsContent>
-
-          {/* ============ TAB 5: UPSELL PLATAFORMA ============ */}
-          <TabsContent value="upsell" className="mt-6 focus:outline-none">
-            <UpsellPlatformTab
-              upsellData={form.upsell_platform}
-              onChange={handleUpsellPlatformChange}
-              onSave={() => handleSaveArrays('upsell_platform')}
               saving={savingArrays}
               launchBatch={form.batch}
               launchId={form.id}
