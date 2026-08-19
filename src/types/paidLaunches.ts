@@ -10,11 +10,9 @@ export type DailyData = DailyEntry[] // array of 7 days (Seg..Dom)
 
 /** A single delivered class within a paid launch. */
 export interface ClassSession {
-  date: string // YYYY-MM-DD
-  topic: string
-  attendees: number | string
-  revenue: number | string
-  notes: string
+  label: string
+  live_attendees: number | string
+  unique_viewers: number | string
 }
 
 export type ClassSessions = ClassSession[]
@@ -70,6 +68,7 @@ export interface PaidLaunchRecord {
   commercial_commission?: number
   revenue_tax_rate?: number
   traffic_tax_rate?: number
+  students_in_challenge?: number | string
   daily_data?: DailyData
   class_sessions?: ClassSessions
   commercial_sales?: CommercialSales
@@ -92,6 +91,7 @@ export interface PaidLaunchInput {
   commercial_commission?: number
   revenue_tax_rate?: number
   traffic_tax_rate?: number
+  students_in_challenge?: number | string
   daily_data?: DailyData
   class_sessions?: ClassSessions
   commercial_sales?: CommercialSales

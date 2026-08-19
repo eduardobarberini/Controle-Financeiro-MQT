@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19T17:25:22.958Z",
+  "generatedAt": "2026-08-19T17:36:42.220Z",
   "collections": [
     {
       "name": "users",
@@ -512,6 +512,12 @@
         },
         {
           "name": "traffic_tax_rate",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "students_in_challenge",
           "type": "number",
           "required": false,
           "system": false

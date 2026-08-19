@@ -36,6 +36,7 @@ import type {
   PaidLaunchRecord,
   PaidLaunchInput,
   DailyEntry,
+  ClassSession,
   ClassSessions,
   CommercialSales,
   UpsellPlatform,
@@ -48,6 +49,16 @@ import {
   formatCalculatedPercent,
   formatCalculatedNumber,
 } from '@/lib/launch-format'
+
+const DEFAULT_CLASS_SESSIONS: ClassSession[] = [
+  { label: 'Aula de Boas Vindas', live_attendees: '', unique_viewers: '' },
+  { label: 'Treino 1', live_attendees: '', unique_viewers: '' },
+  { label: 'Encontro Com a Nutri', live_attendees: '', unique_viewers: '' },
+  { label: 'Treino 2', live_attendees: '', unique_viewers: '' },
+  { label: 'Treino 3', live_attendees: '', unique_viewers: '' },
+  { label: 'Treino 4', live_attendees: '', unique_viewers: '' },
+  { label: 'Treino 5', live_attendees: '', unique_viewers: '' },
+]
 
 const DEFAULT_DAYS: DailyEntry[] = [
   { dayLabel: 'Seg', dateLabel: '8/6', investment: 18201, ticket_sales: 394, bump_sales: 116 },
@@ -131,6 +142,7 @@ interface FormState {
   commercial_commission: string | number
   revenue_tax_rate: string | number
   traffic_tax_rate: string | number
+  students_in_challenge: string | number
   daily_data: DailyEntry[]
   class_sessions: ClassSessions
   commercial_sales: CommercialSales
@@ -158,8 +170,9 @@ const DEFAULT_FORM: FormState = {
   commercial_commission: 3752,
   revenue_tax_rate: 9.0,
   traffic_tax_rate: 12.15,
+  students_in_challenge: '',
   daily_data: DEFAULT_DAYS,
-  class_sessions: [],
+  class_sessions: DEFAULT_CLASS_SESSIONS,
   commercial_sales: [],
   upsell_platform: DEFAULT_UPSELL_PLATFORM,
 }
@@ -196,11 +209,15 @@ export default function LancamentoPago() {
           commercial_commission: target.commercial_commission ?? 3752,
           revenue_tax_rate: target.revenue_tax_rate ?? 9.0,
           traffic_tax_rate: target.traffic_tax_rate ?? 12.15,
+          students_in_challenge: target.students_in_challenge ?? '',
           daily_data:
             target.daily_data && Array.isArray(target.daily_data) && target.daily_data.length === 7
               ? target.daily_data
               : DEFAULT_DAYS,
-          class_sessions: Array.isArray(target.class_sessions) ? target.class_sessions : [],
+          class_sessions:
+            Array.isArray(target.class_sessions) && target.class_sessions.length > 0
+              ? target.class_sessions
+              : DEFAULT_CLASS_SESSIONS,
           commercial_sales: Array.isArray(target.commercial_sales) ? target.commercial_sales : [],
           upsell_platform:
             target.upsell_platform &&
@@ -261,11 +278,15 @@ export default function LancamentoPago() {
           commercial_commission: found.commercial_commission ?? 3752,
           revenue_tax_rate: found.revenue_tax_rate ?? 9.0,
           traffic_tax_rate: found.traffic_tax_rate ?? 12.15,
+          students_in_challenge: found.students_in_challenge ?? '',
           daily_data:
             found.daily_data && Array.isArray(found.daily_data) && found.daily_data.length === 7
               ? found.daily_data
               : DEFAULT_DAYS,
-          class_sessions: Array.isArray(found.class_sessions) ? found.class_sessions : [],
+          class_sessions:
+            Array.isArray(found.class_sessions) && found.class_sessions.length > 0
+              ? found.class_sessions
+              : DEFAULT_CLASS_SESSIONS,
           commercial_sales: Array.isArray(found.commercial_sales) ? found.commercial_sales : [],
           upsell_platform:
             found.upsell_platform &&
@@ -350,9 +371,12 @@ export default function LancamentoPago() {
               matchingRecord.daily_data.length === 7
                 ? matchingRecord.daily_data
                 : DEFAULT_DAYS,
-            class_sessions: Array.isArray(matchingRecord.class_sessions)
-              ? matchingRecord.class_sessions
-              : [],
+            students_in_challenge: matchingRecord.students_in_challenge ?? '',
+            class_sessions:
+              Array.isArray(matchingRecord.class_sessions) &&
+              matchingRecord.class_sessions.length > 0
+                ? matchingRecord.class_sessions
+                : DEFAULT_CLASS_SESSIONS,
             commercial_sales: Array.isArray(matchingRecord.commercial_sales)
               ? matchingRecord.commercial_sales
               : [],
@@ -375,6 +399,30 @@ export default function LancamentoPago() {
       }
 
       return updated
+    })
+  }
+
+  // Handle class session input changes
+  const handleSessionChange = (
+    index: number,
+    field: 'live_attendees' | 'unique_viewers',
+    val: string,
+  ) => {
+    setForm((prev) => {
+      const currentSessions =
+        Array.isArray(prev.class_sessions) && prev.class_sessions.length > 0
+          ? [...prev.class_sessions]
+          : [...DEFAULT_CLASS_SESSIONS]
+
+      currentSessions[index] = {
+        ...currentSessions[index],
+        [field]: val,
+      }
+
+      return {
+        ...prev,
+        class_sessions: currentSessions,
+      }
     })
   }
 
@@ -652,6 +700,10 @@ export default function LancamentoPago() {
         commercial_commission: Number(form.commercial_commission) || 0,
         revenue_tax_rate: Number(form.revenue_tax_rate) || 0,
         traffic_tax_rate: Number(form.traffic_tax_rate) || 0,
+        students_in_challenge:
+          form.students_in_challenge !== ''
+            ? Number(form.students_in_challenge) || form.students_in_challenge
+            : '',
         daily_data: form.daily_data,
         class_sessions: form.class_sessions,
         commercial_sales: form.commercial_sales,
@@ -1427,7 +1479,18 @@ export default function LancamentoPago() {
 
           {/* ============ TAB 3: CONTROLE AULAS ============ */}
           <TabsContent value="aulas" className="mt-6 focus:outline-none">
-            <ControleAulasTab />
+            <ControleAulasTab
+              studentsInChallenge={form.students_in_challenge}
+              sessions={
+                Array.isArray(form.class_sessions) && form.class_sessions.length > 0
+                  ? form.class_sessions
+                  : DEFAULT_CLASS_SESSIONS
+              }
+              onChangeStudents={(val) => handleChange('students_in_challenge', val)}
+              onChangeSession={handleSessionChange}
+              onSave={handleSave}
+              saving={saving}
+            />
           </TabsContent>
 
           {/* ============ TAB 4: VENDAS COMERCIAL ============ */}
