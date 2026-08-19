@@ -18,16 +18,22 @@ export interface ClassSession {
 export type ClassSessions = ClassSession[]
 
 /** Commercial/enterprise sales pipeline entry within a paid launch. */
-export interface CommercialSale {
-  client: string
-  product: string
-  value: number | string
-  status: 'Prospecto' | 'Negociação' | 'Fechado' | 'Perdido'
-  close_date: string // YYYY-MM-DD
-  notes: string
+export interface CommercialCategoryMetrics {
+  card_pix_sales: number | string
+  card_pix_ticket: number | string
+  boleto_sales: number | string
+  boleto_ticket: number | string
 }
 
-export type CommercialSales = CommercialSale[]
+export interface CommercialSellerEntry {
+  id: string
+  name: string
+  commission_rate: number | string
+  plataforma: CommercialCategoryMetrics
+  renovacao: CommercialCategoryMetrics
+}
+
+export type CommercialSales = CommercialSellerEntry[]
 
 export interface UpsellDailyEntry {
   isPrimeiraHora?: boolean // Indicates special 'Primeira Hora' column

@@ -173,7 +173,42 @@ const DEFAULT_FORM: FormState = {
   students_in_challenge: '',
   daily_data: DEFAULT_DAYS,
   class_sessions: DEFAULT_CLASS_SESSIONS,
-  commercial_sales: [],
+  commercial_sales: [
+    {
+      id: 'seller-1',
+      name: 'Maju',
+      commission_rate: 5,
+      plataforma: {
+        card_pix_sales: 90,
+        card_pix_ticket: 297,
+        boleto_sales: 20,
+        boleto_ticket: 297,
+      },
+      renovacao: {
+        card_pix_sales: 10,
+        card_pix_ticket: 197,
+        boleto_sales: 2,
+        boleto_ticket: 197,
+      },
+    },
+    {
+      id: 'seller-2',
+      name: 'Marlene',
+      commission_rate: 5,
+      plataforma: {
+        card_pix_sales: 90,
+        card_pix_ticket: 297,
+        boleto_sales: 20,
+        boleto_ticket: 297,
+      },
+      renovacao: {
+        card_pix_sales: 10,
+        card_pix_ticket: 197,
+        boleto_sales: 2,
+        boleto_ticket: 197,
+      },
+    },
+  ],
   upsell_platform: DEFAULT_UPSELL_PLATFORM,
 }
 
@@ -218,7 +253,10 @@ export default function LancamentoPago() {
             Array.isArray(target.class_sessions) && target.class_sessions.length > 0
               ? target.class_sessions
               : DEFAULT_CLASS_SESSIONS,
-          commercial_sales: Array.isArray(target.commercial_sales) ? target.commercial_sales : [],
+          commercial_sales:
+            Array.isArray(target.commercial_sales) && target.commercial_sales.length > 0
+              ? target.commercial_sales
+              : DEFAULT_FORM.commercial_sales,
           upsell_platform:
             target.upsell_platform &&
             typeof target.upsell_platform === 'object' &&
@@ -287,7 +325,10 @@ export default function LancamentoPago() {
             Array.isArray(found.class_sessions) && found.class_sessions.length > 0
               ? found.class_sessions
               : DEFAULT_CLASS_SESSIONS,
-          commercial_sales: Array.isArray(found.commercial_sales) ? found.commercial_sales : [],
+          commercial_sales:
+            Array.isArray(found.commercial_sales) && found.commercial_sales.length > 0
+              ? found.commercial_sales
+              : DEFAULT_FORM.commercial_sales,
           upsell_platform:
             found.upsell_platform &&
             typeof found.upsell_platform === 'object' &&
@@ -377,9 +418,11 @@ export default function LancamentoPago() {
               matchingRecord.class_sessions.length > 0
                 ? matchingRecord.class_sessions
                 : DEFAULT_CLASS_SESSIONS,
-            commercial_sales: Array.isArray(matchingRecord.commercial_sales)
-              ? matchingRecord.commercial_sales
-              : [],
+            commercial_sales:
+              Array.isArray(matchingRecord.commercial_sales) &&
+              matchingRecord.commercial_sales.length > 0
+                ? matchingRecord.commercial_sales
+                : DEFAULT_FORM.commercial_sales,
             upsell_platform:
               matchingRecord.upsell_platform &&
               typeof matchingRecord.upsell_platform === 'object' &&
@@ -1495,7 +1538,20 @@ export default function LancamentoPago() {
 
           {/* ============ TAB 4: VENDAS COMERCIAL ============ */}
           <TabsContent value="comercial" className="mt-6 focus:outline-none">
-            <VendasComercialTab />
+            <VendasComercialTab
+              commercialSales={
+                Array.isArray(form.commercial_sales) && form.commercial_sales.length > 0
+                  ? form.commercial_sales
+                  : DEFAULT_FORM.commercial_sales
+              }
+              totalIngressos={dailyCalculated.totalTicketSales}
+              totalUpsells={upsellCalc.calculatedTotalSales}
+              onChangeSales={(sales) => handleChange('commercial_sales', sales as any)}
+              onSave={handleSave}
+              saving={saving}
+              launchBatch={form.batch}
+              launchId={form.id}
+            />
           </TabsContent>
         </Tabs>
       )}
