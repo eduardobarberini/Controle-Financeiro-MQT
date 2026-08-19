@@ -17,6 +17,7 @@ interface KpiCardProps {
   tooltipText?: string
   iconBgColor?: string
   iconColor?: string
+  size?: 'default' | 'large'
 }
 
 export const KpiCard: React.FC<KpiCardProps> = ({
@@ -32,7 +33,14 @@ export const KpiCard: React.FC<KpiCardProps> = ({
   statusMode = 'default',
   iconBgColor = 'bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20',
   iconColor,
+  size = 'default',
 }) => {
+  const isLarge = size === 'large'
+  const valueTextClass = isLarge ? 'text-3xl sm:text-4xl font-extrabold' : 'text-2xl font-bold'
+  const contentPaddingClass = isLarge ? 'p-6' : 'p-5'
+  const iconWrapClass = isLarge ? 'p-2.5' : 'p-2'
+  const iconSizeClass = isLarge ? 'w-5 h-5' : 'w-4 h-4'
+  const titleTextClass = isLarge ? 'text-sm' : 'text-xs'
   // Animated count-up simulation
   const [displayValue, setDisplayValue] = useState<number>(0)
 
@@ -119,23 +127,25 @@ export const KpiCard: React.FC<KpiCardProps> = ({
     <Card
       className={`${cardBgClass} shadow-sm rounded-2xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}
     >
-      <CardContent className="p-5 flex flex-col justify-between h-full">
+      <CardContent className={`${contentPaddingClass} flex flex-col justify-between h-full`}>
         {/* Top row: Label & Icon */}
         <div className="flex items-start justify-between gap-2 mb-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <span
+            className={`${titleTextClass} font-semibold uppercase tracking-wider text-slate-500`}
+          >
             {title}
           </span>
           <div
-            className={`p-2 rounded-xl border ${iconBgColor} shrink-0`}
+            className={`${iconWrapClass} rounded-xl border ${iconBgColor} shrink-0`}
             style={iconColor ? { color: iconColor } : undefined}
           >
-            <Icon className="w-4 h-4" />
+            <Icon className={iconSizeClass} />
           </div>
         </div>
 
         {/* Main Value */}
         <div className="my-1">
-          <div className="text-2xl font-bold tracking-tight text-slate-900 tabular-nums">
+          <div className={`${valueTextClass} tracking-tight text-slate-900 tabular-nums`}>
             {renderFormattedValue()}
           </div>
         </div>

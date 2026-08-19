@@ -139,9 +139,10 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
     <div className="space-y-6 animate-in fade-in-50 duration-300">
       {/* 2. Hierarchical KPI Cards */}
       <div className="space-y-4">
-        {/* Top large cards: Lucro Líquido, Faturamento Consolidado, Investimento Total */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Top large highlight cards (main KPIs): Lucro Líquido, Margem de Lucro % */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <KpiCard
+            size="large"
             title="Lucro Líquido"
             value={calc.lucroLiquido}
             formatType="currency"
@@ -155,37 +156,8 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
           />
 
           <KpiCard
-            title="Faturamento Consolidado"
-            value={calc.totalFaturamento}
-            formatType="currency"
-            icon={TrendingUp}
-            subtext="Soma de Ingressos, Bumps e Upsell"
-            iconBgColor="bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20"
-          />
-
-          <KpiCard
-            title="Investimento Total"
-            value={calc.totalInvestment}
-            formatType="currency"
-            icon={Calculator}
-            subtext="Tráfego + API + Comissão + Impostos"
-            iconBgColor="bg-[#FF2AFF]/10 text-[#FF2AFF] border-[#FF2AFF]/20"
-          />
-        </div>
-
-        {/* Bottom smaller cards: ROAS Médio, Margem de Lucro % */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <KpiCard
-            title="ROAS Médio"
-            value={calc.roasMedia}
-            formatType="roas"
-            icon={PieChart}
-            subtext="Total Faturamento / Investimento Tráfego"
-            iconBgColor="bg-amber-50 text-amber-700 border-amber-200"
-          />
-
-          <KpiCard
-            title="% Margem de Lucro"
+            size="large"
+            title="Margem de Lucro"
             value={calc.margemLucroPercent}
             formatType="percent"
             decimals={1}
@@ -196,6 +168,36 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                 : 'bg-rose-50 text-rose-700 border-rose-200'
             }
+          />
+        </div>
+
+        {/* Bottom smaller cards (secondary KPIs): Investimento Total, Faturamento Total, ROAS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <KpiCard
+            title="Investimento Total"
+            value={calc.totalInvestment}
+            formatType="currency"
+            icon={Calculator}
+            subtext="Tráfego + API + Comissão + Impostos"
+            iconBgColor="bg-[#FF2AFF]/10 text-[#FF2AFF] border-[#FF2AFF]/20"
+          />
+
+          <KpiCard
+            title="Faturamento Total"
+            value={calc.totalFaturamento}
+            formatType="currency"
+            icon={TrendingUp}
+            subtext="Soma de Ingressos, Bumps e Upsell"
+            iconBgColor="bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20"
+          />
+
+          <KpiCard
+            title="ROAS"
+            value={calc.roasMedia}
+            formatType="roas"
+            icon={PieChart}
+            subtext="Total Faturamento / Investimento Tráfego"
+            iconBgColor="bg-amber-50 text-amber-700 border-amber-200"
           />
         </div>
       </div>
