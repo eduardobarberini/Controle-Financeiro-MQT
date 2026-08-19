@@ -60,7 +60,7 @@ export const paidLaunchesService = {
     }
   },
 
-  /** Partially update only the JSON array fields (class_sessions / commercial_sales / upsell_platform). */
+  /** Partially update JSON / nested fields (class_sessions / commercial_sales / upsell_platform). */
   async saveArrays(
     id: string,
     data: {

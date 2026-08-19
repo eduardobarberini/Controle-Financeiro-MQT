@@ -13,6 +13,7 @@ import {
   CalendarDays,
   Lock,
 } from 'lucide-react'
+import { UpsellPlatformTab } from '@/components/launch/UpsellPlatformTab'
 import { KpiCard } from '@/components/dashboard/KpiCard'
 import { DailySalesChart } from '@/components/dashboard/DailySalesChart'
 import { Card } from '@/components/ui/card'
@@ -68,6 +69,15 @@ interface FormState {
   upsell_platform: UpsellPlatform
 }
 
+const DEFAULT_UPSELL_PLATFORM: UpsellPlatform = {
+  total_sales: '',
+  ticket: '',
+  card_pix_sales: '',
+  boleto_3x_sales: '',
+  refunds: '',
+  inadimplencia_rate: '',
+}
+
 const DEFAULT_FORM: FormState = {
   batch: 'S1 - 23/08/2026',
   capture_days: 1,
@@ -78,7 +88,7 @@ const DEFAULT_FORM: FormState = {
   daily_data: DEFAULT_DAYS,
   class_sessions: [],
   commercial_sales: [],
-  upsell_platform: [],
+  upsell_platform: DEFAULT_UPSELL_PLATFORM,
 }
 
 export default function LancamentoPago() {
@@ -98,7 +108,6 @@ export default function LancamentoPago() {
       setRecords(data)
 
       if (data.length > 0) {
-        // Find preferred or first record
         const target = preferredId ? data.find((r) => r.id === preferredId) || data[0] : data[0]
 
         setSelectedLaunchId(target.id)
@@ -116,7 +125,12 @@ export default function LancamentoPago() {
               : DEFAULT_DAYS,
           class_sessions: Array.isArray(target.class_sessions) ? target.class_sessions : [],
           commercial_sales: Array.isArray(target.commercial_sales) ? target.commercial_sales : [],
-          upsell_platform: Array.isArray(target.upsell_platform) ? target.upsell_platform : [],
+          upsell_platform:
+            target.upsell_platform &&
+            typeof target.upsell_platform === 'object' &&
+            !Array.isArray(target.upsell_platform)
+              ? { ...DEFAULT_UPSELL_PLATFORM, ...target.upsell_platform }
+              : DEFAULT_UPSELL_PLATFORM,
         })
       } else {
         setSelectedLaunchId('new')
@@ -164,10 +178,26 @@ export default function LancamentoPago() {
               : DEFAULT_DAYS,
           class_sessions: Array.isArray(found.class_sessions) ? found.class_sessions : [],
           commercial_sales: Array.isArray(found.commercial_sales) ? found.commercial_sales : [],
-          upsell_platform: Array.isArray(found.upsell_platform) ? found.upsell_platform : [],
+          upsell_platform:
+            found.upsell_platform &&
+            typeof found.upsell_platform === 'object' &&
+            !Array.isArray(found.upsell_platform)
+              ? { ...DEFAULT_UPSELL_PLATFORM, ...found.upsell_platform }
+              : DEFAULT_UPSELL_PLATFORM,
         })
       }
     }
+  }
+
+  // Handle upsell platform field changes
+  const handleUpsellChange = (field: keyof UpsellPlatform, value: string | number) => {
+    setForm((prev) => ({
+      ...prev,
+      upsell_platform: {
+        ...prev.upsell_platform,
+        [field]: value,
+      },
+    }))
   }
 
   // Handle single field input changes
@@ -175,7 +205,6 @@ export default function LancamentoPago() {
     setForm((prev) => {
       const updated = { ...prev, [field]: value }
 
-      // If user typed in 'batch' manually, check if it matches an existing record's batch name
       if (field === 'batch' && typeof value === 'string') {
         const matchingRecord = records.find(
           (r) => r.batch.trim().toLowerCase() === value.trim().toLowerCase(),
@@ -197,9 +226,12 @@ export default function LancamentoPago() {
             commercial_sales: Array.isArray(matchingRecord.commercial_sales)
               ? matchingRecord.commercial_sales
               : [],
-            upsell_platform: Array.isArray(matchingRecord.upsell_platform)
-              ? matchingRecord.upsell_platform
-              : [],
+            upsell_platform:
+              matchingRecord.upsell_platform &&
+              typeof matchingRecord.upsell_platform === 'object' &&
+              !Array.isArray(matchingRecord.upsell_platform)
+                ? { ...DEFAULT_UPSELL_PLATFORM, ...matchingRecord.upsell_platform }
+                : DEFAULT_UPSELL_PLATFORM,
           }
         }
       }
@@ -239,7 +271,6 @@ export default function LancamentoPago() {
       const ticketSales = Number(day.ticket_sales) || 0
       const bumpSales = Number(day.bump_sales) || 0
 
-      // Count day if there is investment or sales
       const hasData = day.investment !== '' || day.ticket_sales !== '' || day.bump_sales !== ''
       if (hasData) {
         activeDaysCount++
@@ -284,9 +315,34 @@ export default function LancamentoPago() {
     }
   }, [form.daily_data, form.ticket_ticket, form.bump_ticket])
 
+  // Upsell Platform Calculations
+  const upsellCalc = useMemo(() => {
+    const totalSales = Number(form.upsell_platform?.total_sales) || 0
+    const ticket = Number(form.upsell_platform?.ticket) || 0
+    const cardPixSales = Number(form.upsell_platform?.card_pix_sales) || 0
+    const boleto3xSales = Number(form.upsell_platform?.boleto_3x_sales) || 0
+    const refunds = Number(form.upsell_platform?.refunds) || 0
+    const inadimplenciaRate = Number(form.upsell_platform?.inadimplencia_rate) || 0
+
+    const totalTicketSales = dailyCalculated?.totalTicketSales || 0
+
+    const conversionRate = totalTicketSales > 0 ? totalSales / totalTicketSales : 0
+    const boletoRate = totalSales > 0 ? boleto3xSales / totalSales : 0
+    const refundRate = totalSales > 0 ? refunds / totalSales : 0
+
+    const platformRevenue =
+      cardPixSales * ticket + boleto3xSales * ticket * (1 - inadimplenciaRate / 100)
+
+    return {
+      conversionRate,
+      boletoRate,
+      refundRate,
+      platformRevenue,
+    }
+  }, [form.upsell_platform, dailyCalculated?.totalTicketSales])
+
   // Consolidated vertical form calculations
   const calc = useMemo(() => {
-    // Automatically derived totals from daily tracking
     const trafficInvestment = dailyCalculated.totalInvestment
     const totalTicketSales = dailyCalculated.totalTicketSales
     const bumpSales = dailyCalculated.totalBumpSales
@@ -298,7 +354,6 @@ export default function LancamentoPago() {
     const bumpTicket = Number(form.bump_ticket) || 0
     const bumpRefunds = Number(form.bump_refunds) || 0
 
-    // Venda de Ingressos
     const dailyTraffic = captureDays > 0 ? trafficInvestment / captureDays : 0
     const cac = totalTicketSales > 0 ? trafficInvestment / totalTicketSales : 0
     const avgSalesPerDay = captureDays > 0 ? totalTicketSales / captureDays : 0
@@ -306,12 +361,10 @@ export default function LancamentoPago() {
     const ticketRevenue = totalTicketSales * ticketTicket
     const ticketRoas = trafficInvestment > 0 ? ticketRevenue / trafficInvestment : 0
 
-    // Order Bump
     const bumpConversion = totalTicketSales > 0 ? bumpSales / totalTicketSales : 0
     const bumpRefundRate = bumpSales > 0 ? bumpRefunds / bumpSales : 0
     const bumpRevenue = bumpSales * bumpTicket
 
-    // Resultado Ingressos + Order Bumps
     const totalRevenue = ticketRevenue + bumpRevenue
     const averageTicket = totalTicketSales > 0 ? totalRevenue / totalTicketSales : 0
     const captureBalance = totalRevenue - trafficInvestment
@@ -355,6 +408,7 @@ export default function LancamentoPago() {
       conversaoBump: calc.bumpConversion,
     }
   }, [calc])
+
   // Save current launch
   const handleSave = async () => {
     if (!form.batch.trim()) {
@@ -385,8 +439,6 @@ export default function LancamentoPago() {
       }
 
       const savedRec = await paidLaunchesService.save(form.id, payload)
-
-      // Reload data and keep active saved launch selected
       await loadData(savedRec.id)
 
       toast({
@@ -527,7 +579,7 @@ export default function LancamentoPago() {
           {/* ============ TAB 1: VENDA DE INGRESSOS ============ */}
           <TabsContent value="ingressos" className="mt-6 space-y-6 focus:outline-none">
             <div className="space-y-4">
-              {/* Row 1 (Featured / Larger Cards): Faturamento Total, Investimento Tráfego, ROAS Geral */}
+              {/* Row 1: Faturamento Total, Investimento Tráfego, ROAS Geral */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <KpiCard
                   title="Faturamento Total"
@@ -557,7 +609,7 @@ export default function LancamentoPago() {
                 />
               </div>
 
-              {/* Row 2 (Secondary Cards): Saldo da Captação, Total Ingressos, Conversão Order Bump */}
+              {/* Row 2: Saldo da Captação, Total Ingressos, Conversão Order Bump */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <KpiCard
                   title="Saldo da Captação"
@@ -603,7 +655,7 @@ export default function LancamentoPago() {
                 }))}
               />
 
-              {/* NEW SECTION: ACOMPANHAMENTO DIÁRIO (TABELA HORIZONTAL) */}
+              {/* ACOMPANHAMENTO DIÁRIO */}
               <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
                 <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider flex items-center justify-between">
                   <span className="flex items-center gap-2">
@@ -618,7 +670,6 @@ export default function LancamentoPago() {
                 <div className="p-4 sm:p-6 overflow-x-auto">
                   <table className="w-full text-xs border-collapse min-w-[760px]">
                     <thead>
-                      {/* Row 1: Header - Day labels and dates */}
                       <tr className="bg-[#FAF8FF] border-b border-slate-200">
                         <th className="p-3 text-left font-bold text-slate-800 bg-slate-900 text-white w-48 text-sm">
                           Venda Ingressos
@@ -654,7 +705,7 @@ export default function LancamentoPago() {
                     </thead>
 
                     <tbody className="divide-y divide-slate-100">
-                      {/* Investimento (Manual) */}
+                      {/* Investimento */}
                       <tr className="hover:bg-slate-50/50 transition-colors">
                         <td className="p-2.5 font-medium text-slate-700">Investimento</td>
                         {form.daily_data.map((day, idx) => (
@@ -679,7 +730,7 @@ export default function LancamentoPago() {
                         ))}
                       </tr>
 
-                      {/* Vendas Ingresso (Manual) */}
+                      {/* Vendas Ingresso */}
                       <tr className="hover:bg-slate-50/50 transition-colors">
                         <td className="p-2.5 font-medium text-slate-700">Vendas Ingresso</td>
                         {form.daily_data.map((day, idx) => (
@@ -698,7 +749,7 @@ export default function LancamentoPago() {
                         ))}
                       </tr>
 
-                      {/* Faturamento Ingresso (Calculado) */}
+                      {/* Faturamento Ingresso */}
                       <tr className="bg-slate-50/80 font-bold">
                         <td className="p-2.5 text-slate-900">Faturamento Ingresso</td>
                         {dailyCalculated.days.map((dayCalc, idx) => (
@@ -711,7 +762,7 @@ export default function LancamentoPago() {
                         ))}
                       </tr>
 
-                      {/* Vendas Order Bump (Manual) */}
+                      {/* Vendas Order Bump */}
                       <tr className="hover:bg-slate-50/50 transition-colors">
                         <td className="p-2.5 font-medium text-slate-700">Vendas Order Bump</td>
                         {form.daily_data.map((day, idx) => (
@@ -728,7 +779,7 @@ export default function LancamentoPago() {
                         ))}
                       </tr>
 
-                      {/* % Conversão Order Bump (Calculado) */}
+                      {/* % Conversão Order Bump */}
                       <tr className="hover:bg-slate-50/50 transition-colors">
                         <td className="p-2.5 font-medium text-slate-700">% Conversão Order Bump</td>
                         {dailyCalculated.days.map((dayCalc, idx) => (
@@ -741,7 +792,7 @@ export default function LancamentoPago() {
                         ))}
                       </tr>
 
-                      {/* Faturamento Order Bump (Calculado) */}
+                      {/* Faturamento Order Bump */}
                       <tr className="hover:bg-slate-50/50 transition-colors">
                         <td className="p-2.5 font-medium text-slate-700">Faturamento Order Bump</td>
                         {dailyCalculated.days.map((dayCalc, idx) => (
@@ -754,7 +805,7 @@ export default function LancamentoPago() {
                         ))}
                       </tr>
 
-                      {/* Faturamento Total (Calculado - Soft Pastel Green Highlight) */}
+                      {/* Faturamento Total */}
                       <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-t border-b border-emerald-200">
                         <td className="p-2.5 text-emerald-950">Faturamento Total</td>
                         {dailyCalculated.days.map((dayCalc, idx) => (
@@ -767,7 +818,7 @@ export default function LancamentoPago() {
                         ))}
                       </tr>
 
-                      {/* Saldo Diário (Calculado - Soft Pastel Green Highlight with red text for negative) */}
+                      {/* Saldo Diário */}
                       <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-b border-emerald-200">
                         <td className="p-2.5 text-emerald-950">Saldo Diário</td>
                         {dailyCalculated.days.map((dayCalc, idx) => (
@@ -786,7 +837,7 @@ export default function LancamentoPago() {
                         ))}
                       </tr>
 
-                      {/* Ticket Médio (Calculado - Soft Pastel Green Highlight) */}
+                      {/* Ticket Médio */}
                       <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-b border-emerald-200">
                         <td className="p-2.5 text-emerald-950">Ticket Médio</td>
                         {dailyCalculated.days.map((dayCalc, idx) => (
@@ -799,7 +850,7 @@ export default function LancamentoPago() {
                         ))}
                       </tr>
 
-                      {/* CAC (Calculado - Soft Pastel Green Highlight) */}
+                      {/* CAC */}
                       <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-b border-emerald-200">
                         <td className="p-2.5 text-emerald-950">CAC</td>
                         {dailyCalculated.days.map((dayCalc, idx) => (
@@ -812,7 +863,7 @@ export default function LancamentoPago() {
                         ))}
                       </tr>
 
-                      {/* ROAS (Calculado - Soft Pastel Pink/Red Highlight) */}
+                      {/* ROAS */}
                       <tr className="bg-[#FDE8EC] font-bold text-rose-950 border-b border-rose-200">
                         <td className="p-2.5 text-rose-950">ROAS</td>
                         {dailyCalculated.days.map((dayCalc, idx) => (
@@ -836,7 +887,6 @@ export default function LancamentoPago() {
                 </div>
 
                 <div className="p-4 sm:p-6 space-y-2.5">
-                  {/* Dias Captação (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
                     <span className="font-bold text-xs text-slate-700 flex items-center gap-1.5">
                       <Lock className="w-3 h-3 text-slate-400" />
@@ -847,7 +897,6 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  {/* Turma */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
                     <span className="font-medium text-sm text-slate-700">Turma</span>
                     <div className="relative">
@@ -861,7 +910,6 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  {/* Ticket Ingresso */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
                     <span className="font-medium text-sm text-slate-700">Ticket Ingresso</span>
                     <div className="relative">
@@ -879,7 +927,6 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  {/* Investimento Tráfego (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
                     <span className="font-medium text-xs text-slate-700 flex items-center gap-1.5">
                       <Lock className="w-3 h-3 text-slate-400" />
@@ -890,7 +937,6 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  {/* Tráfego Diário (CALCULATED - READ ONLY) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
                     <span className="font-medium text-xs text-slate-500">Tráfego Diário</span>
                     <div className="text-right font-bold tabular-nums text-xs text-slate-700">
@@ -898,7 +944,6 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  {/* CAC (CALCULATED - READ ONLY) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
                     <span className="font-medium text-xs text-slate-500">CAC</span>
                     <div className="text-right font-bold tabular-nums text-xs text-slate-700">
@@ -906,7 +951,6 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  {/* Vendas Totais Ingresso (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
                     <span className="font-medium text-xs text-slate-700 flex items-center gap-1.5">
                       <Lock className="w-3 h-3 text-slate-400" />
@@ -917,7 +961,6 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  {/* Média Vendas / Dia Ingresso (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
                     <span className="font-bold text-sm text-amber-950">
                       Média Vendas / Dia Ingresso
@@ -927,7 +970,6 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  {/* Reembolso */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
                     <span className="font-medium text-sm text-slate-700">Reembolso</span>
                     <Input
@@ -939,7 +981,6 @@ export default function LancamentoPago() {
                     />
                   </div>
 
-                  {/* Taxa Reembolso (CALCULATED - READ ONLY) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
                     <span className="font-medium text-xs text-slate-500">Taxa Reembolso</span>
                     <div className="text-right font-bold tabular-nums text-xs text-slate-700">
@@ -947,7 +988,6 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  {/* Faturamento Ingressos (CALCULATED - READ ONLY) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
                     <span className="font-semibold text-xs text-slate-700">
                       Faturamento Ingressos
@@ -957,7 +997,6 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  {/* ROAS Venda Ingresso (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
                     <span className="font-bold text-sm text-amber-950">ROAS Venda Ingresso</span>
                     <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
@@ -974,7 +1013,6 @@ export default function LancamentoPago() {
                 </div>
 
                 <div className="p-4 sm:p-6 space-y-2.5">
-                  {/* Conversão Order Bump (CALCULATED - READ ONLY) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
                     <span className="font-bold text-xs text-[#6D49F2]">Conversão Order Bump</span>
                     <div className="text-right font-bold tabular-nums text-xs text-[#FF2AFF]">
@@ -982,7 +1020,6 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  {/* Ticket Order Bump */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
                     <span className="font-medium text-sm text-slate-700">Ticket Order Bump</span>
                     <div className="relative">
@@ -1000,7 +1037,6 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  {/* Vendas Order Bump (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
                     <span className="font-medium text-xs text-slate-700 flex items-center gap-1.5">
                       <Lock className="w-3 h-3 text-slate-400" />
@@ -1011,7 +1047,6 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  {/* Reembolso */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
                     <span className="font-medium text-sm text-slate-700">Reembolso</span>
                     <Input
@@ -1023,7 +1058,6 @@ export default function LancamentoPago() {
                     />
                   </div>
 
-                  {/* Taxa Reembolso (CALCULATED - READ ONLY) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
                     <span className="font-medium text-xs text-slate-500">Taxa Reembolso</span>
                     <div className="text-right font-bold tabular-nums text-xs text-slate-700">
@@ -1031,7 +1065,6 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  {/* Faturamento Order Bump (CALCULATED - READ ONLY) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
                     <span className="font-bold text-xs text-slate-700">Faturamento Order Bump</span>
                     <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
@@ -1048,7 +1081,6 @@ export default function LancamentoPago() {
                 </div>
 
                 <div className="p-4 sm:p-6 space-y-2.5">
-                  {/* Faturamento Total */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-emerald-50/80 px-3.5 rounded-xl border border-emerald-200/90">
                     <span className="font-bold text-xs text-emerald-900">Faturamento Total</span>
                     <div className="text-right font-bold tabular-nums text-sm text-emerald-700">
@@ -1056,7 +1088,6 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  {/* Ticket Médio (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
                     <span className="font-bold text-sm text-amber-950">Ticket Médio</span>
                     <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
@@ -1064,7 +1095,6 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  {/* Saldo da Captação (CALCULATED - SOFT PASTEL HIGHLIGHT WITH CONDITIONAL COLOR) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
                     <span className="font-bold text-sm text-amber-950">Saldo da Captação</span>
                     <div
@@ -1076,7 +1106,6 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  {/* ROAS Geral (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
                     <span className="font-bold text-sm text-amber-950">ROAS</span>
                     <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
@@ -1085,7 +1114,7 @@ export default function LancamentoPago() {
                   </div>
                 </div>
 
-                {/* Bottom Action Bar inside or attached to the bottom section */}
+                {/* Bottom Action Bar */}
                 <div className="p-4 sm:p-6 bg-slate-50/80 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="text-xs text-slate-500 font-medium">
                     Lançamento selecionado:{' '}
@@ -1135,9 +1164,15 @@ export default function LancamentoPago() {
 
           {/* ============ TAB 2: UPSELL PLATAFORMA ============ */}
           <TabsContent value="upsell" className="mt-6 focus:outline-none">
-            <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl p-16 flex flex-col items-center justify-center gap-3 text-slate-400">
-              <p className="text-sm text-slate-500 font-medium">Em breve</p>
-            </Card>
+            <UpsellPlatformTab
+              upsellData={form.upsell_platform}
+              onChangeField={handleUpsellChange}
+              upsellCalc={upsellCalc}
+              onSave={handleSave}
+              saving={saving}
+              launchBatch={form.batch}
+              launchId={form.id}
+            />
           </TabsContent>
 
           {/* ============ TAB 3: CONTROLE AULAS ============ */}

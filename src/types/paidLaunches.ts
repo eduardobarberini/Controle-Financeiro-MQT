@@ -31,16 +31,15 @@ export interface CommercialSale {
 
 export type CommercialSales = CommercialSale[]
 
-/** Upsell platform entry within a paid launch. */
-export interface UpsellPlatformItem {
-  client: string
-  product: string
-  value: number | string
-  date: string // YYYY-MM-DD
-  notes: string
+/** Upsell platform metrics within a paid launch. */
+export interface UpsellPlatform {
+  total_sales: number | string
+  ticket: number | string
+  card_pix_sales: number | string
+  boleto_3x_sales: number | string
+  refunds: number | string
+  inadimplencia_rate: number | string
 }
-
-export type UpsellPlatform = UpsellPlatformItem[]
 
 export interface PaidLaunchRecord {
   id: string
