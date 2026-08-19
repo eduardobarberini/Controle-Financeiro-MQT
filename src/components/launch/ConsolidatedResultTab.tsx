@@ -33,8 +33,6 @@ export interface ConsolidatedCalculations {
   ingressosRevenue: number
   orderBumpRevenue: number
   upsellPlatformRevenue: number
-  controleAulasRevenue: number
-  vendasComercialClosedRevenue: number
   totalFaturamento: number
   // Indicators
   roasMedia: number
@@ -51,8 +49,6 @@ interface ConsolidatedResultTabProps {
   ingressosRevenue: number
   orderBumpRevenue: number
   upsellPlatformRevenue: number
-  controleAulasRevenue: number
-  vendasComercialClosedRevenue: number
   onChangeField: (
     field: 'api_official_cost' | 'commercial_commission' | 'revenue_tax_rate' | 'traffic_tax_rate',
     value: string | number,
@@ -72,8 +68,6 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
   ingressosRevenue,
   orderBumpRevenue,
   upsellPlatformRevenue,
-  controleAulasRevenue,
-  vendasComercialClosedRevenue,
   onChangeField,
   onSave,
   saving,
@@ -90,13 +84,11 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
 
     const trafInvestment = Number(trafficInvestment) || 0
 
-    // Sum of all revenues
+    // Sum of remaining revenues (Ingressos, Order Bumps, Upsell Plataforma)
     const totalFaturamento =
       (Number(ingressosRevenue) || 0) +
       (Number(orderBumpRevenue) || 0) +
-      (Number(upsellPlatformRevenue) || 0) +
-      (Number(controleAulasRevenue) || 0) +
-      (Number(vendasComercialClosedRevenue) || 0)
+      (Number(upsellPlatformRevenue) || 0)
 
     // Taxes
     const revenueTaxAmount = totalFaturamento * (revTaxRate / 100)
@@ -127,8 +119,6 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
       ingressosRevenue: Number(ingressosRevenue) || 0,
       orderBumpRevenue: Number(orderBumpRevenue) || 0,
       upsellPlatformRevenue: Number(upsellPlatformRevenue) || 0,
-      controleAulasRevenue: Number(controleAulasRevenue) || 0,
-      vendasComercialClosedRevenue: Number(vendasComercialClosedRevenue) || 0,
       totalFaturamento,
       roasMedia,
       lucroLiquido,
@@ -143,8 +133,6 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
     ingressosRevenue,
     orderBumpRevenue,
     upsellPlatformRevenue,
-    controleAulasRevenue,
-    vendasComercialClosedRevenue,
   ])
 
   return (
@@ -171,7 +159,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
             value={calc.totalFaturamento}
             formatType="currency"
             icon={TrendingUp}
-            subtext="Soma de Ingressos, Bumps, Upsell, Aulas e Comercial Fechado"
+            subtext="Soma de Ingressos, Bumps e Upsell"
             iconBgColor="bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20"
           />
 
@@ -448,26 +436,6 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                 </span>
                 <span className="font-bold text-slate-900">
                   {formatCurrency(upsellPlatformRevenue)}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center py-1 border-b border-slate-100">
-                <span className="text-slate-600 flex items-center gap-1.5">
-                  <Lock className="w-3 h-3 text-slate-400" />
-                  Controle Aulas
-                </span>
-                <span className="font-bold text-slate-900">
-                  {formatCurrency(controleAulasRevenue)}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center py-1 border-b border-slate-100">
-                <span className="text-slate-600 flex items-center gap-1.5">
-                  <Lock className="w-3 h-3 text-slate-400" />
-                  Comercial (Fechado)
-                </span>
-                <span className="font-bold text-slate-900">
-                  {formatCurrency(vendasComercialClosedRevenue)}
                 </span>
               </div>
 

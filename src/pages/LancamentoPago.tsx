@@ -818,8 +818,6 @@ export default function LancamentoPago() {
               ingressosRevenue={calc.ticketRevenue}
               orderBumpRevenue={calc.bumpRevenue}
               upsellPlatformRevenue={upsellCalc.platformRevenue}
-              controleAulasRevenue={classSessionsRevenue}
-              vendasComercialClosedRevenue={commercialSalesClosedRevenue}
               onChangeField={(field, val) => handleChange(field, val)}
               onSave={handleSave}
               saving={saving}
