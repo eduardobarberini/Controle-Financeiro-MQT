@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T22:39:43.177Z",
+  "generatedAt": "2026-08-19T12:08:36.536Z",
   "collections": [
     {
       "name": "users",
@@ -466,6 +466,12 @@
           "name": "batch",
           "type": "text",
           "required": true,
+          "system": false
+        },
+        {
+          "name": "daily_data",
+          "type": "json",
+          "required": false,
           "system": false
         }
       ],

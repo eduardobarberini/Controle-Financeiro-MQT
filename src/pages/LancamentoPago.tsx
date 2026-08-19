@@ -10,6 +10,8 @@ import {
   Calendar,
   Plus,
   Trash2,
+  CalendarDays,
+  Lock,
 } from 'lucide-react'
 import { KpiCard } from '@/components/dashboard/KpiCard'
 import { Card } from '@/components/ui/card'
@@ -24,19 +26,27 @@ import {
 } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { paidLaunchesService } from '@/services/paidLaunches'
-import type { PaidLaunchRecord, PaidLaunchInput } from '@/types/paidLaunches'
+import type { PaidLaunchRecord, PaidLaunchInput, DailyEntry } from '@/types/paidLaunches'
+
+const DEFAULT_DAYS: DailyEntry[] = [
+  { dayLabel: 'Seg', dateLabel: '8/6', investment: 18201, ticket_sales: 394, bump_sales: 116 },
+  { dayLabel: 'Ter', dateLabel: '9/6', investment: '', ticket_sales: '', bump_sales: '' },
+  { dayLabel: 'Qua', dateLabel: '10/6', investment: '', ticket_sales: '', bump_sales: '' },
+  { dayLabel: 'Qui', dateLabel: '11/6', investment: '', ticket_sales: '', bump_sales: '' },
+  { dayLabel: 'Sex', dateLabel: '12/6', investment: '', ticket_sales: '', bump_sales: '' },
+  { dayLabel: 'Sáb', dateLabel: '13/6', investment: '', ticket_sales: '', bump_sales: '' },
+  { dayLabel: 'Dom', dateLabel: '14/6', investment: '', ticket_sales: '', bump_sales: '' },
+]
 
 interface FormState {
   id?: string
   capture_days: string | number
   batch: string
   ticket_ticket: string | number
-  traffic_investment: string | number
-  total_ticket_sales: string | number
   ticket_refunds: string | number
   bump_ticket: string | number
-  bump_sales: string | number
   bump_refunds: string | number
+  daily_data: DailyEntry[]
 }
 
 // Utility formatting
@@ -78,14 +88,12 @@ const formatCalculatedNumber = (val: number, decimals = 2): string => {
 
 const DEFAULT_FORM: FormState = {
   batch: 'S1 - 23/08/2026',
-  capture_days: 7,
+  capture_days: 1,
   ticket_ticket: 29.9,
-  traffic_investment: 120546,
-  total_ticket_sales: 3041,
   ticket_refunds: 17,
   bump_ticket: 19.9,
-  bump_sales: 639,
   bump_refunds: 3,
+  daily_data: DEFAULT_DAYS,
 }
 
 export default function LancamentoPago() {
@@ -111,15 +119,16 @@ export default function LancamentoPago() {
         setSelectedLaunchId(target.id)
         setForm({
           id: target.id,
-          capture_days: target.capture_days,
+          capture_days: target.capture_days ?? 0,
           batch: target.batch,
-          ticket_ticket: target.ticket_ticket,
-          traffic_investment: target.traffic_investment,
-          total_ticket_sales: target.total_ticket_sales,
-          ticket_refunds: target.ticket_refunds,
-          bump_ticket: target.bump_ticket,
-          bump_sales: target.bump_sales,
-          bump_refunds: target.bump_refunds,
+          ticket_ticket: target.ticket_ticket ?? 0,
+          ticket_refunds: target.ticket_refunds ?? 0,
+          bump_ticket: target.bump_ticket ?? 0,
+          bump_refunds: target.bump_refunds ?? 0,
+          daily_data:
+            target.daily_data && Array.isArray(target.daily_data) && target.daily_data.length === 7
+              ? target.daily_data
+              : DEFAULT_DAYS,
         })
       } else {
         setSelectedLaunchId('new')
@@ -155,15 +164,16 @@ export default function LancamentoPago() {
       if (found) {
         setForm({
           id: found.id,
-          capture_days: found.capture_days,
+          capture_days: found.capture_days ?? 0,
           batch: found.batch,
-          ticket_ticket: found.ticket_ticket,
-          traffic_investment: found.traffic_investment,
-          total_ticket_sales: found.total_ticket_sales,
-          ticket_refunds: found.ticket_refunds,
-          bump_ticket: found.bump_ticket,
-          bump_sales: found.bump_sales,
-          bump_refunds: found.bump_refunds,
+          ticket_ticket: found.ticket_ticket ?? 0,
+          ticket_refunds: found.ticket_refunds ?? 0,
+          bump_ticket: found.bump_ticket ?? 0,
+          bump_refunds: found.bump_refunds ?? 0,
+          daily_data:
+            found.daily_data && Array.isArray(found.daily_data) && found.daily_data.length === 7
+              ? found.daily_data
+              : DEFAULT_DAYS,
         })
       }
     }
@@ -180,11 +190,16 @@ export default function LancamentoPago() {
           (r) => r.batch.trim().toLowerCase() === value.trim().toLowerCase(),
         )
         if (matchingRecord && matchingRecord.id !== prev.id) {
-          // Keep user's input string intact while linking the existing ID
           return {
             ...matchingRecord,
             batch: value,
             id: matchingRecord.id,
+            daily_data:
+              matchingRecord.daily_data &&
+              Array.isArray(matchingRecord.daily_data) &&
+              matchingRecord.daily_data.length === 7
+                ? matchingRecord.daily_data
+                : DEFAULT_DAYS,
           }
         }
       }
@@ -193,16 +208,94 @@ export default function LancamentoPago() {
     })
   }
 
-  // Calculations for current active vertical form
-  const calc = useMemo(() => {
-    const captureDays = Number(form.capture_days) || 0
+  // Handle changes in daily tracking table
+  const handleDailyChange = (
+    index: number,
+    field: 'dayLabel' | 'dateLabel' | 'investment' | 'ticket_sales' | 'bump_sales',
+    val: string,
+  ) => {
+    setForm((prev) => {
+      const newDaily = [...prev.daily_data]
+      newDaily[index] = {
+        ...newDaily[index],
+        [field]: val,
+      }
+      return { ...prev, daily_data: newDaily }
+    })
+  }
+
+  // Computed per-day metrics and consolidated totals
+  const dailyCalculated = useMemo(() => {
     const ticketTicket = Number(form.ticket_ticket) || 0
-    const trafficInvestment = Number(form.traffic_investment) || 0
-    const totalTicketSales = Number(form.total_ticket_sales) || 0
+    const bumpTicket = Number(form.bump_ticket) || 0
+
+    let totalInvestment = 0
+    let totalTicketSales = 0
+    let totalBumpSales = 0
+    let activeDaysCount = 0
+
+    const days = form.daily_data.map((day) => {
+      const inv = Number(day.investment) || 0
+      const ticketSales = Number(day.ticket_sales) || 0
+      const bumpSales = Number(day.bump_sales) || 0
+
+      // Count day if there is investment or sales
+      const hasData = day.investment !== '' || day.ticket_sales !== '' || day.bump_sales !== ''
+      if (hasData) {
+        activeDaysCount++
+      }
+
+      totalInvestment += inv
+      totalTicketSales += ticketSales
+      totalBumpSales += bumpSales
+
+      const ticketRevenue = ticketSales * ticketTicket
+      const bumpRevenue = bumpSales * bumpTicket
+      const bumpConversion = ticketSales > 0 ? bumpSales / ticketSales : 0
+      const totalRevenue = ticketRevenue + bumpRevenue
+      const dailyBalance = totalRevenue - inv
+      const averageTicket = ticketSales > 0 ? totalRevenue / ticketSales : 0
+      const cac = ticketSales > 0 ? inv / ticketSales : 0
+      const roas = inv > 0 ? totalRevenue / inv : 0
+
+      return {
+        ...day,
+        inv,
+        ticketSales,
+        bumpSales,
+        ticketRevenue,
+        bumpRevenue,
+        bumpConversion,
+        totalRevenue,
+        dailyBalance,
+        averageTicket,
+        cac,
+        roas,
+        hasData,
+      }
+    })
+
+    return {
+      days,
+      totalInvestment,
+      totalTicketSales,
+      totalBumpSales,
+      activeDaysCount,
+    }
+  }, [form.daily_data, form.ticket_ticket, form.bump_ticket])
+
+  // Consolidated vertical form calculations
+  const calc = useMemo(() => {
+    // Automatically derived totals from daily tracking
+    const trafficInvestment = dailyCalculated.totalInvestment
+    const totalTicketSales = dailyCalculated.totalTicketSales
+    const bumpSales = dailyCalculated.totalBumpSales
+    const captureDays = dailyCalculated.activeDaysCount
+
+    const ticketTicket = Number(form.ticket_ticket) || 0
     const ticketRefunds = Number(form.ticket_refunds) || 0
 
     const bumpTicket = Number(form.bump_ticket) || 0
-    const bumpSales = Number(form.bump_sales) || 0
     const bumpRefunds = Number(form.bump_refunds) || 0
 
     // Venda de Ingressos
@@ -225,6 +318,7 @@ export default function LancamentoPago() {
     const overallRoas = trafficInvestment > 0 ? totalRevenue / trafficInvestment : 0
 
     return {
+      captureDays,
       dailyTraffic,
       cac,
       avgSalesPerDay,
@@ -242,7 +336,13 @@ export default function LancamentoPago() {
       totalTicketSales,
       bumpSales,
     }
-  }, [form])
+  }, [
+    dailyCalculated,
+    form.ticket_ticket,
+    form.ticket_refunds,
+    form.bump_ticket,
+    form.bump_refunds,
+  ])
 
   // Top Dashboard KPIs reflect currently loaded launch
   const dashboardKpis = useMemo(() => {
@@ -269,15 +369,16 @@ export default function LancamentoPago() {
     setSaving(true)
     try {
       const payload: PaidLaunchInput = {
-        capture_days: Number(form.capture_days) || 0,
+        capture_days: calc.captureDays,
         batch: form.batch.trim(),
         ticket_ticket: Number(form.ticket_ticket) || 0,
-        traffic_investment: Number(form.traffic_investment) || 0,
-        total_ticket_sales: Number(form.total_ticket_sales) || 0,
+        traffic_investment: calc.trafficInvestment,
+        total_ticket_sales: calc.totalTicketSales,
         ticket_refunds: Number(form.ticket_refunds) || 0,
         bump_ticket: Number(form.bump_ticket) || 0,
-        bump_sales: Number(form.bump_sales) || 0,
+        bump_sales: calc.bumpSales,
         bump_refunds: Number(form.bump_refunds) || 0,
+        daily_data: form.daily_data,
       }
 
       const savedRec = await paidLaunchesService.save(form.id, payload)
@@ -448,6 +549,226 @@ export default function LancamentoPago() {
         </Card>
       ) : (
         <div className="w-full space-y-6">
+          {/* NEW SECTION: ACOMPANHAMENTO DIÁRIO (TABELA HORIZONTAL) */}
+          <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
+            <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <CalendarDays className="w-4 h-4 text-[#FF2AFF]" />
+                Acompanhamento Diário - Vendas da Semana
+              </span>
+              <span className="text-[11px] text-slate-300 font-normal normal-case">
+                Preencha Investimento, Vendas Ingresso e Order Bump por dia
+              </span>
+            </div>
+
+            <div className="p-4 sm:p-6 overflow-x-auto">
+              <table className="w-full text-xs border-collapse min-w-[760px]">
+                <thead>
+                  {/* Row 1: Header - Day labels and dates */}
+                  <tr className="bg-[#FAF8FF] border-b border-slate-200">
+                    <th className="p-3 text-left font-bold text-slate-800 bg-slate-900 text-white w-48 text-sm">
+                      Venda Ingressos
+                    </th>
+                    {form.daily_data.map((day, idx) => (
+                      <th
+                        key={idx}
+                        className="p-2 text-center font-bold text-slate-800 bg-[#F2EBFF] border-l border-slate-200/80 min-w-[100px]"
+                      >
+                        <div className="flex items-center justify-center gap-1">
+                          <input
+                            type="text"
+                            value={day.dayLabel || ''}
+                            onChange={(e) => handleDailyChange(idx, 'dayLabel', e.target.value)}
+                            className="w-10 text-center font-bold text-slate-900 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2]"
+                            placeholder="Dia"
+                          />
+                        </div>
+                        <div className="text-[11px] text-slate-500 font-normal mt-0.5">
+                          <input
+                            type="text"
+                            value={day.dateLabel || ''}
+                            onChange={(e) => handleDailyChange(idx, 'dateLabel', e.target.value)}
+                            className="w-12 text-center text-slate-600 bg-transparent border-b border-dashed border-slate-300 focus:outline-none focus:border-[#6D49F2]"
+                            placeholder="Data"
+                          />
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+
+                <tbody className="divide-y divide-slate-100">
+                  {/* Investimento (Manual) */}
+                  <tr className="hover:bg-slate-50/50 transition-colors">
+                    <td className="p-2.5 font-medium text-slate-700">Investimento</td>
+                    {form.daily_data.map((day, idx) => (
+                      <td key={idx} className="p-1.5 border-l border-slate-100 text-center">
+                        <div className="relative">
+                          <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">
+                            R$
+                          </span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min={0}
+                            placeholder="0"
+                            value={day.investment}
+                            onChange={(e) => handleDailyChange(idx, 'investment', e.target.value)}
+                            className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                          />
+                        </div>
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* Vendas Ingresso (Manual) */}
+                  <tr className="hover:bg-slate-50/50 transition-colors">
+                    <td className="p-2.5 font-medium text-slate-700">Vendas Ingresso</td>
+                    {form.daily_data.map((day, idx) => (
+                      <td key={idx} className="p-1.5 border-l border-slate-100 text-center">
+                        <Input
+                          type="number"
+                          min={0}
+                          placeholder="0"
+                          value={day.ticket_sales}
+                          onChange={(e) => handleDailyChange(idx, 'ticket_sales', e.target.value)}
+                          className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                        />
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* Faturamento Ingresso (Calculado) */}
+                  <tr className="bg-slate-50/80 font-bold">
+                    <td className="p-2.5 text-slate-900">Faturamento Ingresso</td>
+                    {dailyCalculated.days.map((dayCalc, idx) => (
+                      <td
+                        key={idx}
+                        className="p-2 border-l border-slate-200/80 text-center tabular-nums text-slate-900"
+                      >
+                        {formatCurrency(dayCalc.ticketRevenue)}
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* Vendas Order Bump (Manual) */}
+                  <tr className="hover:bg-slate-50/50 transition-colors">
+                    <td className="p-2.5 font-medium text-slate-700">Vendas Order Bump</td>
+                    {form.daily_data.map((day, idx) => (
+                      <td key={idx} className="p-1.5 border-l border-slate-100 text-center">
+                        <Input
+                          type="number"
+                          min={0}
+                          placeholder="0"
+                          value={day.bump_sales}
+                          onChange={(e) => handleDailyChange(idx, 'bump_sales', e.target.value)}
+                          className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                        />
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* % Conversão Order Bump (Calculado) */}
+                  <tr className="hover:bg-slate-50/50 transition-colors">
+                    <td className="p-2.5 font-medium text-slate-700">% Conversão Order Bump</td>
+                    {dailyCalculated.days.map((dayCalc, idx) => (
+                      <td
+                        key={idx}
+                        className="p-2 border-l border-slate-100 text-center tabular-nums text-slate-600"
+                      >
+                        {formatPercent(dayCalc.bumpConversion)}
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* Faturamento Order Bump (Calculado) */}
+                  <tr className="hover:bg-slate-50/50 transition-colors">
+                    <td className="p-2.5 font-medium text-slate-700">Faturamento Order Bump</td>
+                    {dailyCalculated.days.map((dayCalc, idx) => (
+                      <td
+                        key={idx}
+                        className="p-2 border-l border-slate-100 text-center tabular-nums text-slate-700"
+                      >
+                        {formatCurrency(dayCalc.bumpRevenue)}
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* Faturamento Total (Calculado - Soft Pastel Green Highlight) */}
+                  <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-t border-b border-emerald-200">
+                    <td className="p-2.5 text-emerald-950">Faturamento Total</td>
+                    {dailyCalculated.days.map((dayCalc, idx) => (
+                      <td
+                        key={idx}
+                        className="p-2 border-l border-emerald-200/80 text-center tabular-nums text-emerald-900"
+                      >
+                        {formatCurrency(dayCalc.totalRevenue)}
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* Saldo Diário (Calculado - Soft Pastel Green Highlight with red text for negative) */}
+                  <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-b border-emerald-200">
+                    <td className="p-2.5 text-emerald-950">Saldo Diário</td>
+                    {dailyCalculated.days.map((dayCalc, idx) => (
+                      <td
+                        key={idx}
+                        className={`p-2 border-l border-emerald-200/80 text-center tabular-nums ${
+                          dayCalc.dailyBalance < 0
+                            ? 'text-rose-600 font-extrabold'
+                            : 'text-emerald-900'
+                        }`}
+                      >
+                        {dayCalc.dailyBalance < 0
+                          ? `-R$ ${Math.abs(dayCalc.dailyBalance).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                          : formatCurrency(dayCalc.dailyBalance)}
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* Ticket Médio (Calculado - Soft Pastel Green Highlight) */}
+                  <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-b border-emerald-200">
+                    <td className="p-2.5 text-emerald-950">Ticket Médio</td>
+                    {dailyCalculated.days.map((dayCalc, idx) => (
+                      <td
+                        key={idx}
+                        className="p-2 border-l border-emerald-200/80 text-center tabular-nums text-emerald-900"
+                      >
+                        {formatCalculatedNumber(dayCalc.averageTicket, 1)}
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* CAC (Calculado - Soft Pastel Green Highlight) */}
+                  <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-b border-emerald-200">
+                    <td className="p-2.5 text-emerald-950">CAC</td>
+                    {dailyCalculated.days.map((dayCalc, idx) => (
+                      <td
+                        key={idx}
+                        className="p-2 border-l border-emerald-200/80 text-center tabular-nums text-emerald-900"
+                      >
+                        {formatCalculatedNumber(dayCalc.cac, 1)}
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* ROAS (Calculado - Soft Pastel Pink/Red Highlight) */}
+                  <tr className="bg-[#FDE8EC] font-bold text-rose-950 border-b border-rose-200">
+                    <td className="p-2.5 text-rose-950">ROAS</td>
+                    {dailyCalculated.days.map((dayCalc, idx) => (
+                      <td
+                        key={idx}
+                        className="p-2 border-l border-rose-200/80 text-center tabular-nums text-rose-950"
+                      >
+                        {formatCalculatedNumber(dayCalc.roas, 2)}
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
           {/* BLOCK 1: VENDA DE INGRESSOS */}
           <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
             <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
@@ -455,16 +776,15 @@ export default function LancamentoPago() {
             </div>
 
             <div className="p-4 sm:p-6 space-y-2.5">
-              {/* Dias Captação */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                <span className="font-bold text-sm text-slate-800">Dias Captação</span>
-                <Input
-                  type="number"
-                  min={1}
-                  value={form.capture_days}
-                  onChange={(e) => handleChange('capture_days', e.target.value)}
-                  className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                />
+              {/* Dias Captação (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                <span className="font-bold text-xs text-slate-700 flex items-center gap-1.5">
+                  <Lock className="w-3 h-3 text-slate-400" />
+                  Dias Captação (calculado)
+                </span>
+                <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
+                  {calc.captureDays} {calc.captureDays === 1 ? 'dia' : 'dias'}
+                </div>
               </div>
 
               {/* Turma */}
@@ -499,21 +819,14 @@ export default function LancamentoPago() {
                 </div>
               </div>
 
-              {/* Investimento Tráfego */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                <span className="font-medium text-sm text-slate-700">Investimento Tráfego</span>
-                <div className="relative">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
-                    R$
-                  </span>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min={0}
-                    value={form.traffic_investment}
-                    onChange={(e) => handleChange('traffic_investment', e.target.value)}
-                    className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                  />
+              {/* Investimento Tráfego (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                <span className="font-medium text-xs text-slate-700 flex items-center gap-1.5">
+                  <Lock className="w-3 h-3 text-slate-400" />
+                  Investimento Tráfego (soma dos dias)
+                </span>
+                <div className="text-right font-bold tabular-nums text-xs text-slate-900">
+                  {formatCurrency(calc.trafficInvestment)}
                 </div>
               </div>
 
@@ -533,16 +846,15 @@ export default function LancamentoPago() {
                 </div>
               </div>
 
-              {/* Vendas Totais Ingresso */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                <span className="font-medium text-sm text-slate-700">Vendas Totais Ingresso</span>
-                <Input
-                  type="number"
-                  min={0}
-                  value={form.total_ticket_sales}
-                  onChange={(e) => handleChange('total_ticket_sales', e.target.value)}
-                  className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                />
+              {/* Vendas Totais Ingresso (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                <span className="font-medium text-xs text-slate-700 flex items-center gap-1.5">
+                  <Lock className="w-3 h-3 text-slate-400" />
+                  Vendas Totais Ingresso (soma dos dias)
+                </span>
+                <div className="text-right font-bold tabular-nums text-xs text-slate-900">
+                  {calc.totalTicketSales}
+                </div>
               </div>
 
               {/* Média Vendas / Dia Ingresso (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
@@ -626,16 +938,15 @@ export default function LancamentoPago() {
                 </div>
               </div>
 
-              {/* Vendas Order Bump */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                <span className="font-medium text-sm text-slate-700">Vendas Order Bump</span>
-                <Input
-                  type="number"
-                  min={0}
-                  value={form.bump_sales}
-                  onChange={(e) => handleChange('bump_sales', e.target.value)}
-                  className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                />
+              {/* Vendas Order Bump (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+                <span className="font-medium text-xs text-slate-700 flex items-center gap-1.5">
+                  <Lock className="w-3 h-3 text-slate-400" />
+                  Vendas Order Bump (soma dos dias)
+                </span>
+                <div className="text-right font-bold tabular-nums text-xs text-slate-900">
+                  {calc.bumpSales}
+                </div>
               </div>
 
               {/* Reembolso */}
