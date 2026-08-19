@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { ArrowUpCircle, Save, Loader2, DollarSign, Percent, CalendarDays, Lock } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { KpiCard } from '@/components/dashboard/KpiCard'
+import { PlatformDailyChart } from '@/components/launch/PlatformDailyChart'
 import type { UpsellPlatform, UpsellDailyEntry } from '@/types/paidLaunches'
 import { formatCurrency, formatCalculatedPercent } from '@/lib/launch-format'
 
@@ -51,6 +52,19 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
   launchBatch,
   launchId,
 }) => {
+  // Build chart data from the same dailyPlatformData that feeds the daily control table.
+  // Total sales per day = Cartão/PIX + Boleto; conversion = the same "% Conversão Desafio / Plataforma" calc.
+  const chartData = useMemo(() => {
+    return (dailySalesList ?? []).map((day, idx) => {
+      const calcDay = upsellCalc.dailyCalculatedTotals?.[idx]
+      return {
+        dayLabel: day.isPrimeiraHora ? '1ª Hora' : day.dayLabel,
+        totalSales: calcDay?.totalSales ?? 0,
+        conversionRate: calcDay?.conversionRate ?? 0,
+      }
+    })
+  }, [dailySalesList, upsellCalc.dailyCalculatedTotals])
+
   return (
     <div className="space-y-6">
       {/* Upper Header / KPI Cards */}
@@ -73,6 +87,9 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
           iconBgColor="bg-[#FF2AFF]/10 text-[#FF2AFF] border-[#FF2AFF]/20"
         />
       </div>
+
+      {/* CHART: Vendas Diárias × Conversão (Recharts) */}
+      <PlatformDailyChart days={chartData} />
 
       {/* Main Form Card */}
       <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
