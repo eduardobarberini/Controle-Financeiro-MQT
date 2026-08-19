@@ -501,7 +501,7 @@ export default function LancamentoPago() {
               value="upsell"
               className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
             >
-              Upsell Plataforma
+              Venda Plataforma
             </TabsTrigger>
             <TabsTrigger
               value="aulas"
