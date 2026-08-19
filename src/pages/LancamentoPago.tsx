@@ -14,6 +14,7 @@ import {
   Lock,
 } from 'lucide-react'
 import { KpiCard } from '@/components/dashboard/KpiCard'
+import { DailySalesChart } from '@/components/dashboard/DailySalesChart'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -549,6 +550,15 @@ export default function LancamentoPago() {
         </Card>
       ) : (
         <div className="w-full space-y-6">
+          {/* CHART: Vendas Diárias × Conversão Order Bump */}
+          <DailySalesChart
+            days={dailyCalculated.days.map((d) => ({
+              dayLabel: d.dayLabel,
+              ticketSales: d.ticketSales,
+              bumpConversion: d.bumpConversion,
+            }))}
+          />
+
           {/* NEW SECTION: ACOMPANHAMENTO DIÁRIO (TABELA HORIZONTAL) */}
           <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
             <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider flex items-center justify-between">
