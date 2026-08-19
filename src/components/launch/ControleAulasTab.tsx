@@ -196,7 +196,7 @@ export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
           <div className="text-xs text-slate-500 font-medium">
             Lançamento:{' '}
             <span className="font-bold text-[#6D49F2]">{launchBatch || 'Sem nome'}</span>
-            {launchId ? ' (Salvo no BD)' : ' (Novo — salve o lançamento na aba Resultado Semanal)'}
+            {launchId ? ' (Salvo no BD)' : ' (Novo — salve o lançamento na aba Venda de Ingressos)'}
           </div>
           <Button
             type="button"

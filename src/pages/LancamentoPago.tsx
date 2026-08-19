@@ -456,7 +456,7 @@ export default function LancamentoPago() {
       toast({
         title: 'Salve o lançamento primeiro',
         description:
-          'Salve o lançamento na aba "Resultado Semanal" para poder gravar os registros.',
+          'Salve o lançamento na aba "Venda de Ingressos" para poder gravar os registros.',
         variant: 'destructive',
       })
       return
@@ -566,15 +566,9 @@ export default function LancamentoPago() {
           <p className="text-sm text-slate-500 font-medium">Carregando dados do lançamento...</p>
         </Card>
       ) : (
-        <Tabs defaultValue="semanal" className="w-full">
+        <Tabs defaultValue="ingressos" className="w-full">
           {/* Pills-style tab bar in MQT palette */}
           <TabsList className="bg-white border border-slate-200/80 shadow-xs rounded-xl p-1.5 h-auto flex flex-col sm:flex-row w-full sm:w-fit gap-1">
-            <TabsTrigger
-              value="semanal"
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
-            >
-              Resultado Semanal
-            </TabsTrigger>
             <TabsTrigger
               value="ingressos"
               className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
@@ -601,8 +595,8 @@ export default function LancamentoPago() {
             </TabsTrigger>
           </TabsList>
 
-          {/* ============ TAB 1: RESULTADO SEMANAL ============ */}
-          <TabsContent value="semanal" className="mt-6 space-y-6 focus:outline-none">
+          {/* ============ TAB 1: VENDA DE INGRESSOS ============ */}
+          <TabsContent value="ingressos" className="mt-6 space-y-6 focus:outline-none">
             <div className="space-y-4">
               {/* Row 1 (Featured / Larger Cards): Faturamento Total, Investimento Tráfego, ROAS Geral */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1210,192 +1204,7 @@ export default function LancamentoPago() {
             </div>
           </TabsContent>
 
-          {/* ============ TAB 2: VENDA DE INGRESSOS (BLOCK 1 ONLY) ============ */}
-          <TabsContent value="ingressos" className="mt-6 space-y-6 focus:outline-none">
-            <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
-              <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
-                VENDA DE INGRESSOS
-              </div>
-
-              <div className="p-4 sm:p-6 space-y-2.5">
-                {/* Dias Captação (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
-                  <span className="font-bold text-xs text-slate-700 flex items-center gap-1.5">
-                    <Lock className="w-3 h-3 text-slate-400" />
-                    Dias Captação (calculado)
-                  </span>
-                  <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
-                    {calc.captureDays} {calc.captureDays === 1 ? 'dia' : 'dias'}
-                  </div>
-                </div>
-
-                {/* Turma */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                  <span className="font-medium text-sm text-slate-700">Turma</span>
-                  <div className="relative">
-                    <Input
-                      type="text"
-                      placeholder='ex: "S1 - 23/08/2026"'
-                      value={form.batch}
-                      onChange={(e) => handleChange('batch', e.target.value)}
-                      className="bg-white border-slate-200 text-slate-900 font-bold text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                    />
-                  </div>
-                </div>
-
-                {/* Ticket Ingresso */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                  <span className="font-medium text-sm text-slate-700">Ticket Ingresso</span>
-                  <div className="relative">
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
-                      R$
-                    </span>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min={0}
-                      value={form.ticket_ticket}
-                      onChange={(e) => handleChange('ticket_ticket', e.target.value)}
-                      className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                    />
-                  </div>
-                </div>
-
-                {/* Investimento Tráfego (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
-                  <span className="font-medium text-xs text-slate-700 flex items-center gap-1.5">
-                    <Lock className="w-3 h-3 text-slate-400" />
-                    Investimento Tráfego (soma dos dias)
-                  </span>
-                  <div className="text-right font-bold tabular-nums text-xs text-slate-900">
-                    {formatCurrency(calc.trafficInvestment)}
-                  </div>
-                </div>
-
-                {/* Tráfego Diário (CALCULATED - READ ONLY) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
-                  <span className="font-medium text-xs text-slate-500">Tráfego Diário</span>
-                  <div className="text-right font-bold tabular-nums text-xs text-slate-700">
-                    {formatCalculatedCurrency(calc.dailyTraffic)}
-                  </div>
-                </div>
-
-                {/* CAC (CALCULATED - READ ONLY) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
-                  <span className="font-medium text-xs text-slate-500">CAC</span>
-                  <div className="text-right font-bold tabular-nums text-xs text-slate-700">
-                    {formatCalculatedCurrency(calc.cac)}
-                  </div>
-                </div>
-
-                {/* Vendas Totais Ingresso (AUTOMATIC FROM DAILY TRACKING - READ ONLY) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
-                  <span className="font-medium text-xs text-slate-700 flex items-center gap-1.5">
-                    <Lock className="w-3 h-3 text-slate-400" />
-                    Vendas Totais Ingresso (soma dos dias)
-                  </span>
-                  <div className="text-right font-bold tabular-nums text-xs text-slate-900">
-                    {calc.totalTicketSales}
-                  </div>
-                </div>
-
-                {/* Média Vendas / Dia Ingresso (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
-                  <span className="font-bold text-sm text-amber-950">
-                    Média Vendas / Dia Ingresso
-                  </span>
-                  <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
-                    {formatCalculatedNumber(calc.avgSalesPerDay, 0)}
-                  </div>
-                </div>
-
-                {/* Reembolso */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                  <span className="font-medium text-sm text-slate-700">Reembolso</span>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={form.ticket_refunds}
-                    onChange={(e) => handleChange('ticket_refunds', e.target.value)}
-                    className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-                  />
-                </div>
-
-                {/* Taxa Reembolso (CALCULATED - READ ONLY) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
-                  <span className="font-medium text-xs text-slate-500">Taxa Reembolso</span>
-                  <div className="text-right font-bold tabular-nums text-xs text-slate-700">
-                    {formatCalculatedPercent(calc.ticketRefundRate)}
-                  </div>
-                </div>
-
-                {/* Faturamento Ingressos (CALCULATED - READ ONLY) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
-                  <span className="font-semibold text-xs text-slate-700">
-                    Faturamento Ingressos
-                  </span>
-                  <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
-                    {formatCurrency(calc.ticketRevenue)}
-                  </div>
-                </div>
-
-                {/* ROAS Venda Ingresso (CALCULATED - SOFT PASTEL HIGHLIGHT) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
-                  <span className="font-bold text-sm text-amber-950">ROAS Venda Ingresso</span>
-                  <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
-                    {formatCalculatedNumber(calc.ticketRoas, 2)}
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Action Bar — own Save / Excluir */}
-              <div className="p-4 sm:p-6 bg-slate-50/80 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="text-xs text-slate-500 font-medium">
-                  Lançamento selecionado:{' '}
-                  <span className="font-bold text-[#6D49F2]">{form.batch || 'Sem nome'}</span>
-                  {form.id ? ' (Salvo no BD)' : ' (Novo)'}
-                </div>
-
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  {form.id && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleDelete}
-                      disabled={deleting || saving}
-                      className="border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 font-semibold text-xs rounded-xl h-11 px-4 transition-all"
-                    >
-                      {deleting ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="w-4 h-4" />
-                      )}
-                    </Button>
-                  )}
-
-                  <Button
-                    onClick={handleSave}
-                    disabled={saving || deleting}
-                    className="w-full sm:w-auto px-8 h-11 bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all"
-                  >
-                    {saving ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Salvando...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4" />
-                        <span>Salvar</span>
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          </TabsContent>
-
-          {/* ============ TAB 3: UPSELL PLATAFORMA ============ */}
+          {/* ============ TAB 2: UPSELL PLATAFORMA ============ */}
           <TabsContent value="upsell" className="mt-6 focus:outline-none">
             <UpsellPlatformTab
               upsellData={form.upsell_platform}
@@ -1407,7 +1216,7 @@ export default function LancamentoPago() {
             />
           </TabsContent>
 
-          {/* ============ TAB 4: CONTROLE AULAS ============ */}
+          {/* ============ TAB 3: CONTROLE AULAS ============ */}
           <TabsContent value="aulas" className="mt-6 focus:outline-none">
             <ControleAulasTab
               sessions={form.class_sessions}
@@ -1419,7 +1228,7 @@ export default function LancamentoPago() {
             />
           </TabsContent>
 
-          {/* ============ TAB 5: VENDAS COMERCIAL ============ */}
+          {/* ============ TAB 4: VENDAS COMERCIAL ============ */}
           <TabsContent value="comercial" className="mt-6 focus:outline-none">
             <VendasComercialTab
               sales={form.commercial_sales}
