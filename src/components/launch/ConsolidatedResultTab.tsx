@@ -206,12 +206,12 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 1. Summary Table ("Resultado Lançamento") */}
         <Card className="lg:col-span-2 bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
-          <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider flex items-center justify-between">
+          <div className="bg-[#FAF8FF] border-b border-slate-200 text-slate-800 px-6 py-3 font-bold text-xs uppercase tracking-wider flex items-center justify-between">
             <span className="flex items-center gap-2">
-              <Calculator className="w-4 h-4 text-[#FF2AFF]" />
+              <Calculator className="w-4 h-4 text-[#6D49F2]" />
               Resultado Lançamento
             </span>
-            <span className="text-[11px] text-slate-300 font-normal normal-case">
+            <span className="text-[11px] text-slate-500 font-normal normal-case">
               Consolidação financeira global
             </span>
           </div>

@@ -45,7 +45,7 @@ export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
           placeholder="0"
           value={studentsInChallenge}
           onChange={(e) => onChangeStudents(e.target.value)}
-          className="w-36 h-9 font-semibold text-slate-900 border-slate-300 focus-visible:ring-[#6D49F2]"
+          className="w-36 h-9 font-semibold text-slate-900 border-slate-200 focus-visible:ring-[#6D49F2]"
         />
       </div>
 
@@ -54,25 +54,25 @@ export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-xs border-collapse border border-slate-300 min-w-[600px]">
+        <table className="w-full text-xs border-collapse border border-slate-200 min-w-[600px]">
           <thead>
             <tr>
-              {/* Comparecimento (Black background, white text) */}
-              <th className="bg-black text-white p-3 text-left font-bold border border-slate-300 w-1/3">
+              {/* Comparecimento (Slate-800 background, white text) */}
+              <th className="bg-slate-800 text-white p-3 text-left font-bold border border-slate-200 w-1/3">
                 Comparecimento
               </th>
               {/* Pessoal Ao Vivo & % (Green bg #2E7D32, white text) */}
-              <th className="bg-[#2E7D32] text-white p-3 text-center font-bold border border-slate-300 w-1/6">
+              <th className="bg-[#2E7D32] text-white p-3 text-center font-bold border border-slate-200 w-1/6">
                 Pessoal Ao Vivo
               </th>
-              <th className="bg-[#2E7D32] text-white p-3 text-center font-bold border border-slate-300 w-1/6">
+              <th className="bg-[#2E7D32] text-white p-3 text-center font-bold border border-slate-200 w-1/6">
                 %
               </th>
               {/* Espectadores Únicos & % (Orange bg #ED7D31, white text) */}
-              <th className="bg-[#ED7D31] text-white p-3 text-center font-bold border border-slate-300 w-1/6">
+              <th className="bg-[#ED7D31] text-white p-3 text-center font-bold border border-slate-200 w-1/6">
                 Espectadores Únicos
               </th>
-              <th className="bg-[#ED7D31] text-white p-3 text-center font-bold border border-slate-300 w-1/6">
+              <th className="bg-[#ED7D31] text-white p-3 text-center font-bold border border-slate-200 w-1/6">
                 %
               </th>
             </tr>
@@ -86,12 +86,12 @@ export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
               return (
                 <tr key={idx} className={isEven ? 'bg-white' : 'bg-slate-50/70'}>
                   {/* Class Label */}
-                  <td className="p-3 font-medium text-slate-800 border border-slate-300">
+                  <td className="p-3 font-medium text-slate-800 border border-slate-200">
                     {session.label}
                   </td>
 
                   {/* Pessoal Ao Vivo Input */}
-                  <td className="p-2 border border-slate-300 text-center">
+                  <td className="p-2 border border-slate-200 text-center">
                     <Input
                       type="number"
                       min={0}
@@ -103,12 +103,12 @@ export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
                   </td>
 
                   {/* Live % */}
-                  <td className="p-3 border border-slate-300 text-center font-semibold text-slate-700 tabular-nums">
+                  <td className="p-3 border border-slate-200 text-center font-semibold text-slate-700 tabular-nums">
                     {livePct}
                   </td>
 
                   {/* Espectadores Únicos Input */}
-                  <td className="p-2 border border-slate-300 text-center">
+                  <td className="p-2 border border-slate-200 text-center">
                     <Input
                       type="number"
                       min={0}
@@ -120,7 +120,7 @@ export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
                   </td>
 
                   {/* Unique % */}
-                  <td className="p-3 border border-slate-300 text-center font-semibold text-slate-700 tabular-nums">
+                  <td className="p-3 border border-slate-200 text-center font-semibold text-slate-700 tabular-nums">
                     {uniquePct}
                   </td>
                 </tr>

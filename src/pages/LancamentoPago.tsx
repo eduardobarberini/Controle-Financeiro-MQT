@@ -989,12 +989,12 @@ export default function LancamentoPago() {
 
               {/* ACOMPANHAMENTO DIÁRIO */}
               <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
-                <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider flex items-center justify-between">
+                <div className="bg-slate-50 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider flex items-center justify-between">
                   <span className="flex items-center gap-2">
                     <CalendarDays className="w-4 h-4 text-[#FF2AFF]" />
                     Acompanhamento Diário - Vendas da Semana
                   </span>
-                  <span className="text-[11px] text-slate-300 font-normal normal-case">
+                  <span className="text-[11px] text-slate-500 font-normal normal-case">
                     Preencha Investimento, Vendas Ingresso e Order Bump por dia
                   </span>
                 </div>
@@ -1003,7 +1003,7 @@ export default function LancamentoPago() {
                   <table className="w-full text-xs border-collapse min-w-[760px]">
                     <thead>
                       <tr className="bg-[#FAF8FF] border-b border-slate-200">
-                        <th className="p-3 text-left font-bold text-slate-800 bg-slate-900 text-white w-48 text-sm">
+                        <th className="p-3 text-left font-bold text-slate-800 bg-[#F2EBFF] w-48 text-sm">
                           Venda Ingressos
                         </th>
                         {form.daily_data.map((day, idx) => (
@@ -1214,7 +1214,7 @@ export default function LancamentoPago() {
 
               {/* BLOCK 1: VENDA DE INGRESSOS */}
               <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
-                <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
+                <div className="bg-slate-50 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider text-center">
                   VENDA DE INGRESSOS
                 </div>
 
@@ -1340,7 +1340,7 @@ export default function LancamentoPago() {
 
               {/* BLOCK 2: ORDER BUMP */}
               <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
-                <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
+                <div className="bg-slate-50 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider text-center">
                   ORDER BUMP
                 </div>
 
@@ -1408,7 +1408,7 @@ export default function LancamentoPago() {
 
               {/* BLOCK 3: RESULTADO INGRESSOS + ORDER BUMPS */}
               <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
-                <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center">
+                <div className="bg-slate-50 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider text-center">
                   RESULTADO INGRESSOS + ORDER BUMPS
                 </div>
 

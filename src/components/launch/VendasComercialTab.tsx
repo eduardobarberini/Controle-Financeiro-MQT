@@ -282,7 +282,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
           return (
             <Card
               key={seller.id || idx}
-              className="bg-white border border-slate-200/90 shadow-2xs rounded-xl overflow-hidden"
+              className="bg-white border border-slate-200/90 shadow-xs rounded-xl overflow-hidden"
             >
               {/* Table Header / Title Bar matching Excel image layout */}
               <div className="overflow-x-auto">
@@ -632,7 +632,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
       </div>
 
       {/* 3. Management Section (Bottom) */}
-      <Card className="bg-white border border-slate-200/90 shadow-2xs rounded-xl p-5 sm:p-6 space-y-4">
+      <Card className="bg-white border border-slate-200/90 shadow-xs rounded-xl p-5 sm:p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
             <Users className="w-4 h-4 text-[#6D49F2]" />

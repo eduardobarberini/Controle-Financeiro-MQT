@@ -94,7 +94,7 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
       {/* Main Form Card */}
       <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
         {/* Header */}
-        <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider text-center flex items-center justify-center gap-2">
+        <div className="bg-slate-50 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider text-center flex items-center justify-center gap-2">
           <ArrowUpCircle className="w-4 h-4 text-[#FF2AFF]" />
           <span>Vendas Plataforma</span>
         </div>
@@ -223,21 +223,21 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
 
       {/* CONTROLE DIÁRIO VENDAS - Table below upper consolidated form */}
       <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
-        <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider flex items-center justify-between">
+        <div className="bg-slate-50 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider flex items-center justify-between">
           <span className="flex items-center gap-2">
             <CalendarDays className="w-4 h-4 text-[#FF2AFF]" />
             Controle Diário Vendas
           </span>
-          <span className="text-[11px] text-slate-300 font-normal normal-case">
+          <span className="text-[11px] text-slate-500 font-normal normal-case">
             Acompanhamento diário das vendas e faturamento da plataforma
           </span>
         </div>
 
         <div className="p-4 sm:p-6 overflow-x-auto">
-          <table className="w-full text-xs border-collapse min-w-[800px] border border-slate-900">
+          <table className="w-full text-xs border-collapse min-w-[800px] border border-slate-200">
             <thead>
-              <tr className="border-b border-slate-900">
-                <th className="p-3 text-center font-bold text-white bg-black min-w-[220px] text-sm border-r border-slate-900">
+              <tr className="border-b border-slate-200">
+                <th className="p-3 text-center font-bold text-slate-800 bg-slate-50 min-w-[220px] text-sm border-r border-slate-200">
                   Controle Diário Vendas
                 </th>
                 {dailySalesList.map((day, idx) => {
@@ -248,7 +248,7 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                     return (
                       <th
                         key={idx}
-                        className="p-3 text-center font-bold text-white bg-[#2E7D32] border-r border-slate-900 min-w-[120px] text-sm"
+                        className="p-3 text-center font-bold text-slate-800 bg-[#C6E0B4] border-r border-slate-200 min-w-[120px] text-sm"
                       >
                         Primeira Hora
                       </th>
@@ -257,14 +257,14 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                   return (
                     <th
                       key={idx}
-                      className="p-2 text-center font-bold text-slate-900 bg-[#FCE4D6] border-r border-slate-900 min-w-[110px]"
+                      className="p-2 text-center font-bold text-slate-800 bg-[#FCE4D6] border-r border-slate-200 min-w-[110px]"
                     >
                       <div className="flex items-center justify-center gap-1">
                         <input
                           type="text"
                           value={day.dayLabel || ''}
                           onChange={(e) => onChangeDailyField(idx, 'dayLabel', e.target.value)}
-                          className="w-12 text-center font-bold text-slate-900 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2]"
+                          className="w-12 text-center font-bold text-slate-800 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2]"
                           placeholder="Dia"
                         />
                       </div>
@@ -286,11 +286,11 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
             <tbody className="divide-y divide-slate-300">
               {/* Vendas Cartão / PIX */}
               <tr className="bg-white hover:bg-slate-50/50 transition-colors">
-                <td className="p-2.5 font-medium text-slate-900 border-r border-slate-900">
+                <td className="p-2.5 font-medium text-slate-900 border-r border-slate-200">
                   Vendas Cartão / PIX
                 </td>
                 {dailySalesList.map((day, idx) => (
-                  <td key={idx} className="p-1.5 border-r border-slate-900 text-center">
+                  <td key={idx} className="p-1.5 border-r border-slate-200 text-center">
                     <Input
                       type="number"
                       min={0}
@@ -305,11 +305,11 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
 
               {/* Faturamento Cartão / PIX */}
               <tr className="bg-slate-50/40 hover:bg-slate-50 transition-colors">
-                <td className="p-2.5 font-medium text-slate-900 border-r border-slate-900">
+                <td className="p-2.5 font-medium text-slate-900 border-r border-slate-200">
                   Faturamento Cartão / PIX
                 </td>
                 {dailySalesList.map((day, idx) => (
-                  <td key={idx} className="p-1.5 border-r border-slate-900 text-center">
+                  <td key={idx} className="p-1.5 border-r border-slate-200 text-center">
                     <div className="relative">
                       <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">
                         R$
@@ -332,11 +332,11 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
 
               {/* Vendas Boleto Parcelado */}
               <tr className="bg-white hover:bg-slate-50/50 transition-colors">
-                <td className="p-2.5 font-medium text-slate-900 border-r border-slate-900">
+                <td className="p-2.5 font-medium text-slate-900 border-r border-slate-200">
                   Vendas Boleto Parcelado
                 </td>
                 {dailySalesList.map((day, idx) => (
-                  <td key={idx} className="p-1.5 border-r border-slate-900 text-center">
+                  <td key={idx} className="p-1.5 border-r border-slate-200 text-center">
                     <Input
                       type="number"
                       min={0}
@@ -351,11 +351,11 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
 
               {/* Faturamento Boleto Parcelado */}
               <tr className="bg-slate-50/40 hover:bg-slate-50 transition-colors">
-                <td className="p-2.5 font-medium text-slate-900 border-r border-slate-900">
+                <td className="p-2.5 font-medium text-slate-900 border-r border-slate-200">
                   Faturamento Boleto Parcelado
                 </td>
                 {dailySalesList.map((day, idx) => (
-                  <td key={idx} className="p-1.5 border-r border-slate-900 text-center">
+                  <td key={idx} className="p-1.5 border-r border-slate-200 text-center">
                     <div className="relative">
                       <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">
                         R$
@@ -375,14 +375,14 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
               </tr>
 
               {/* Vendas Totais (Calculated row - Light Green #C6E0B4) */}
-              <tr className="bg-[#C6E0B4] border-t-2 border-slate-900 text-slate-950 font-bold">
-                <td className="p-2.5 font-bold text-slate-950 border-r border-slate-900 text-xs">
+              <tr className="bg-[#C6E0B4] border-t-2 border-slate-200 text-slate-950 font-bold">
+                <td className="p-2.5 font-bold text-slate-950 border-r border-slate-200 text-xs">
                   Vendas Totais
                 </td>
                 {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
                   <td
                     key={idx}
-                    className="p-2 border-r border-slate-900 text-center tabular-nums text-slate-950 font-bold text-xs"
+                    className="p-2 border-r border-slate-200 text-center tabular-nums text-slate-950 font-bold text-xs"
                   >
                     {calcDay.totalSales}
                   </td>
@@ -391,28 +391,28 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
 
               {/* % Conversão Desafio / Plataforma (Calculated row - Light Green #C6E0B4) */}
               <tr className="bg-[#C6E0B4] text-slate-950 font-bold">
-                <td className="p-2.5 font-bold text-slate-950 border-r border-slate-900 text-xs">
+                <td className="p-2.5 font-bold text-slate-950 border-r border-slate-200 text-xs">
                   % Conversão Desafio / Plataforma
                 </td>
                 {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
                   <td
                     key={idx}
-                    className="p-2 border-r border-slate-900 text-center tabular-nums text-slate-950 font-bold text-xs"
+                    className="p-2 border-r border-slate-200 text-center tabular-nums text-slate-950 font-bold text-xs"
                   >
                     {formatCalculatedPercent(calcDay.conversionRate)}
                   </td>
                 ))}
               </tr>
 
-              {/* Faturamento Total (Calculated row - Orange #ED7D31) */}
-              <tr className="bg-[#ED7D31] font-bold text-white border-t border-slate-900">
-                <td className="p-2.5 text-slate-950 font-bold text-xs border-r border-slate-900">
+              {/* Faturamento Total (Calculated row - Amber highlight) */}
+              <tr className="bg-amber-100 text-slate-800 font-bold border-t border-slate-200">
+                <td className="p-2.5 text-slate-950 font-bold text-xs border-r border-slate-200">
                   Faturamento Total
                 </td>
                 {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
                   <td
                     key={idx}
-                    className="p-2 border-r border-slate-900 text-center tabular-nums text-slate-950 font-extrabold text-xs"
+                    className="p-2 border-r border-slate-200 text-center tabular-nums text-slate-950 font-extrabold text-xs"
                   >
                     {formatCurrency(calcDay.totalRevenue)}
                   </td>
