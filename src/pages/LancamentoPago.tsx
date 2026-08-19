@@ -557,19 +557,6 @@ export default function LancamentoPago() {
     }
   }, [form.upsell_platform, dailyCalculated?.totalTicketSales])
 
-  // Revenues from Controle Aulas and Commercial Sales (closed)
-  const classSessionsRevenue = useMemo(() => {
-    if (!Array.isArray(form.class_sessions)) return 0
-    return form.class_sessions.reduce((sum, s) => sum + (Number(s.revenue) || 0), 0)
-  }, [form.class_sessions])
-
-  const commercialSalesClosedRevenue = useMemo(() => {
-    if (!Array.isArray(form.commercial_sales)) return 0
-    return form.commercial_sales
-      .filter((s) => s.status === 'Fechado')
-      .reduce((sum, s) => sum + (Number(s.value) || 0), 0)
-  }, [form.commercial_sales])
-
   // Consolidated vertical form calculations
   const calc = useMemo(() => {
     const trafficInvestment = dailyCalculated.totalInvestment
@@ -1440,30 +1427,12 @@ export default function LancamentoPago() {
 
           {/* ============ TAB 3: CONTROLE AULAS ============ */}
           <TabsContent value="aulas" className="mt-6 focus:outline-none">
-            <ControleAulasTab
-              sessions={form.class_sessions}
-              onChange={(nextSessions) =>
-                setForm((prev) => ({ ...prev, class_sessions: nextSessions }))
-              }
-              onSave={handleSave}
-              saving={saving}
-              launchBatch={form.batch}
-              launchId={form.id}
-            />
+            <ControleAulasTab />
           </TabsContent>
 
           {/* ============ TAB 4: VENDAS COMERCIAL ============ */}
           <TabsContent value="comercial" className="mt-6 focus:outline-none">
-            <VendasComercialTab
-              sales={form.commercial_sales}
-              onChange={(nextSales) =>
-                setForm((prev) => ({ ...prev, commercial_sales: nextSales }))
-              }
-              onSave={handleSave}
-              saving={saving}
-              launchBatch={form.batch}
-              launchId={form.id}
-            />
+            <VendasComercialTab />
           </TabsContent>
         </Tabs>
       )}
