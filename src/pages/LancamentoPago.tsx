@@ -13,6 +13,9 @@ import {
   CalendarDays,
   Lock,
 } from 'lucide-react'
+import { ConsolidatedResultTab } from '@/components/launch/ConsolidatedResultTab'
+import { ControleAulasTab } from '@/components/launch/ControleAulasTab'
+import { VendasComercialTab } from '@/components/launch/VendasComercialTab'
 import { UpsellPlatformTab } from '@/components/launch/UpsellPlatformTab'
 import { KpiCard } from '@/components/dashboard/KpiCard'
 import { DailySalesChart } from '@/components/dashboard/DailySalesChart'
@@ -124,6 +127,10 @@ interface FormState {
   ticket_refunds: string | number
   bump_ticket: string | number
   bump_refunds: string | number
+  api_official_cost: string | number
+  commercial_commission: string | number
+  revenue_tax_rate: string | number
+  traffic_tax_rate: string | number
   daily_data: DailyEntry[]
   class_sessions: ClassSessions
   commercial_sales: CommercialSales
@@ -147,6 +154,10 @@ const DEFAULT_FORM: FormState = {
   ticket_refunds: 17,
   bump_ticket: 19.9,
   bump_refunds: 3,
+  api_official_cost: 490,
+  commercial_commission: 3752,
+  revenue_tax_rate: 9.0,
+  traffic_tax_rate: 12.15,
   daily_data: DEFAULT_DAYS,
   class_sessions: [],
   commercial_sales: [],
@@ -181,6 +192,10 @@ export default function LancamentoPago() {
           ticket_refunds: target.ticket_refunds ?? 0,
           bump_ticket: target.bump_ticket ?? 0,
           bump_refunds: target.bump_refunds ?? 0,
+          api_official_cost: target.api_official_cost ?? 490,
+          commercial_commission: target.commercial_commission ?? 3752,
+          revenue_tax_rate: target.revenue_tax_rate ?? 9.0,
+          traffic_tax_rate: target.traffic_tax_rate ?? 12.15,
           daily_data:
             target.daily_data && Array.isArray(target.daily_data) && target.daily_data.length === 7
               ? target.daily_data
@@ -242,6 +257,10 @@ export default function LancamentoPago() {
           ticket_refunds: found.ticket_refunds ?? 0,
           bump_ticket: found.bump_ticket ?? 0,
           bump_refunds: found.bump_refunds ?? 0,
+          api_official_cost: found.api_official_cost ?? 490,
+          commercial_commission: found.commercial_commission ?? 3752,
+          revenue_tax_rate: found.revenue_tax_rate ?? 9.0,
+          traffic_tax_rate: found.traffic_tax_rate ?? 12.15,
           daily_data:
             found.daily_data && Array.isArray(found.daily_data) && found.daily_data.length === 7
               ? found.daily_data
@@ -321,6 +340,10 @@ export default function LancamentoPago() {
             ...matchingRecord,
             batch: value,
             id: matchingRecord.id,
+            api_official_cost: matchingRecord.api_official_cost ?? 490,
+            commercial_commission: matchingRecord.commercial_commission ?? 3752,
+            revenue_tax_rate: matchingRecord.revenue_tax_rate ?? 9.0,
+            traffic_tax_rate: matchingRecord.traffic_tax_rate ?? 12.15,
             daily_data:
               matchingRecord.daily_data &&
               Array.isArray(matchingRecord.daily_data) &&
@@ -534,6 +557,19 @@ export default function LancamentoPago() {
     }
   }, [form.upsell_platform, dailyCalculated?.totalTicketSales])
 
+  // Revenues from Controle Aulas and Commercial Sales (closed)
+  const classSessionsRevenue = useMemo(() => {
+    if (!Array.isArray(form.class_sessions)) return 0
+    return form.class_sessions.reduce((sum, s) => sum + (Number(s.revenue) || 0), 0)
+  }, [form.class_sessions])
+
+  const commercialSalesClosedRevenue = useMemo(() => {
+    if (!Array.isArray(form.commercial_sales)) return 0
+    return form.commercial_sales
+      .filter((s) => s.status === 'Fechado')
+      .reduce((sum, s) => sum + (Number(s.value) || 0), 0)
+  }, [form.commercial_sales])
+
   // Consolidated vertical form calculations
   const calc = useMemo(() => {
     const trafficInvestment = dailyCalculated.totalInvestment
@@ -625,6 +661,10 @@ export default function LancamentoPago() {
         bump_ticket: Number(form.bump_ticket) || 0,
         bump_sales: calc.bumpSales,
         bump_refunds: Number(form.bump_refunds) || 0,
+        api_official_cost: Number(form.api_official_cost) || 0,
+        commercial_commission: Number(form.commercial_commission) || 0,
+        revenue_tax_rate: Number(form.revenue_tax_rate) || 0,
+        traffic_tax_rate: Number(form.traffic_tax_rate) || 0,
         daily_data: form.daily_data,
         class_sessions: form.class_sessions,
         commercial_sales: form.commercial_sales,
@@ -769,9 +809,23 @@ export default function LancamentoPago() {
 
           {/* ============ TAB: RESULTADO CONSOLIDADO ============ */}
           <TabsContent value="consolidado" className="mt-6 focus:outline-none">
-            <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl p-16 flex flex-col items-center justify-center gap-3 text-slate-400">
-              <p className="text-sm text-slate-500 font-medium">Em breve</p>
-            </Card>
+            <ConsolidatedResultTab
+              apiOfficialCost={form.api_official_cost}
+              commercialCommission={form.commercial_commission}
+              revenueTaxRate={form.revenue_tax_rate}
+              trafficTaxRate={form.traffic_tax_rate}
+              trafficInvestment={calc.trafficInvestment}
+              ingressosRevenue={calc.ticketRevenue}
+              orderBumpRevenue={calc.bumpRevenue}
+              upsellPlatformRevenue={upsellCalc.platformRevenue}
+              controleAulasRevenue={classSessionsRevenue}
+              vendasComercialClosedRevenue={commercialSalesClosedRevenue}
+              onChangeField={(field, val) => handleChange(field, val)}
+              onSave={handleSave}
+              saving={saving}
+              launchBatch={form.batch}
+              launchId={form.id}
+            />
           </TabsContent>
 
           {/* ============ TAB 1: VENDA DE INGRESSOS ============ */}
@@ -1388,16 +1442,30 @@ export default function LancamentoPago() {
 
           {/* ============ TAB 3: CONTROLE AULAS ============ */}
           <TabsContent value="aulas" className="mt-6 focus:outline-none">
-            <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl p-16 flex flex-col items-center justify-center gap-3 text-slate-400">
-              <p className="text-sm text-slate-500 font-medium">Em breve</p>
-            </Card>
+            <ControleAulasTab
+              sessions={form.class_sessions}
+              onChange={(nextSessions) =>
+                setForm((prev) => ({ ...prev, class_sessions: nextSessions }))
+              }
+              onSave={handleSave}
+              saving={saving}
+              launchBatch={form.batch}
+              launchId={form.id}
+            />
           </TabsContent>
 
           {/* ============ TAB 4: VENDAS COMERCIAL ============ */}
           <TabsContent value="comercial" className="mt-6 focus:outline-none">
-            <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl p-16 flex flex-col items-center justify-center gap-3 text-slate-400">
-              <p className="text-sm text-slate-500 font-medium">Em breve</p>
-            </Card>
+            <VendasComercialTab
+              sales={form.commercial_sales}
+              onChange={(nextSales) =>
+                setForm((prev) => ({ ...prev, commercial_sales: nextSales }))
+              }
+              onSave={handleSave}
+              saving={saving}
+              launchBatch={form.batch}
+              launchId={form.id}
+            />
           </TabsContent>
         </Tabs>
       )}

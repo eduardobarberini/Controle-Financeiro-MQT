@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19T16:39:31.384Z",
+  "generatedAt": "2026-08-19T16:46:22.840Z",
   "collections": [
     {
       "name": "users",
@@ -489,6 +489,30 @@
         {
           "name": "upsell_platform",
           "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "api_official_cost",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "commercial_commission",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "revenue_tax_rate",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "traffic_tax_rate",
+          "type": "number",
           "required": false,
           "system": false
         }

@@ -66,6 +66,10 @@ export interface PaidLaunchRecord {
   bump_ticket: number
   bump_sales: number
   bump_refunds: number
+  api_official_cost?: number
+  commercial_commission?: number
+  revenue_tax_rate?: number
+  traffic_tax_rate?: number
   daily_data?: DailyData
   class_sessions?: ClassSessions
   commercial_sales?: CommercialSales
@@ -84,6 +88,10 @@ export interface PaidLaunchInput {
   bump_ticket: number
   bump_sales: number
   bump_refunds: number
+  api_official_cost?: number
+  commercial_commission?: number
+  revenue_tax_rate?: number
+  traffic_tax_rate?: number
   daily_data?: DailyData
   class_sessions?: ClassSessions
   commercial_sales?: CommercialSales
