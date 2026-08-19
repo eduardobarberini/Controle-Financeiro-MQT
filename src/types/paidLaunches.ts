@@ -31,6 +31,17 @@ export interface CommercialSale {
 
 export type CommercialSales = CommercialSale[]
 
+export interface UpsellDailyEntry {
+  dayLabel?: string // e.g. 'Qui', 'Sex', 'Sáb', 'Dom', 'Seg', 'Ter', 'Qua'
+  dateLabel?: string // e.g. '20/8', '21/8', etc.
+  card_pix_sales: number | string // Manual: Vendas Cartão / PIX
+  card_pix_revenue: number | string // Manual: Faturamento Cartão / PIX
+  boleto_sales: number | string // Manual: Vendas Boleto Parcelado
+  boleto_revenue: number | string // Manual: Faturamento Boleto Parcelado
+}
+
+export type UpsellDailyData = UpsellDailyEntry[]
+
 /** Upsell platform metrics within a paid launch. */
 export interface UpsellPlatform {
   total_sales: number | string
@@ -39,6 +50,7 @@ export interface UpsellPlatform {
   boleto_3x_sales: number | string
   refunds: number | string
   inadimplencia_rate: number | string
+  daily_sales?: UpsellDailyData
 }
 
 export interface PaidLaunchRecord {

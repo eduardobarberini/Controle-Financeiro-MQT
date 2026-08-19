@@ -36,6 +36,7 @@ import type {
   ClassSessions,
   CommercialSales,
   UpsellPlatform,
+  UpsellDailyEntry,
 } from '@/types/paidLaunches'
 import {
   formatCurrency,
@@ -53,6 +54,65 @@ const DEFAULT_DAYS: DailyEntry[] = [
   { dayLabel: 'Sex', dateLabel: '12/6', investment: '', ticket_sales: '', bump_sales: '' },
   { dayLabel: 'Sáb', dateLabel: '13/6', investment: '', ticket_sales: '', bump_sales: '' },
   { dayLabel: 'Dom', dateLabel: '14/6', investment: '', ticket_sales: '', bump_sales: '' },
+]
+
+const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
+  {
+    dayLabel: 'Seg',
+    dateLabel: '',
+    card_pix_sales: '',
+    card_pix_revenue: '',
+    boleto_sales: '',
+    boleto_revenue: '',
+  },
+  {
+    dayLabel: 'Ter',
+    dateLabel: '',
+    card_pix_sales: '',
+    card_pix_revenue: '',
+    boleto_sales: '',
+    boleto_revenue: '',
+  },
+  {
+    dayLabel: 'Qua',
+    dateLabel: '',
+    card_pix_sales: '',
+    card_pix_revenue: '',
+    boleto_sales: '',
+    boleto_revenue: '',
+  },
+  {
+    dayLabel: 'Qui',
+    dateLabel: '',
+    card_pix_sales: '',
+    card_pix_revenue: '',
+    boleto_sales: '',
+    boleto_revenue: '',
+  },
+  {
+    dayLabel: 'Sex',
+    dateLabel: '',
+    card_pix_sales: '',
+    card_pix_revenue: '',
+    boleto_sales: '',
+    boleto_revenue: '',
+  },
+  {
+    dayLabel: 'Sáb',
+    dateLabel: '',
+    card_pix_sales: '',
+    card_pix_revenue: '',
+    boleto_sales: '',
+    boleto_revenue: '',
+  },
+  {
+    dayLabel: 'Dom',
+    dateLabel: '',
+    card_pix_sales: '',
+    card_pix_revenue: '',
+    boleto_sales: '',
+    boleto_revenue: '',
+  },
 ]
 
 interface FormState {
@@ -76,6 +136,7 @@ const DEFAULT_UPSELL_PLATFORM: UpsellPlatform = {
   boleto_3x_sales: '',
   refunds: '',
   inadimplencia_rate: '',
+  daily_sales: DEFAULT_UPSELL_DAILY_SALES,
 }
 
 const DEFAULT_FORM: FormState = {
@@ -129,7 +190,15 @@ export default function LancamentoPago() {
             target.upsell_platform &&
             typeof target.upsell_platform === 'object' &&
             !Array.isArray(target.upsell_platform)
-              ? { ...DEFAULT_UPSELL_PLATFORM, ...target.upsell_platform }
+              ? {
+                  ...DEFAULT_UPSELL_PLATFORM,
+                  ...target.upsell_platform,
+                  daily_sales:
+                    Array.isArray(target.upsell_platform.daily_sales) &&
+                    target.upsell_platform.daily_sales.length > 0
+                      ? target.upsell_platform.daily_sales
+                      : DEFAULT_UPSELL_DAILY_SALES,
+                }
               : DEFAULT_UPSELL_PLATFORM,
         })
       } else {
@@ -182,7 +251,15 @@ export default function LancamentoPago() {
             found.upsell_platform &&
             typeof found.upsell_platform === 'object' &&
             !Array.isArray(found.upsell_platform)
-              ? { ...DEFAULT_UPSELL_PLATFORM, ...found.upsell_platform }
+              ? {
+                  ...DEFAULT_UPSELL_PLATFORM,
+                  ...found.upsell_platform,
+                  daily_sales:
+                    Array.isArray(found.upsell_platform.daily_sales) &&
+                    found.upsell_platform.daily_sales.length > 0
+                      ? found.upsell_platform.daily_sales
+                      : DEFAULT_UPSELL_DAILY_SALES,
+                }
               : DEFAULT_UPSELL_PLATFORM,
         })
       }
@@ -190,7 +267,10 @@ export default function LancamentoPago() {
   }
 
   // Handle upsell platform field changes
-  const handleUpsellChange = (field: keyof UpsellPlatform, value: string | number) => {
+  const handleUpsellChange = (
+    field: keyof UpsellPlatform,
+    value: string | number | UpsellDailyEntry[],
+  ) => {
     setForm((prev) => ({
       ...prev,
       upsell_platform: {
@@ -198,6 +278,32 @@ export default function LancamentoPago() {
         [field]: value,
       },
     }))
+  }
+
+  // Handle upsell daily sales entry change
+  const handleUpsellDailyChange = (
+    index: number,
+    field: keyof UpsellDailyEntry,
+    val: string | number,
+  ) => {
+    setForm((prev) => {
+      const currentDaily = Array.isArray(prev.upsell_platform?.daily_sales)
+        ? [...prev.upsell_platform.daily_sales]
+        : [...DEFAULT_UPSELL_DAILY_SALES]
+
+      currentDaily[index] = {
+        ...currentDaily[index],
+        [field]: val,
+      }
+
+      return {
+        ...prev,
+        upsell_platform: {
+          ...prev.upsell_platform,
+          daily_sales: currentDaily,
+        },
+      }
+    })
   }
 
   // Handle single field input changes
@@ -230,7 +336,15 @@ export default function LancamentoPago() {
               matchingRecord.upsell_platform &&
               typeof matchingRecord.upsell_platform === 'object' &&
               !Array.isArray(matchingRecord.upsell_platform)
-                ? { ...DEFAULT_UPSELL_PLATFORM, ...matchingRecord.upsell_platform }
+                ? {
+                    ...DEFAULT_UPSELL_PLATFORM,
+                    ...matchingRecord.upsell_platform,
+                    daily_sales:
+                      Array.isArray(matchingRecord.upsell_platform.daily_sales) &&
+                      matchingRecord.upsell_platform.daily_sales.length > 0
+                        ? matchingRecord.upsell_platform.daily_sales
+                        : DEFAULT_UPSELL_DAILY_SALES,
+                  }
                 : DEFAULT_UPSELL_PLATFORM,
           }
         }
@@ -317,27 +431,73 @@ export default function LancamentoPago() {
 
   // Upsell Platform Calculations
   const upsellCalc = useMemo(() => {
-    const totalSales = Number(form.upsell_platform?.total_sales) || 0
     const ticket = Number(form.upsell_platform?.ticket) || 0
-    const cardPixSales = Number(form.upsell_platform?.card_pix_sales) || 0
-    const boleto3xSales = Number(form.upsell_platform?.boleto_3x_sales) || 0
     const refunds = Number(form.upsell_platform?.refunds) || 0
     const inadimplenciaRate = Number(form.upsell_platform?.inadimplencia_rate) || 0
+
+    const dailySales = Array.isArray(form.upsell_platform?.daily_sales)
+      ? form.upsell_platform.daily_sales
+      : DEFAULT_UPSELL_DAILY_SALES
+
+    let calculatedCardPixSales = 0
+    let calculatedCardPixRevenue = 0
+    let calculatedBoletoSales = 0
+    let calculatedBoletoRevenue = 0
+
+    const dailyCalculatedTotals = dailySales.map((day) => {
+      const cardPixSales = Number(day.card_pix_sales) || 0
+      const cardPixRevenue = Number(day.card_pix_revenue) || 0
+      const boletoSales = Number(day.boleto_sales) || 0
+      const boletoRevenue = Number(day.boleto_revenue) || 0
+      const totalRevenue = cardPixRevenue + boletoRevenue
+
+      calculatedCardPixSales += cardPixSales
+      calculatedCardPixRevenue += cardPixRevenue
+      calculatedBoletoSales += boletoSales
+      calculatedBoletoRevenue += boletoRevenue
+
+      return {
+        cardPixSales,
+        cardPixRevenue,
+        boletoSales,
+        boletoRevenue,
+        totalRevenue,
+      }
+    })
+
+    const calculatedTotalSales = calculatedCardPixSales + calculatedBoletoSales
+    const sumDailyTotalRevenue = calculatedCardPixRevenue + calculatedBoletoRevenue
+
+    // Total sales in platform is calculated from daily sales (or fallback if empty)
+    const totalSales =
+      calculatedTotalSales > 0
+        ? calculatedTotalSales
+        : Number(form.upsell_platform?.total_sales) || 0
 
     const totalTicketSales = dailyCalculated?.totalTicketSales || 0
 
     const conversionRate = totalTicketSales > 0 ? totalSales / totalTicketSales : 0
-    const boletoRate = totalSales > 0 ? boleto3xSales / totalSales : 0
+    const boletoRate = totalSales > 0 ? calculatedBoletoSales / totalSales : 0
     const refundRate = totalSales > 0 ? refunds / totalSales : 0
 
+    // Platform revenue is total daily revenues (or calculated with ticket & inadimplencia if daily revenue is zero)
     const platformRevenue =
-      cardPixSales * ticket + boleto3xSales * ticket * (1 - inadimplenciaRate / 100)
+      sumDailyTotalRevenue > 0
+        ? sumDailyTotalRevenue
+        : calculatedCardPixSales * ticket +
+          calculatedBoletoSales * ticket * (1 - inadimplenciaRate / 100)
 
     return {
       conversionRate,
       boletoRate,
       refundRate,
       platformRevenue,
+      calculatedCardPixSales,
+      calculatedCardPixRevenue,
+      calculatedBoletoSales,
+      calculatedBoletoRevenue,
+      calculatedTotalSales,
+      dailyCalculatedTotals,
     }
   }, [form.upsell_platform, dailyCalculated?.totalTicketSales])
 
@@ -435,7 +595,12 @@ export default function LancamentoPago() {
         daily_data: form.daily_data,
         class_sessions: form.class_sessions,
         commercial_sales: form.commercial_sales,
-        upsell_platform: form.upsell_platform,
+        upsell_platform: {
+          ...form.upsell_platform,
+          total_sales: upsellCalc.calculatedTotalSales,
+          card_pix_sales: upsellCalc.calculatedCardPixSales,
+          boleto_3x_sales: upsellCalc.calculatedBoletoSales,
+        },
       }
 
       const savedRec = await paidLaunchesService.save(form.id, payload)
@@ -1165,8 +1330,20 @@ export default function LancamentoPago() {
           {/* ============ TAB 2: UPSELL PLATAFORMA ============ */}
           <TabsContent value="upsell" className="mt-6 focus:outline-none">
             <UpsellPlatformTab
-              upsellData={form.upsell_platform}
+              upsellData={{
+                ...form.upsell_platform,
+                total_sales: upsellCalc.calculatedTotalSales,
+                card_pix_sales: upsellCalc.calculatedCardPixSales,
+                boleto_3x_sales: upsellCalc.calculatedBoletoSales,
+              }}
               onChangeField={handleUpsellChange}
+              onChangeDailyField={handleUpsellDailyChange}
+              dailySalesList={
+                Array.isArray(form.upsell_platform?.daily_sales) &&
+                form.upsell_platform.daily_sales.length > 0
+                  ? form.upsell_platform.daily_sales
+                  : DEFAULT_UPSELL_DAILY_SALES
+              }
               upsellCalc={upsellCalc}
               onSave={handleSave}
               saving={saving}

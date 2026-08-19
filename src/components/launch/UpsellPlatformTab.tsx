@@ -1,25 +1,34 @@
 import React from 'react'
-import { ArrowUpCircle, Save, Loader2, DollarSign, Percent } from 'lucide-react'
+import { ArrowUpCircle, Save, Loader2, DollarSign, Percent, CalendarDays, Lock } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { KpiCard } from '@/components/dashboard/KpiCard'
-import type { UpsellPlatform } from '@/types/paidLaunches'
-import {
-  formatCurrency,
-  formatPercent,
-  formatCalculatedPercent,
-  formatCalculatedCurrency,
-} from '@/lib/launch-format'
+import type { UpsellPlatform, UpsellDailyEntry } from '@/types/paidLaunches'
+import { formatCurrency, formatCalculatedPercent } from '@/lib/launch-format'
 
 interface UpsellPlatformTabProps {
   upsellData: UpsellPlatform
-  onChangeField: (field: keyof UpsellPlatform, value: string | number) => void
+  onChangeField: (field: keyof UpsellPlatform, value: string | number | UpsellDailyEntry[]) => void
+  onChangeDailyField: (index: number, field: keyof UpsellDailyEntry, value: string | number) => void
+  dailySalesList: UpsellDailyEntry[]
   upsellCalc: {
     conversionRate: number
     boletoRate: number
     refundRate: number
     platformRevenue: number
+    calculatedCardPixSales: number
+    calculatedCardPixRevenue: number
+    calculatedBoletoSales: number
+    calculatedBoletoRevenue: number
+    calculatedTotalSales: number
+    dailyCalculatedTotals: {
+      cardPixSales: number
+      cardPixRevenue: number
+      boletoSales: number
+      boletoRevenue: number
+      totalRevenue: number
+    }[]
   }
   onSave: () => Promise<void>
   saving: boolean
@@ -30,6 +39,8 @@ interface UpsellPlatformTabProps {
 export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
   upsellData,
   onChangeField,
+  onChangeDailyField,
+  dailySalesList,
   upsellCalc,
   onSave,
   saving,
@@ -42,7 +53,7 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <KpiCard
           title="Vendas Totais"
-          value={Number(upsellData.total_sales) || 0}
+          value={upsellCalc.calculatedTotalSales}
           formatType="raw"
           icon={DollarSign}
           subtext="Total de vendas na plataforma"
@@ -76,17 +87,15 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
             </div>
           </div>
 
-          {/* Vendas Totais (Manual) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-            <span className="font-medium text-sm text-slate-700 font-bold">Vendas Totais</span>
-            <Input
-              type="number"
-              min={0}
-              value={upsellData.total_sales}
-              onChange={(e) => onChangeField('total_sales', e.target.value)}
-              placeholder="0"
-              className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-            />
+          {/* Vendas Totais (Calculated from daily sales) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+            <span className="font-bold text-xs text-slate-700 flex items-center gap-1.5">
+              <Lock className="w-3 h-3 text-slate-400" />
+              Vendas Totais (calculado)
+            </span>
+            <div className="text-right font-bold tabular-nums text-xs text-slate-900">
+              {upsellCalc.calculatedTotalSales}
+            </div>
           </div>
 
           {/* Ticket (Manual) */}
@@ -108,30 +117,26 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
             </div>
           </div>
 
-          {/* Vendas Cartão / Pix (Manual) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-            <span className="font-medium text-sm text-slate-700">Vendas Cartão / Pix</span>
-            <Input
-              type="number"
-              min={0}
-              value={upsellData.card_pix_sales}
-              onChange={(e) => onChangeField('card_pix_sales', e.target.value)}
-              placeholder="0"
-              className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-            />
+          {/* Vendas Cartão / Pix (Calculated) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+            <span className="font-medium text-xs text-slate-700 flex items-center gap-1.5">
+              <Lock className="w-3 h-3 text-slate-400" />
+              Vendas Cartão / Pix (soma dos dias)
+            </span>
+            <div className="text-right font-bold tabular-nums text-xs text-slate-900">
+              {upsellCalc.calculatedCardPixSales}
+            </div>
           </div>
 
-          {/* Vendas Boleto 3x (Manual) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-            <span className="font-medium text-sm text-slate-700">Vendas Boleto 3x</span>
-            <Input
-              type="number"
-              min={0}
-              value={upsellData.boleto_3x_sales}
-              onChange={(e) => onChangeField('boleto_3x_sales', e.target.value)}
-              placeholder="0"
-              className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
-            />
+          {/* Vendas Boleto 3x (Calculated) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
+            <span className="font-medium text-xs text-slate-700 flex items-center gap-1.5">
+              <Lock className="w-3 h-3 text-slate-400" />
+              Vendas Boleto 3x (soma dos dias)
+            </span>
+            <div className="text-right font-bold tabular-nums text-xs text-slate-900">
+              {upsellCalc.calculatedBoletoSales}
+            </div>
           </div>
 
           {/* % Vendas Boleto 3x (Calculated) */}
@@ -192,6 +197,153 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
               </span>
             </div>
           </div>
+        </div>
+      </Card>
+
+      {/* CONTROLE DIÁRIO VENDAS - Table below upper consolidated form */}
+      <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
+        <div className="bg-slate-900 text-white px-6 py-3 font-bold text-xs uppercase tracking-wider flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <CalendarDays className="w-4 h-4 text-[#FF2AFF]" />
+            Controle Diário Vendas
+          </span>
+          <span className="text-[11px] text-slate-300 font-normal normal-case">
+            Acompanhamento diário das vendas e faturamento da plataforma
+          </span>
+        </div>
+
+        <div className="p-4 sm:p-6 overflow-x-auto">
+          <table className="w-full text-xs border-collapse min-w-[760px]">
+            <thead>
+              <tr className="bg-[#FAF8FF] border-b border-slate-200">
+                <th className="p-3 text-left font-bold text-white bg-slate-900 w-52 text-sm">
+                  Controle Diário Vendas
+                </th>
+                {dailySalesList.map((day, idx) => (
+                  <th
+                    key={idx}
+                    className="p-2 text-center font-bold text-slate-800 bg-[#FEDEB5] border-l border-slate-300/80 min-w-[100px]"
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      <input
+                        type="text"
+                        value={day.dayLabel || ''}
+                        onChange={(e) => onChangeDailyField(idx, 'dayLabel', e.target.value)}
+                        className="w-10 text-center font-bold text-slate-900 bg-transparent border-b border-dashed border-slate-500 focus:outline-none focus:border-[#6D49F2]"
+                        placeholder="Dia"
+                      />
+                    </div>
+                    <div className="text-[11px] text-slate-600 font-medium mt-0.5">
+                      <input
+                        type="text"
+                        value={day.dateLabel || ''}
+                        onChange={(e) => onChangeDailyField(idx, 'dateLabel', e.target.value)}
+                        className="w-12 text-center text-slate-700 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2]"
+                        placeholder="Data"
+                      />
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+
+            <tbody className="divide-y divide-slate-100">
+              {/* Vendas Cartão / PIX */}
+              <tr className="hover:bg-slate-50/50 transition-colors">
+                <td className="p-2.5 font-medium text-slate-700">Vendas Cartão / PIX</td>
+                {dailySalesList.map((day, idx) => (
+                  <td key={idx} className="p-1.5 border-l border-slate-200 text-center">
+                    <Input
+                      type="number"
+                      min={0}
+                      placeholder="0"
+                      value={day.card_pix_sales}
+                      onChange={(e) => onChangeDailyField(idx, 'card_pix_sales', e.target.value)}
+                      className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                    />
+                  </td>
+                ))}
+              </tr>
+
+              {/* Faturamento Cartão / PIX */}
+              <tr className="hover:bg-slate-50/50 transition-colors">
+                <td className="p-2.5 font-medium text-slate-700">Faturamento Cartão / PIX</td>
+                {dailySalesList.map((day, idx) => (
+                  <td key={idx} className="p-1.5 border-l border-slate-200 text-center">
+                    <div className="relative">
+                      <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">
+                        R$
+                      </span>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        placeholder="0"
+                        value={day.card_pix_revenue}
+                        onChange={(e) =>
+                          onChangeDailyField(idx, 'card_pix_revenue', e.target.value)
+                        }
+                        className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                      />
+                    </div>
+                  </td>
+                ))}
+              </tr>
+
+              {/* Vendas Boleto Parcelado */}
+              <tr className="hover:bg-slate-50/50 transition-colors">
+                <td className="p-2.5 font-medium text-slate-700">Vendas Boleto Parcelado</td>
+                {dailySalesList.map((day, idx) => (
+                  <td key={idx} className="p-1.5 border-l border-slate-200 text-center">
+                    <Input
+                      type="number"
+                      min={0}
+                      placeholder="0"
+                      value={day.boleto_sales}
+                      onChange={(e) => onChangeDailyField(idx, 'boleto_sales', e.target.value)}
+                      className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                    />
+                  </td>
+                ))}
+              </tr>
+
+              {/* Faturamento Boleto Parcelado */}
+              <tr className="hover:bg-slate-50/50 transition-colors">
+                <td className="p-2.5 font-medium text-slate-700">Faturamento Boleto Parcelado</td>
+                {dailySalesList.map((day, idx) => (
+                  <td key={idx} className="p-1.5 border-l border-slate-200 text-center">
+                    <div className="relative">
+                      <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">
+                        R$
+                      </span>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        placeholder="0"
+                        value={day.boleto_revenue}
+                        onChange={(e) => onChangeDailyField(idx, 'boleto_revenue', e.target.value)}
+                        className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                      />
+                    </div>
+                  </td>
+                ))}
+              </tr>
+
+              {/* Faturamento Total (Green Background as shown in the image) */}
+              <tr className="bg-[#C6E0B4] font-bold text-slate-900 border-t-2 border-slate-900">
+                <td className="p-3 text-slate-950 font-bold text-sm">Faturamento Total</td>
+                {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
+                  <td
+                    key={idx}
+                    className="p-2.5 border-l border-slate-800 text-center tabular-nums text-slate-950 font-extrabold text-xs"
+                  >
+                    {formatCurrency(calcDay.totalRevenue)}
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         {/* Action Bar */}
