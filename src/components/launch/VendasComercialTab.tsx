@@ -32,6 +32,7 @@ import {
   formatCalculatedCurrency,
   formatCalculatedPercent,
 } from '@/lib/launch-format'
+import { formatNumber, parsePtBrNumber } from '@/lib/financial-utils'
 
 interface VendasComercialTabProps {
   commercialSales: CommercialSales
@@ -355,19 +356,39 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                         </TableCell>
                         <TableCell className="py-2 px-2.5 border-r border-slate-200 text-center text-xs">
                           <Input
-                            type="number"
-                            min={0}
+                            type="text"
+                            inputMode="numeric"
                             placeholder="0"
-                            value={seller.plataforma?.card_pix_sales ?? ''}
+                            value={
+                              seller.plataforma?.card_pix_sales === '' ||
+                              seller.plataforma?.card_pix_sales === undefined ||
+                              seller.plataforma?.card_pix_sales === null
+                                ? ''
+                                : String(seller.plataforma.card_pix_sales)
+                            }
                             onChange={(e) =>
                               handleCategoryFieldChange(
                                 idx,
                                 'plataforma',
                                 'card_pix_sales',
-                                e.target.value,
+                                e.target.value.replace(/[^0-9.,]/g, ''),
                               )
                             }
-                            className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                            onBlur={() => {
+                              const val = seller.plataforma?.card_pix_sales
+                              if (val !== '' && val !== undefined && val !== null) {
+                                const parsed = parsePtBrNumber(val)
+                                if (parsed > 0) {
+                                  handleCategoryFieldChange(
+                                    idx,
+                                    'plataforma',
+                                    'card_pix_sales',
+                                    formatNumber(parsed, 0),
+                                  )
+                                }
+                              }
+                            }}
+                            className="h-8 text-center font-semibold tabular-nums text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                           />
                         </TableCell>
                         <TableCell className="py-2 px-2.5 border-r border-slate-200 text-center text-xs">
@@ -376,20 +397,39 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                               R$
                             </span>
                             <Input
-                              type="number"
-                              step="0.01"
-                              min={0}
-                              placeholder="0"
-                              value={seller.plataforma?.card_pix_ticket ?? ''}
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="0,00"
+                              value={
+                                seller.plataforma?.card_pix_ticket === '' ||
+                                seller.plataforma?.card_pix_ticket === undefined ||
+                                seller.plataforma?.card_pix_ticket === null
+                                  ? ''
+                                  : String(seller.plataforma.card_pix_ticket)
+                              }
                               onChange={(e) =>
                                 handleCategoryFieldChange(
                                   idx,
                                   'plataforma',
                                   'card_pix_ticket',
-                                  e.target.value,
+                                  e.target.value.replace(/[^0-9.,]/g, ''),
                                 )
                               }
-                              className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                              onBlur={() => {
+                                const val = seller.plataforma?.card_pix_ticket
+                                if (val !== '' && val !== undefined && val !== null) {
+                                  const parsed = parsePtBrNumber(val)
+                                  if (parsed > 0) {
+                                    handleCategoryFieldChange(
+                                      idx,
+                                      'plataforma',
+                                      'card_pix_ticket',
+                                      formatNumber(parsed, 2),
+                                    )
+                                  }
+                                }
+                              }}
+                              className="pl-6 h-8 text-center font-semibold tabular-nums text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                             />
                           </div>
                         </TableCell>
@@ -408,19 +448,39 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                         </TableCell>
                         <TableCell className="py-2 px-2.5 border-r border-slate-200 text-center text-xs">
                           <Input
-                            type="number"
-                            min={0}
+                            type="text"
+                            inputMode="numeric"
                             placeholder="0"
-                            value={seller.plataforma?.boleto_sales ?? ''}
+                            value={
+                              seller.plataforma?.boleto_sales === '' ||
+                              seller.plataforma?.boleto_sales === undefined ||
+                              seller.plataforma?.boleto_sales === null
+                                ? ''
+                                : String(seller.plataforma.boleto_sales)
+                            }
                             onChange={(e) =>
                               handleCategoryFieldChange(
                                 idx,
                                 'plataforma',
                                 'boleto_sales',
-                                e.target.value,
+                                e.target.value.replace(/[^0-9.,]/g, ''),
                               )
                             }
-                            className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                            onBlur={() => {
+                              const val = seller.plataforma?.boleto_sales
+                              if (val !== '' && val !== undefined && val !== null) {
+                                const parsed = parsePtBrNumber(val)
+                                if (parsed > 0) {
+                                  handleCategoryFieldChange(
+                                    idx,
+                                    'plataforma',
+                                    'boleto_sales',
+                                    formatNumber(parsed, 0),
+                                  )
+                                }
+                              }
+                            }}
+                            className="h-8 text-center font-semibold tabular-nums text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                           />
                         </TableCell>
                         <TableCell className="py-2 px-2.5 border-r border-slate-200 text-center text-xs">
@@ -429,20 +489,39 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                               R$
                             </span>
                             <Input
-                              type="number"
-                              step="0.01"
-                              min={0}
-                              placeholder="0"
-                              value={seller.plataforma?.boleto_ticket ?? ''}
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="0,00"
+                              value={
+                                seller.plataforma?.boleto_ticket === '' ||
+                                seller.plataforma?.boleto_ticket === undefined ||
+                                seller.plataforma?.boleto_ticket === null
+                                  ? ''
+                                  : String(seller.plataforma.boleto_ticket)
+                              }
                               onChange={(e) =>
                                 handleCategoryFieldChange(
                                   idx,
                                   'plataforma',
                                   'boleto_ticket',
-                                  e.target.value,
+                                  e.target.value.replace(/[^0-9.,]/g, ''),
                                 )
                               }
-                              className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                              onBlur={() => {
+                                const val = seller.plataforma?.boleto_ticket
+                                if (val !== '' && val !== undefined && val !== null) {
+                                  const parsed = parsePtBrNumber(val)
+                                  if (parsed > 0) {
+                                    handleCategoryFieldChange(
+                                      idx,
+                                      'plataforma',
+                                      'boleto_ticket',
+                                      formatNumber(parsed, 2),
+                                    )
+                                  }
+                                }
+                              }}
+                              className="pl-6 h-8 text-center font-semibold tabular-nums text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                             />
                           </div>
                         </TableCell>
@@ -480,19 +559,39 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                         </TableCell>
                         <TableCell className="py-2 px-2.5 border-r border-slate-200 text-center text-xs">
                           <Input
-                            type="number"
-                            min={0}
+                            type="text"
+                            inputMode="numeric"
                             placeholder="0"
-                            value={seller.renovacao?.card_pix_sales ?? ''}
+                            value={
+                              seller.renovacao?.card_pix_sales === '' ||
+                              seller.renovacao?.card_pix_sales === undefined ||
+                              seller.renovacao?.card_pix_sales === null
+                                ? ''
+                                : String(seller.renovacao.card_pix_sales)
+                            }
                             onChange={(e) =>
                               handleCategoryFieldChange(
                                 idx,
                                 'renovacao',
                                 'card_pix_sales',
-                                e.target.value,
+                                e.target.value.replace(/[^0-9.,]/g, ''),
                               )
                             }
-                            className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                            onBlur={() => {
+                              const val = seller.renovacao?.card_pix_sales
+                              if (val !== '' && val !== undefined && val !== null) {
+                                const parsed = parsePtBrNumber(val)
+                                if (parsed > 0) {
+                                  handleCategoryFieldChange(
+                                    idx,
+                                    'renovacao',
+                                    'card_pix_sales',
+                                    formatNumber(parsed, 0),
+                                  )
+                                }
+                              }
+                            }}
+                            className="h-8 text-center font-semibold tabular-nums text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                           />
                         </TableCell>
                         <TableCell className="py-2 px-2.5 border-r border-slate-200 text-center text-xs">
@@ -501,20 +600,39 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                               R$
                             </span>
                             <Input
-                              type="number"
-                              step="0.01"
-                              min={0}
-                              placeholder="0"
-                              value={seller.renovacao?.card_pix_ticket ?? ''}
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="0,00"
+                              value={
+                                seller.renovacao?.card_pix_ticket === '' ||
+                                seller.renovacao?.card_pix_ticket === undefined ||
+                                seller.renovacao?.card_pix_ticket === null
+                                  ? ''
+                                  : String(seller.renovacao.card_pix_ticket)
+                              }
                               onChange={(e) =>
                                 handleCategoryFieldChange(
                                   idx,
                                   'renovacao',
                                   'card_pix_ticket',
-                                  e.target.value,
+                                  e.target.value.replace(/[^0-9.,]/g, ''),
                                 )
                               }
-                              className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                              onBlur={() => {
+                                const val = seller.renovacao?.card_pix_ticket
+                                if (val !== '' && val !== undefined && val !== null) {
+                                  const parsed = parsePtBrNumber(val)
+                                  if (parsed > 0) {
+                                    handleCategoryFieldChange(
+                                      idx,
+                                      'renovacao',
+                                      'card_pix_ticket',
+                                      formatNumber(parsed, 2),
+                                    )
+                                  }
+                                }
+                              }}
+                              className="pl-6 h-8 text-center font-semibold tabular-nums text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                             />
                           </div>
                         </TableCell>
@@ -533,19 +651,39 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                         </TableCell>
                         <TableCell className="py-2 px-2.5 border-r border-slate-200 text-center text-xs">
                           <Input
-                            type="number"
-                            min={0}
+                            type="text"
+                            inputMode="numeric"
                             placeholder="0"
-                            value={seller.renovacao?.boleto_sales ?? ''}
+                            value={
+                              seller.renovacao?.boleto_sales === '' ||
+                              seller.renovacao?.boleto_sales === undefined ||
+                              seller.renovacao?.boleto_sales === null
+                                ? ''
+                                : String(seller.renovacao.boleto_sales)
+                            }
                             onChange={(e) =>
                               handleCategoryFieldChange(
                                 idx,
                                 'renovacao',
                                 'boleto_sales',
-                                e.target.value,
+                                e.target.value.replace(/[^0-9.,]/g, ''),
                               )
                             }
-                            className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                            onBlur={() => {
+                              const val = seller.renovacao?.boleto_sales
+                              if (val !== '' && val !== undefined && val !== null) {
+                                const parsed = parsePtBrNumber(val)
+                                if (parsed > 0) {
+                                  handleCategoryFieldChange(
+                                    idx,
+                                    'renovacao',
+                                    'boleto_sales',
+                                    formatNumber(parsed, 0),
+                                  )
+                                }
+                              }
+                            }}
+                            className="h-8 text-center font-semibold tabular-nums text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                           />
                         </TableCell>
                         <TableCell className="py-2 px-2.5 border-r border-slate-200 text-center text-xs">
@@ -554,20 +692,39 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                               R$
                             </span>
                             <Input
-                              type="number"
-                              step="0.01"
-                              min={0}
-                              placeholder="0"
-                              value={seller.renovacao?.boleto_ticket ?? ''}
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="0,00"
+                              value={
+                                seller.renovacao?.boleto_ticket === '' ||
+                                seller.renovacao?.boleto_ticket === undefined ||
+                                seller.renovacao?.boleto_ticket === null
+                                  ? ''
+                                  : String(seller.renovacao.boleto_ticket)
+                              }
                               onChange={(e) =>
                                 handleCategoryFieldChange(
                                   idx,
                                   'renovacao',
                                   'boleto_ticket',
-                                  e.target.value,
+                                  e.target.value.replace(/[^0-9.,]/g, ''),
                                 )
                               }
-                              className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                              onBlur={() => {
+                                const val = seller.renovacao?.boleto_ticket
+                                if (val !== '' && val !== undefined && val !== null) {
+                                  const parsed = parsePtBrNumber(val)
+                                  if (parsed > 0) {
+                                    handleCategoryFieldChange(
+                                      idx,
+                                      'renovacao',
+                                      'boleto_ticket',
+                                      formatNumber(parsed, 2),
+                                    )
+                                  }
+                                }
+                              }}
+                              className="pl-6 h-8 text-center font-semibold tabular-nums text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                             />
                           </div>
                         </TableCell>
@@ -644,15 +801,33 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                   <span className="text-xs font-medium text-slate-600">% Comissão</span>
                   <div className="relative w-24">
                     <Input
-                      type="number"
-                      step="0.1"
-                      min={0}
-                      max={100}
-                      value={seller.commission_rate}
-                      onChange={(e) =>
-                        handleSellerInfoChange(idx, 'commission_rate', e.target.value)
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="0,0"
+                      value={
+                        seller.commission_rate === '' ||
+                        seller.commission_rate === undefined ||
+                        seller.commission_rate === null
+                          ? ''
+                          : String(seller.commission_rate)
                       }
-                      className="pr-6 h-8 text-xs text-right font-bold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                      onChange={(e) =>
+                        handleSellerInfoChange(
+                          idx,
+                          'commission_rate',
+                          e.target.value.replace(/[^0-9.,]/g, ''),
+                        )
+                      }
+                      onBlur={() => {
+                        const val = seller.commission_rate
+                        if (val !== '' && val !== undefined && val !== null) {
+                          const parsed = parsePtBrNumber(val)
+                          if (parsed > 0) {
+                            handleSellerInfoChange(idx, 'commission_rate', formatNumber(parsed, 1))
+                          }
+                        }
+                      }}
+                      className="pr-6 h-8 text-xs text-right font-bold tabular-nums text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                     />
                     <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">
                       %

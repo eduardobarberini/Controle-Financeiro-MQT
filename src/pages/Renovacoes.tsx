@@ -97,45 +97,67 @@ const CurrencyCell: React.FC<{
   value: string
   onChange: (v: string) => void
   modified: boolean
-}> = ({ value, onChange, modified }) => (
-  <div className="relative">
-    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
-      R$
-    </span>
-    <Input
-      type="text"
-      inputMode="decimal"
-      value={value}
-      onChange={(e) => onChange(e.target.value.replace(/[^0-9.,]/g, ''))}
-      placeholder="0,00"
-      className={`h-8 pl-7 pr-2 text-xs font-semibold tabular-nums text-slate-900 bg-white rounded-lg shadow-2xs ${
-        modified
-          ? 'border-amber-400 focus-visible:ring-amber-400'
-          : 'border-slate-200 focus-visible:ring-[#6D49F2]'
-      }`}
-    />
-  </div>
-)
+}> = ({ value, onChange, modified }) => {
+  const handleBlur = () => {
+    if (!value.trim()) return
+    const parsed = parsePtBrNumber(value)
+    if (parsed > 0) {
+      onChange(formatNumber(parsed, 2))
+    }
+  }
+
+  return (
+    <div className="relative">
+      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
+        R$
+      </span>
+      <Input
+        type="text"
+        inputMode="decimal"
+        value={value}
+        onChange={(e) => onChange(e.target.value.replace(/[^0-9.,]/g, ''))}
+        onBlur={handleBlur}
+        placeholder="0,00"
+        className={`h-8 pl-7 pr-2 text-xs font-semibold tabular-nums text-slate-900 bg-white rounded-lg shadow-2xs ${
+          modified
+            ? 'border-amber-400 focus-visible:ring-amber-400'
+            : 'border-slate-200 focus-visible:ring-[#6D49F2]'
+        }`}
+      />
+    </div>
+  )
+}
 
 /** Plain numeric input (no R$ prefix) used for counts. */
 const NumberCell: React.FC<{
   value: string
   onChange: (v: string) => void
   modified: boolean
-}> = ({ value, onChange, modified }) => (
-  <Input
-    type="text"
-    inputMode="numeric"
-    value={value}
-    onChange={(e) => onChange(e.target.value.replace(/[^0-9]/g, ''))}
-    placeholder="0"
-    className={`h-8 px-2.5 text-xs font-semibold tabular-nums text-slate-900 bg-white rounded-lg shadow-2xs text-center ${
-      modified
-        ? 'border-amber-400 focus-visible:ring-amber-400'
-        : 'border-slate-200 focus-visible:ring-[#6D49F2]'
-    }`}
-  />
-)
+}> = ({ value, onChange, modified }) => {
+  const handleBlur = () => {
+    if (!value.trim()) return
+    const parsed = parsePtBrNumber(value)
+    if (parsed > 0) {
+      onChange(formatNumber(parsed, 0))
+    }
+  }
+
+  return (
+    <Input
+      type="text"
+      inputMode="numeric"
+      value={value}
+      onChange={(e) => onChange(e.target.value.replace(/[^0-9.,]/g, ''))}
+      onBlur={handleBlur}
+      placeholder="0"
+      className={`h-8 px-2.5 text-xs font-semibold tabular-nums text-slate-900 bg-white rounded-lg shadow-2xs text-center ${
+        modified
+          ? 'border-amber-400 focus-visible:ring-amber-400'
+          : 'border-slate-200 focus-visible:ring-[#6D49F2]'
+      }`}
+    />
+  )
+}
 
 /** Read-only computed cell — muted background, no input. */
 const ReadOnlyCell: React.FC<{
@@ -174,7 +196,7 @@ export default function Renovacoes() {
         : { ...EMPTY_SAVED }
 
       const strNum = (n: number) => (n > 0 ? formatNumber(n, 0) : '')
-      const strCur = (n: number) => (n > 0 ? formatCurrency(n).replace('R$', '').trim() : '')
+      const strCur = (n: number) => (n > 0 ? formatNumber(n, 2) : '')
 
       newRows.push({
         key: `r-${i}`,
@@ -268,7 +290,7 @@ export default function Renovacoes() {
     try {
       await save(row.id, payload)
       const strNum = (n: number) => (n > 0 ? formatNumber(n, 0) : '')
-      const strCur = (n: number) => (n > 0 ? formatCurrency(n).replace('R$', '').trim() : '')
+      const strCur = (n: number) => (n > 0 ? formatNumber(n, 2) : '')
       setRows((prev) =>
         prev.map((r) =>
           r.key === row.key
@@ -558,7 +580,9 @@ export default function Renovacoes() {
                   tickLine={false}
                   axisLine={false}
                   tick={{ fill: '#94a3b8', fontSize: 10 }}
-                  tickFormatter={(val) => `R$${val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}`}
+                  tickFormatter={(val) =>
+                    `R$ ${val >= 1000 ? `${formatNumber(val / 1000, 0)}k` : formatNumber(val, 0)}`
+                  }
                 />
                 <YAxis
                   yAxisId="right"

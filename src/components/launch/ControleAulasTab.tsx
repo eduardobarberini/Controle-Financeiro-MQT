@@ -13,6 +13,7 @@ import {
 import { Save, Loader2, Video } from 'lucide-react'
 import { UniqueViewersChart } from '@/components/launch/UniqueViewersChart'
 import type { ClassSession } from '@/types/paidLaunches'
+import { formatNumber, parsePtBrNumber } from '@/lib/financial-utils'
 
 interface ControleAulasTabProps {
   studentsInChallenge: number | string
@@ -35,9 +36,9 @@ export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
 
   const formatPercentage = (value: number | string) => {
     if (!studentsNum || studentsNum <= 0) return '-'
-    const num = Number(value) || 0
+    const num = typeof value === 'string' ? parsePtBrNumber(value) : Number(value) || 0
     const pct = (num / studentsNum) * 100
-    return `${pct.toFixed(1)}%`
+    return `${formatNumber(pct, 1)}%`
   }
 
   return (
@@ -61,12 +62,30 @@ export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
             Alunas no Desafio
           </label>
           <Input
-            type="number"
-            min={0}
+            type="text"
+            inputMode="numeric"
             placeholder="0"
-            value={studentsInChallenge}
-            onChange={(e) => onChangeStudents(e.target.value)}
-            className="w-36 h-8 text-xs font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] rounded-lg shadow-2xs"
+            value={
+              studentsInChallenge === '' ||
+              studentsInChallenge === undefined ||
+              studentsInChallenge === null
+                ? ''
+                : String(studentsInChallenge)
+            }
+            onChange={(e) => onChangeStudents(e.target.value.replace(/[^0-9.,]/g, ''))}
+            onBlur={() => {
+              if (
+                studentsInChallenge !== '' &&
+                studentsInChallenge !== undefined &&
+                studentsInChallenge !== null
+              ) {
+                const parsed = parsePtBrNumber(studentsInChallenge)
+                if (parsed > 0) {
+                  onChangeStudents(formatNumber(parsed, 0))
+                }
+              }
+            }}
+            className="w-36 h-8 text-xs font-semibold tabular-nums text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] rounded-lg shadow-2xs"
           />
         </div>
 
@@ -117,12 +136,36 @@ export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
                     {/* Pessoal Ao Vivo Input */}
                     <TableCell className="py-2 px-2.5 border-r border-slate-200 text-center">
                       <Input
-                        type="number"
-                        min={0}
+                        type="text"
+                        inputMode="numeric"
                         placeholder="0"
-                        value={session.live_attendees}
-                        onChange={(e) => onChangeSession(idx, 'live_attendees', e.target.value)}
-                        className="h-8 text-center font-semibold text-xs text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                        value={
+                          session.live_attendees === '' ||
+                          session.live_attendees === undefined ||
+                          session.live_attendees === null
+                            ? ''
+                            : String(session.live_attendees)
+                        }
+                        onChange={(e) =>
+                          onChangeSession(
+                            idx,
+                            'live_attendees',
+                            e.target.value.replace(/[^0-9.,]/g, ''),
+                          )
+                        }
+                        onBlur={() => {
+                          if (
+                            session.live_attendees !== '' &&
+                            session.live_attendees !== undefined &&
+                            session.live_attendees !== null
+                          ) {
+                            const parsed = parsePtBrNumber(session.live_attendees)
+                            if (parsed > 0) {
+                              onChangeSession(idx, 'live_attendees', formatNumber(parsed, 0))
+                            }
+                          }
+                        }}
+                        className="h-8 text-center font-semibold tabular-nums text-xs text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                       />
                     </TableCell>
 
@@ -134,12 +177,36 @@ export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
                     {/* Espectadores Únicos Input */}
                     <TableCell className="py-2 px-2.5 border-r border-slate-200 text-center">
                       <Input
-                        type="number"
-                        min={0}
+                        type="text"
+                        inputMode="numeric"
                         placeholder="0"
-                        value={session.unique_viewers}
-                        onChange={(e) => onChangeSession(idx, 'unique_viewers', e.target.value)}
-                        className="h-8 text-center font-semibold text-xs text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                        value={
+                          session.unique_viewers === '' ||
+                          session.unique_viewers === undefined ||
+                          session.unique_viewers === null
+                            ? ''
+                            : String(session.unique_viewers)
+                        }
+                        onChange={(e) =>
+                          onChangeSession(
+                            idx,
+                            'unique_viewers',
+                            e.target.value.replace(/[^0-9.,]/g, ''),
+                          )
+                        }
+                        onBlur={() => {
+                          if (
+                            session.unique_viewers !== '' &&
+                            session.unique_viewers !== undefined &&
+                            session.unique_viewers !== null
+                          ) {
+                            const parsed = parsePtBrNumber(session.unique_viewers)
+                            if (parsed > 0) {
+                              onChangeSession(idx, 'unique_viewers', formatNumber(parsed, 0))
+                            }
+                          }
+                        }}
+                        className="h-8 text-center font-semibold tabular-nums text-xs text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                       />
                     </TableCell>
 

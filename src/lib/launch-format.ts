@@ -3,36 +3,54 @@
  * Kept in one place so currency / percent / number formatting stays consistent.
  */
 
-export const formatCurrency = (val: number): string => {
-  if (isNaN(val) || !isFinite(val)) return 'R$ 0,00'
-  return new Intl.NumberFormat('pt-BR', {
+export const formatCurrency = (val: number | null | undefined): string => {
+  if (val === null || val === undefined || isNaN(val) || !isFinite(val)) return 'R$ 0,00'
+  const isNegative = val < 0
+  const absVal = Math.abs(val)
+  const formatted = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-  }).format(val)
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+    .format(absVal)
+    .replace(/\u00A0/g, ' ')
+    .replace(/^R\$\s*/, 'R$ ')
+  return isNegative ? `-${formatted}` : formatted
 }
 
-export const formatPercent = (val: number): string => {
-  if (isNaN(val) || !isFinite(val)) return '0,00%'
+export const formatPercent = (val: number | null | undefined, decimals = 2): string => {
+  if (val === null || val === undefined || isNaN(val) || !isFinite(val)) {
+    return (
+      (0).toLocaleString('pt-BR', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      }) + '%'
+    )
+  }
   return (
     new Intl.NumberFormat('pt-BR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
     }).format(val * 100) + '%'
   )
 }
 
-export const formatCalculatedCurrency = (val: number): string => {
-  if (isNaN(val) || !isFinite(val)) return 'R$ 0,00'
+export const formatCalculatedCurrency = (val: number | null | undefined): string => {
   return formatCurrency(val)
 }
 
-export const formatCalculatedPercent = (val: number): string => {
-  if (isNaN(val) || !isFinite(val)) return '0,00%'
-  return formatPercent(val)
+export const formatCalculatedPercent = (val: number | null | undefined, decimals = 2): string => {
+  return formatPercent(val, decimals)
 }
 
-export const formatCalculatedNumber = (val: number, decimals = 2): string => {
-  if (isNaN(val) || !isFinite(val)) return '0'
+export const formatCalculatedNumber = (val: number | null | undefined, decimals = 2): string => {
+  if (val === null || val === undefined || isNaN(val) || !isFinite(val)) {
+    return (0).toLocaleString('pt-BR', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    })
+  }
   return new Intl.NumberFormat('pt-BR', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,

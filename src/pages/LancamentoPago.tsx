@@ -1222,15 +1222,40 @@ export default function LancamentoPago() {
                                   R$
                                 </span>
                                 <Input
-                                  type="number"
-                                  step="0.01"
-                                  min={0}
-                                  placeholder="0"
-                                  value={day.investment}
-                                  onChange={(e) =>
-                                    handleDailyChange(idx, 'investment', e.target.value)
+                                  type="text"
+                                  inputMode="decimal"
+                                  placeholder="0,00"
+                                  value={
+                                    day.investment === '' ||
+                                    day.investment === undefined ||
+                                    day.investment === null
+                                      ? ''
+                                      : String(day.investment)
                                   }
-                                  className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                                  onChange={(e) =>
+                                    handleDailyChange(
+                                      idx,
+                                      'investment',
+                                      e.target.value.replace(/[^0-9.,]/g, ''),
+                                    )
+                                  }
+                                  onBlur={() => {
+                                    if (
+                                      day.investment !== '' &&
+                                      day.investment !== undefined &&
+                                      day.investment !== null
+                                    ) {
+                                      const parsed = parsePtBrNumber(day.investment)
+                                      if (parsed > 0) {
+                                        handleDailyChange(
+                                          idx,
+                                          'investment',
+                                          formatNumber(parsed, 2),
+                                        )
+                                      }
+                                    }
+                                  }}
+                                  className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs tabular-nums"
                                 />
                               </div>
                             </TableCell>
@@ -1248,14 +1273,40 @@ export default function LancamentoPago() {
                               className="py-2 px-2.5 border-l border-slate-100 text-center text-xs"
                             >
                               <Input
-                                type="number"
-                                min={0}
+                                type="text"
+                                inputMode="numeric"
                                 placeholder="0"
-                                value={day.ticket_sales}
-                                onChange={(e) =>
-                                  handleDailyChange(idx, 'ticket_sales', e.target.value)
+                                value={
+                                  day.ticket_sales === '' ||
+                                  day.ticket_sales === undefined ||
+                                  day.ticket_sales === null
+                                    ? ''
+                                    : String(day.ticket_sales)
                                 }
-                                className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                                onChange={(e) =>
+                                  handleDailyChange(
+                                    idx,
+                                    'ticket_sales',
+                                    e.target.value.replace(/[^0-9.,]/g, ''),
+                                  )
+                                }
+                                onBlur={() => {
+                                  if (
+                                    day.ticket_sales !== '' &&
+                                    day.ticket_sales !== undefined &&
+                                    day.ticket_sales !== null
+                                  ) {
+                                    const parsed = parsePtBrNumber(day.ticket_sales)
+                                    if (parsed > 0) {
+                                      handleDailyChange(
+                                        idx,
+                                        'ticket_sales',
+                                        formatNumber(parsed, 0),
+                                      )
+                                    }
+                                  }
+                                }}
+                                className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs tabular-nums"
                               />
                             </TableCell>
                           ))}
@@ -1287,14 +1338,36 @@ export default function LancamentoPago() {
                               className="py-2 px-2.5 border-l border-slate-100 text-center text-xs"
                             >
                               <Input
-                                type="number"
-                                min={0}
+                                type="text"
+                                inputMode="numeric"
                                 placeholder="0"
-                                value={day.bump_sales}
-                                onChange={(e) =>
-                                  handleDailyChange(idx, 'bump_sales', e.target.value)
+                                value={
+                                  day.bump_sales === '' ||
+                                  day.bump_sales === undefined ||
+                                  day.bump_sales === null
+                                    ? ''
+                                    : String(day.bump_sales)
                                 }
-                                className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                                onChange={(e) =>
+                                  handleDailyChange(
+                                    idx,
+                                    'bump_sales',
+                                    e.target.value.replace(/[^0-9.,]/g, ''),
+                                  )
+                                }
+                                onBlur={() => {
+                                  if (
+                                    day.bump_sales !== '' &&
+                                    day.bump_sales !== undefined &&
+                                    day.bump_sales !== null
+                                  ) {
+                                    const parsed = parsePtBrNumber(day.bump_sales)
+                                    if (parsed > 0) {
+                                      handleDailyChange(idx, 'bump_sales', formatNumber(parsed, 0))
+                                    }
+                                  }
+                                }}
+                                className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs tabular-nums"
                               />
                             </TableCell>
                           ))}
@@ -1359,9 +1432,7 @@ export default function LancamentoPago() {
                                   : 'text-slate-900 font-bold'
                               }`}
                             >
-                              {dayCalc.dailyBalance < 0
-                                ? `-R$ ${Math.abs(dayCalc.dailyBalance).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                : formatCurrency(dayCalc.dailyBalance)}
+                              {formatCurrency(dayCalc.dailyBalance)}
                             </TableCell>
                           ))}
                         </TableRow>
@@ -1459,11 +1530,31 @@ export default function LancamentoPago() {
                         R$
                       </span>
                       <Input
-                        type="number"
-                        step="0.01"
-                        min={0}
-                        value={form.ticket_ticket}
-                        onChange={(e) => handleChange('ticket_ticket', e.target.value)}
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="0,00"
+                        value={
+                          form.ticket_ticket === '' ||
+                          form.ticket_ticket === undefined ||
+                          form.ticket_ticket === null
+                            ? ''
+                            : String(form.ticket_ticket)
+                        }
+                        onChange={(e) =>
+                          handleChange('ticket_ticket', e.target.value.replace(/[^0-9.,]/g, ''))
+                        }
+                        onBlur={() => {
+                          if (
+                            form.ticket_ticket !== '' &&
+                            form.ticket_ticket !== undefined &&
+                            form.ticket_ticket !== null
+                          ) {
+                            const parsed = parsePtBrNumber(form.ticket_ticket)
+                            if (parsed > 0) {
+                              handleChange('ticket_ticket', formatNumber(parsed, 2))
+                            }
+                          }
+                        }}
                         className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
                       />
                     </div>
@@ -1515,11 +1606,32 @@ export default function LancamentoPago() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
                     <span className="font-medium text-xs text-slate-700">Reembolso</span>
                     <Input
-                      type="number"
-                      min={0}
-                      value={form.ticket_refunds}
-                      onChange={(e) => handleChange('ticket_refunds', e.target.value)}
-                      className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0"
+                      value={
+                        form.ticket_refunds === '' ||
+                        form.ticket_refunds === undefined ||
+                        form.ticket_refunds === null
+                          ? ''
+                          : String(form.ticket_refunds)
+                      }
+                      onChange={(e) =>
+                        handleChange('ticket_refunds', e.target.value.replace(/[^0-9.,]/g, ''))
+                      }
+                      onBlur={() => {
+                        if (
+                          form.ticket_refunds !== '' &&
+                          form.ticket_refunds !== undefined &&
+                          form.ticket_refunds !== null
+                        ) {
+                          const parsed = parsePtBrNumber(form.ticket_refunds)
+                          if (parsed > 0) {
+                            handleChange('ticket_refunds', formatNumber(parsed, 0))
+                          }
+                        }
+                      }}
+                      className="bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-center text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
                     />
                   </div>
 
@@ -1575,11 +1687,31 @@ export default function LancamentoPago() {
                         R$
                       </span>
                       <Input
-                        type="number"
-                        step="0.01"
-                        min={0}
-                        value={form.bump_ticket}
-                        onChange={(e) => handleChange('bump_ticket', e.target.value)}
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="0,00"
+                        value={
+                          form.bump_ticket === '' ||
+                          form.bump_ticket === undefined ||
+                          form.bump_ticket === null
+                            ? ''
+                            : String(form.bump_ticket)
+                        }
+                        onChange={(e) =>
+                          handleChange('bump_ticket', e.target.value.replace(/[^0-9.,]/g, ''))
+                        }
+                        onBlur={() => {
+                          if (
+                            form.bump_ticket !== '' &&
+                            form.bump_ticket !== undefined &&
+                            form.bump_ticket !== null
+                          ) {
+                            const parsed = parsePtBrNumber(form.bump_ticket)
+                            if (parsed > 0) {
+                              handleChange('bump_ticket', formatNumber(parsed, 2))
+                            }
+                          }
+                        }}
                         className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
                       />
                     </div>
@@ -1598,11 +1730,32 @@ export default function LancamentoPago() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
                     <span className="font-medium text-xs text-slate-700">Reembolso</span>
                     <Input
-                      type="number"
-                      min={0}
-                      value={form.bump_refunds}
-                      onChange={(e) => handleChange('bump_refunds', e.target.value)}
-                      className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0"
+                      value={
+                        form.bump_refunds === '' ||
+                        form.bump_refunds === undefined ||
+                        form.bump_refunds === null
+                          ? ''
+                          : String(form.bump_refunds)
+                      }
+                      onChange={(e) =>
+                        handleChange('bump_refunds', e.target.value.replace(/[^0-9.,]/g, ''))
+                      }
+                      onBlur={() => {
+                        if (
+                          form.bump_refunds !== '' &&
+                          form.bump_refunds !== undefined &&
+                          form.bump_refunds !== null
+                        ) {
+                          const parsed = parsePtBrNumber(form.bump_refunds)
+                          if (parsed > 0) {
+                            handleChange('bump_refunds', formatNumber(parsed, 0))
+                          }
+                        }
+                      }}
+                      className="bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-center text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
                     />
                   </div>
 

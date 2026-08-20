@@ -99,30 +99,41 @@ const EMPTY_SAVED = {
   fixed_costs: 0,
 }
 
-/** Small R$ prefixed input used across the editable cells. */
+/** Small R$ prefixed input used across the editable cells with pt-BR onBlur formatting. */
 const CurrencyCell: React.FC<{
   value: string
   onChange: (v: string) => void
   modified: boolean
-}> = ({ value, onChange, modified }) => (
-  <div className="relative">
-    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
-      R$
-    </span>
-    <Input
-      type="text"
-      inputMode="decimal"
-      value={value}
-      onChange={(e) => onChange(e.target.value.replace(/[^0-9.,]/g, ''))}
-      placeholder="0,00"
-      className={`h-8 pl-7 pr-2 text-xs font-semibold tabular-nums text-slate-900 bg-white rounded-lg shadow-2xs ${
-        modified
-          ? 'border-amber-400 focus-visible:ring-amber-400'
-          : 'border-slate-200 focus-visible:ring-[#6D49F2]'
-      }`}
-    />
-  </div>
-)
+}> = ({ value, onChange, modified }) => {
+  const handleBlur = () => {
+    if (!value.trim()) return
+    const parsed = parsePtBrNumber(value)
+    if (parsed > 0) {
+      onChange(formatNumber(parsed, 2))
+    }
+  }
+
+  return (
+    <div className="relative">
+      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
+        R$
+      </span>
+      <Input
+        type="text"
+        inputMode="decimal"
+        value={value}
+        onChange={(e) => onChange(e.target.value.replace(/[^0-9.,]/g, ''))}
+        onBlur={handleBlur}
+        placeholder="0,00"
+        className={`h-8 pl-7 pr-2 text-xs font-semibold tabular-nums text-slate-900 bg-white rounded-lg shadow-2xs ${
+          modified
+            ? 'border-amber-400 focus-visible:ring-amber-400'
+            : 'border-slate-200 focus-visible:ring-[#6D49F2]'
+        }`}
+      />
+    </div>
+  )
+}
 
 /** Read-only computed cell — muted background, no input. */
 const ReadOnlyCell: React.FC<{
@@ -171,7 +182,7 @@ export default function Mensal() {
           }
         : { ...EMPTY_SAVED }
 
-      const str = (n: number) => (n > 0 ? formatCurrency(n).replace('R$', '').trim() : '')
+      const str = (n: number) => (n > 0 ? formatNumber(n, 2) : '')
 
       newRows.push({
         key: `m-${i}`,
@@ -285,7 +296,7 @@ export default function Mensal() {
     setRows((prev) => prev.map((r) => (r.key === row.key ? { ...r, isSavingRow: true } : r)))
     try {
       await save(row.id, payload)
-      const str = (n: number) => (n > 0 ? formatCurrency(n).replace('R$', '').trim() : '')
+      const str = (n: number) => (n > 0 ? formatNumber(n, 2) : '')
       setRows((prev) =>
         prev.map((r) =>
           r.key === row.key
@@ -514,7 +525,9 @@ export default function Mensal() {
                   tickLine={false}
                   axisLine={false}
                   tick={{ fill: '#94a3b8', fontSize: 10 }}
-                  tickFormatter={(val) => `R$${val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}`}
+                  tickFormatter={(val) =>
+                    `R$ ${val >= 1000 ? `${formatNumber(val / 1000, 0)}k` : formatNumber(val, 0)}`
+                  }
                 />
                 <Tooltip
                   formatter={(value: number, name: string) => {
@@ -915,13 +928,11 @@ export default function Mensal() {
           </p>
           <p>
             • <strong>Imposto Meta</strong> = Investimento Meta ×{' '}
-            {(taxMetaRate * 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}% (auto,
-            somente leitura).
+            {formatNumber(taxMetaRate * 100, 2)}% (auto, somente leitura).
           </p>
           <p>
             • <strong>Imposto Sobre Vendas</strong> = Faturamento ×{' '}
-            {(salesTaxRate * 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}% (auto,
-            somente leitura).
+            {formatNumber(salesTaxRate * 100, 2)}% (auto, somente leitura).
           </p>
           <p>
             • <strong>Total Variável</strong> = Investimento Meta + Imposto Meta + Imposto Sobre

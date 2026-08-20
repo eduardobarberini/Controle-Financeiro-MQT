@@ -11,6 +11,7 @@ import {
 } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { BarChart3 } from 'lucide-react'
+import { formatNumber } from '@/lib/financial-utils'
 import type { ClassSession } from '@/types/paidLaunches'
 
 interface UniqueViewersChartProps {
@@ -97,9 +98,9 @@ export const UniqueViewersChart: React.FC<UniqueViewersChartProps> = ({
               <Tooltip
                 formatter={(value: number, name: string) => {
                   if (name === 'percentual') {
-                    return [`${Number(value).toFixed(1)}%`, '% Espectadores Únicos']
+                    return [`${formatNumber(Number(value), 1)}%`, '% Espectadores Únicos']
                   }
-                  return [`${value}`, 'Espectadores Únicos']
+                  return [formatNumber(Number(value), 0), 'Espectadores Únicos']
                 }}
                 contentStyle={{
                   backgroundColor: '#0f172a',

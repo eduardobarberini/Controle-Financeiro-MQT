@@ -56,7 +56,13 @@ const numberFormatter = new Intl.NumberFormat('pt-BR', {
 
 export function formatCurrency(value: number | null | undefined): string {
   if (value === null || value === undefined || isNaN(value)) return 'R$ 0,00'
-  return currencyFormatter.format(value)
+  const isNegative = value < 0
+  const absVal = Math.abs(value)
+  const formatted = currencyFormatter
+    .format(absVal)
+    .replace(/\u00A0/g, ' ')
+    .replace(/^R\$\s*/, 'R$ ')
+  return isNegative ? `-${formatted}` : formatted
 }
 
 /**
@@ -106,15 +112,38 @@ export function parsePtBrNumber(val: string | number | null | undefined): number
 
 export function formatCompactCurrency(value: number | null | undefined): string {
   if (value === null || value === undefined || isNaN(value)) return 'R$ 0'
-  return compactCurrencyFormatter.format(value)
+  return compactCurrencyFormatter
+    .format(value)
+    .replace(/\u00A0/g, ' ')
+    .replace(/^R\$\s*/, 'R$ ')
 }
 
 export function formatNumber(value: number | null | undefined, decimals = 2): string {
-  if (value === null || value === undefined || isNaN(value)) return '0,00'
+  if (value === null || value === undefined || isNaN(value)) {
+    return (0).toLocaleString('pt-BR', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    })
+  }
   return new Intl.NumberFormat('pt-BR', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   }).format(value)
+}
+
+/**
+ * Formats a raw numeric input value for pt-BR display on blur.
+ * If empty/invalid, returns empty string or formatted 0.
+ */
+export function formatPtBrInput(
+  val: string | number | null | undefined,
+  decimals = 2,
+  blankIfZero = false,
+): string {
+  if (val === '' || val === null || val === undefined) return ''
+  const parsed = typeof val === 'number' ? val : parsePtBrNumber(val)
+  if (parsed === 0 && blankIfZero) return ''
+  return formatNumber(parsed, decimals)
 }
 
 export function formatPercent(value: number | null | undefined, decimals = 1): string {

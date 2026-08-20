@@ -4,6 +4,8 @@ import { toast } from '@/hooks/use-toast'
 import {
   formatCurrency,
   formatPercent,
+  formatNumber,
+  parsePtBrNumber,
   getProgressColor,
   DEFAULT_TAX_META_PERCENT,
   DEFAULT_SALES_TAX_PERCENT,
@@ -44,46 +46,60 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
 
   useEffect(() => {
     if (open) {
-      setRevenueGoalStr(goals?.annual_revenue_goal ? String(goals.annual_revenue_goal) : '')
-      setProfitGoalStr(goals?.annual_profit_goal ? String(goals.annual_profit_goal) : '')
+      setRevenueGoalStr(
+        goals?.annual_revenue_goal ? formatNumber(goals.annual_revenue_goal, 2) : '',
+      )
+      setProfitGoalStr(goals?.annual_profit_goal ? formatNumber(goals.annual_profit_goal, 2) : '')
       setProfitMarginGoalStr(
         goals?.profit_margin_goal !== undefined && goals?.profit_margin_goal !== null
-          ? String(goals.profit_margin_goal)
+          ? formatNumber(goals.profit_margin_goal, 1)
           : '',
       )
       setRenewalRateGoalStr(
         goals?.renewal_rate_goal !== undefined && goals?.renewal_rate_goal !== null
-          ? String(goals.renewal_rate_goal)
+          ? formatNumber(goals.renewal_rate_goal, 1)
           : '',
       )
       setTaxMetaRateStr(
         goals?.tax_meta_rate !== undefined && goals?.tax_meta_rate !== null
-          ? String(goals.tax_meta_rate)
-          : String(DEFAULT_TAX_META_PERCENT),
+          ? formatNumber(goals.tax_meta_rate, 2)
+          : formatNumber(DEFAULT_TAX_META_PERCENT, 2),
       )
       setSalesTaxRateStr(
         goals?.sales_tax_rate !== undefined && goals?.sales_tax_rate !== null
-          ? String(goals.sales_tax_rate)
-          : String(DEFAULT_SALES_TAX_PERCENT),
+          ? formatNumber(goals.sales_tax_rate, 2)
+          : formatNumber(DEFAULT_SALES_TAX_PERCENT, 2),
       )
       setErrors({})
     }
   }, [goals, selectedYear, open])
 
   const handleInputChange = (setter: React.Dispatch<React.SetStateAction<string>>, val: string) => {
-    const sanitized = val.replace(/[^0-9.,]/g, '').replace(',', '.')
+    const sanitized = val.replace(/[^0-9.,]/g, '')
     setter(sanitized)
     setErrors({})
   }
 
+  const handleBlurFormat = (
+    setter: React.Dispatch<React.SetStateAction<string>>,
+    val: string,
+    decimals = 2,
+  ) => {
+    if (!val.trim()) return
+    const parsed = parsePtBrNumber(val)
+    if (parsed > 0) {
+      setter(formatNumber(parsed, decimals))
+    }
+  }
+
   const validate = () => {
     const errs: Record<string, string> = {}
-    const rev = parseFloat(revenueGoalStr)
-    const prof = parseFloat(profitGoalStr)
-    const margin = parseFloat(profitMarginGoalStr)
-    const renewalRate = parseFloat(renewalRateGoalStr)
-    const taxMeta = parseFloat(taxMetaRateStr)
-    const salesTax = parseFloat(salesTaxRateStr)
+    const rev = parsePtBrNumber(revenueGoalStr)
+    const prof = parsePtBrNumber(profitGoalStr)
+    const margin = parsePtBrNumber(profitMarginGoalStr)
+    const renewalRate = parsePtBrNumber(renewalRateGoalStr)
+    const taxMeta = parsePtBrNumber(taxMetaRateStr)
+    const salesTax = parsePtBrNumber(salesTaxRateStr)
 
     if (isNaN(rev) || rev <= 0) {
       errs.revenue = 'A Meta de Faturamento Anual deve ser maior que zero.'
@@ -115,12 +131,12 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
     e.preventDefault()
     if (!validate()) return
 
-    const rev = parseFloat(revenueGoalStr)
-    const prof = parseFloat(profitGoalStr)
-    const margin = profitMarginGoalStr !== '' ? parseFloat(profitMarginGoalStr) : null
-    const renewalRate = renewalRateGoalStr !== '' ? parseFloat(renewalRateGoalStr) : null
-    const taxMeta = parseFloat(taxMetaRateStr)
-    const salesTax = parseFloat(salesTaxRateStr)
+    const rev = parsePtBrNumber(revenueGoalStr)
+    const prof = parsePtBrNumber(profitGoalStr)
+    const margin = profitMarginGoalStr !== '' ? parsePtBrNumber(profitMarginGoalStr) : null
+    const renewalRate = renewalRateGoalStr !== '' ? parsePtBrNumber(renewalRateGoalStr) : null
+    const taxMeta = parsePtBrNumber(taxMetaRateStr)
+    const salesTax = parsePtBrNumber(salesTaxRateStr)
 
     try {
       setIsSubmitting(true)
@@ -181,6 +197,7 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                   inputMode="decimal"
                   value={revenueGoalStr}
                   onChange={(e) => handleInputChange(setRevenueGoalStr, e.target.value)}
+                  onBlur={() => handleBlurFormat(setRevenueGoalStr, revenueGoalStr, 2)}
                   placeholder="500.000,00"
                   className="h-11 pl-8 pr-2 text-xs font-semibold tabular-nums text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-[#6D49F2] rounded-xl"
                   required
@@ -190,7 +207,7 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                 <p className="text-[11px] text-rose-500 mt-1">{errors.revenue}</p>
               ) : (
                 <p className="text-[10px] text-slate-400">
-                  ≈ {formatCurrency((parseFloat(revenueGoalStr) || 0) / 12)} / mês
+                  ≈ {formatCurrency((parsePtBrNumber(revenueGoalStr) || 0) / 12)} / mês
                 </p>
               )}
             </div>
@@ -214,6 +231,7 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                   inputMode="decimal"
                   value={profitGoalStr}
                   onChange={(e) => handleInputChange(setProfitGoalStr, e.target.value)}
+                  onBlur={() => handleBlurFormat(setProfitGoalStr, profitGoalStr, 2)}
                   placeholder="150.000,00"
                   className="h-11 pl-8 pr-2 text-xs font-semibold tabular-nums text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-[#6D49F2] rounded-xl"
                   required
@@ -223,7 +241,7 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                 <p className="text-[11px] text-rose-500 mt-1">{errors.profit}</p>
               ) : (
                 <p className="text-[10px] text-slate-400">
-                  ≈ {formatCurrency((parseFloat(profitGoalStr) || 0) / 12)} / mês
+                  ≈ {formatCurrency((parsePtBrNumber(profitGoalStr) || 0) / 12)} / mês
                 </p>
               )}
             </div>
@@ -244,7 +262,8 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                   inputMode="decimal"
                   value={profitMarginGoalStr}
                   onChange={(e) => handleInputChange(setProfitMarginGoalStr, e.target.value)}
-                  placeholder="30"
+                  onBlur={() => handleBlurFormat(setProfitMarginGoalStr, profitMarginGoalStr, 1)}
+                  placeholder="30,0"
                   className="h-11 pr-7 text-xs font-semibold tabular-nums text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-[#6D49F2] rounded-xl"
                 />
                 <span className="absolute right-3 top-3 text-xs text-slate-400 font-semibold pointer-events-none">
@@ -274,7 +293,8 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                   inputMode="decimal"
                   value={renewalRateGoalStr}
                   onChange={(e) => handleInputChange(setRenewalRateGoalStr, e.target.value)}
-                  placeholder="70"
+                  onBlur={() => handleBlurFormat(setRenewalRateGoalStr, renewalRateGoalStr, 1)}
+                  placeholder="70,0"
                   className="h-11 pr-7 text-xs font-semibold tabular-nums text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-[#6D49F2] rounded-xl"
                 />
                 <span className="absolute right-3 top-3 text-xs text-slate-400 font-semibold pointer-events-none">
@@ -311,7 +331,8 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                     inputMode="decimal"
                     value={taxMetaRateStr}
                     onChange={(e) => handleInputChange(setTaxMetaRateStr, e.target.value)}
-                    placeholder="12.15"
+                    onBlur={() => handleBlurFormat(setTaxMetaRateStr, taxMetaRateStr, 2)}
+                    placeholder="12,15"
                     className="h-11 pr-8 text-sm font-semibold tabular-nums text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-purple-500 rounded-xl"
                     required
                   />
@@ -343,7 +364,8 @@ export const MetasModal: React.FC<MetasModalProps> = ({ open, onOpenChange }) =>
                     inputMode="decimal"
                     value={salesTaxRateStr}
                     onChange={(e) => handleInputChange(setSalesTaxRateStr, e.target.value)}
-                    placeholder="7.5"
+                    onBlur={() => handleBlurFormat(setSalesTaxRateStr, salesTaxRateStr, 2)}
+                    placeholder="7,50"
                     className="h-11 pr-8 text-sm font-semibold tabular-nums text-slate-900 bg-slate-50/50 border-slate-200 focus-visible:ring-purple-500 rounded-xl"
                     required
                   />

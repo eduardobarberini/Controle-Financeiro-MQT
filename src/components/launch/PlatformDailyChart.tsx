@@ -12,6 +12,7 @@ import {
 } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { BarChart3 } from 'lucide-react'
+import { formatNumber } from '@/lib/financial-utils'
 
 interface PlatformDailyChartDay {
   dayLabel?: string
@@ -97,9 +98,9 @@ export const PlatformDailyChart: React.FC<PlatformDailyChartProps> = ({ days }) 
               <Tooltip
                 formatter={(value: number, name: string) => {
                   if (name === 'conversao') {
-                    return [`${Number(value).toFixed(1)}%`, 'Conversão Desafio / Plataforma']
+                    return [`${formatNumber(Number(value), 1)}%`, 'Conversão Desafio / Plataforma']
                   }
-                  return [`${value}`, 'Vendas Totais']
+                  return [formatNumber(Number(value), 0), 'Vendas Totais']
                 }}
                 contentStyle={{
                   backgroundColor: '#0f172a',

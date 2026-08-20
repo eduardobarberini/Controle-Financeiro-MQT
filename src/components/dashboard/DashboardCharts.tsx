@@ -17,6 +17,7 @@ import { YearFinancialSummary } from '@/types/financial'
 import {
   formatCurrency,
   formatPercent,
+  formatNumber,
   getProgressColor,
   MONTH_SHORT_NAMES_PT,
 } from '@/lib/financial-utils'
@@ -193,7 +194,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
                     tick={{ fill: '#94a3b8', fontSize: 10 }}
                     width={72}
                     tickFormatter={(val: number) =>
-                      val >= 1000 ? `R$ ${(val / 1000).toFixed(0)}k` : `R$ ${val}`
+                      val >= 1000
+                        ? `R$ ${formatNumber(val / 1000, 0)}k`
+                        : `R$ ${formatNumber(val, 0)}`
                     }
                   />
                   <Tooltip
@@ -344,7 +347,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
                     tick={{ fill: '#94a3b8', fontSize: 10 }}
                     width={72}
                     tickFormatter={(val: number) =>
-                      Math.abs(val) >= 1000 ? `R$ ${(val / 1000).toFixed(0)}k` : `R$ ${val}`
+                      Math.abs(val) >= 1000
+                        ? `R$ ${formatNumber(val / 1000, 0)}k`
+                        : `R$ ${formatNumber(val, 0)}`
                     }
                   />
                   <Tooltip

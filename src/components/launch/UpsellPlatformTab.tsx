@@ -15,6 +15,7 @@ import {
 import { PlatformDailyChart } from '@/components/launch/PlatformDailyChart'
 import type { UpsellPlatform, UpsellDailyEntry } from '@/types/paidLaunches'
 import { formatCurrency, formatCalculatedPercent } from '@/lib/launch-format'
+import { formatNumber, parsePtBrNumber } from '@/lib/financial-utils'
 
 interface UpsellPlatformTabProps {
   upsellData: UpsellPlatform
@@ -140,12 +141,29 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                 R$
               </span>
               <Input
-                type="number"
-                step="0.01"
-                min={0}
-                value={upsellData.ticket}
-                onChange={(e) => onChangeField('ticket', e.target.value)}
-                placeholder="0.00"
+                type="text"
+                inputMode="decimal"
+                value={
+                  upsellData.ticket === '' ||
+                  upsellData.ticket === undefined ||
+                  upsellData.ticket === null
+                    ? ''
+                    : String(upsellData.ticket)
+                }
+                onChange={(e) => onChangeField('ticket', e.target.value.replace(/[^0-9.,]/g, ''))}
+                onBlur={() => {
+                  if (
+                    upsellData.ticket !== '' &&
+                    upsellData.ticket !== undefined &&
+                    upsellData.ticket !== null
+                  ) {
+                    const parsed = parsePtBrNumber(upsellData.ticket)
+                    if (parsed > 0) {
+                      onChangeField('ticket', formatNumber(parsed, 2))
+                    }
+                  }
+                }}
+                placeholder="0,00"
                 className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
               />
             </div>
@@ -185,12 +203,30 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
             <span className="font-medium text-xs text-slate-700">Reembolsos</span>
             <Input
-              type="number"
-              min={0}
-              value={upsellData.refunds}
-              onChange={(e) => onChangeField('refunds', e.target.value)}
+              type="text"
+              inputMode="numeric"
+              value={
+                upsellData.refunds === '' ||
+                upsellData.refunds === undefined ||
+                upsellData.refunds === null
+                  ? ''
+                  : String(upsellData.refunds)
+              }
+              onChange={(e) => onChangeField('refunds', e.target.value.replace(/[^0-9.,]/g, ''))}
+              onBlur={() => {
+                if (
+                  upsellData.refunds !== '' &&
+                  upsellData.refunds !== undefined &&
+                  upsellData.refunds !== null
+                ) {
+                  const parsed = parsePtBrNumber(upsellData.refunds)
+                  if (parsed > 0) {
+                    onChangeField('refunds', formatNumber(parsed, 0))
+                  }
+                }
+              }}
               placeholder="0"
-              className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+              className="bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-center text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
             />
           </div>
 
@@ -217,14 +253,32 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
             </span>
             <div className="relative">
               <Input
-                type="number"
-                step="0.01"
-                min={0}
-                max={100}
-                value={upsellData.inadimplencia_rate}
-                onChange={(e) => onChangeField('inadimplencia_rate', e.target.value)}
-                placeholder="0.00"
-                className="pr-7 bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                type="text"
+                inputMode="decimal"
+                value={
+                  upsellData.inadimplencia_rate === '' ||
+                  upsellData.inadimplencia_rate === undefined ||
+                  upsellData.inadimplencia_rate === null
+                    ? ''
+                    : String(upsellData.inadimplencia_rate)
+                }
+                onChange={(e) =>
+                  onChangeField('inadimplencia_rate', e.target.value.replace(/[^0-9.,]/g, ''))
+                }
+                onBlur={() => {
+                  if (
+                    upsellData.inadimplencia_rate !== '' &&
+                    upsellData.inadimplencia_rate !== undefined &&
+                    upsellData.inadimplencia_rate !== null
+                  ) {
+                    const parsed = parsePtBrNumber(upsellData.inadimplencia_rate)
+                    if (parsed > 0) {
+                      onChangeField('inadimplencia_rate', formatNumber(parsed, 2))
+                    }
+                  }
+                }}
+                placeholder="0,00"
+                className="pr-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-center text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
               />
               <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
                 %
@@ -311,12 +365,36 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                       className="py-2 px-2.5 border-r border-slate-200 text-center text-xs"
                     >
                       <Input
-                        type="number"
-                        min={0}
+                        type="text"
+                        inputMode="numeric"
                         placeholder="0"
-                        value={day.card_pix_sales}
-                        onChange={(e) => onChangeDailyField(idx, 'card_pix_sales', e.target.value)}
-                        className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                        value={
+                          day.card_pix_sales === '' ||
+                          day.card_pix_sales === undefined ||
+                          day.card_pix_sales === null
+                            ? ''
+                            : String(day.card_pix_sales)
+                        }
+                        onChange={(e) =>
+                          onChangeDailyField(
+                            idx,
+                            'card_pix_sales',
+                            e.target.value.replace(/[^0-9.,]/g, ''),
+                          )
+                        }
+                        onBlur={() => {
+                          if (
+                            day.card_pix_sales !== '' &&
+                            day.card_pix_sales !== undefined &&
+                            day.card_pix_sales !== null
+                          ) {
+                            const parsed = parsePtBrNumber(day.card_pix_sales)
+                            if (parsed > 0) {
+                              onChangeDailyField(idx, 'card_pix_sales', formatNumber(parsed, 0))
+                            }
+                          }
+                        }}
+                        className="h-8 text-center font-semibold tabular-nums text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                       />
                     </TableCell>
                   ))}
@@ -337,15 +415,36 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                           R$
                         </span>
                         <Input
-                          type="number"
-                          step="0.01"
-                          min={0}
-                          placeholder="0"
-                          value={day.card_pix_revenue}
-                          onChange={(e) =>
-                            onChangeDailyField(idx, 'card_pix_revenue', e.target.value)
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="0,00"
+                          value={
+                            day.card_pix_revenue === '' ||
+                            day.card_pix_revenue === undefined ||
+                            day.card_pix_revenue === null
+                              ? ''
+                              : String(day.card_pix_revenue)
                           }
-                          className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                          onChange={(e) =>
+                            onChangeDailyField(
+                              idx,
+                              'card_pix_revenue',
+                              e.target.value.replace(/[^0-9.,]/g, ''),
+                            )
+                          }
+                          onBlur={() => {
+                            if (
+                              day.card_pix_revenue !== '' &&
+                              day.card_pix_revenue !== undefined &&
+                              day.card_pix_revenue !== null
+                            ) {
+                              const parsed = parsePtBrNumber(day.card_pix_revenue)
+                              if (parsed > 0) {
+                                onChangeDailyField(idx, 'card_pix_revenue', formatNumber(parsed, 2))
+                              }
+                            }
+                          }}
+                          className="pl-6 h-8 text-center font-semibold tabular-nums text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                         />
                       </div>
                     </TableCell>
@@ -363,12 +462,36 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                       className="py-2 px-2.5 border-r border-slate-200 text-center text-xs"
                     >
                       <Input
-                        type="number"
-                        min={0}
+                        type="text"
+                        inputMode="numeric"
                         placeholder="0"
-                        value={day.boleto_sales}
-                        onChange={(e) => onChangeDailyField(idx, 'boleto_sales', e.target.value)}
-                        className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                        value={
+                          day.boleto_sales === '' ||
+                          day.boleto_sales === undefined ||
+                          day.boleto_sales === null
+                            ? ''
+                            : String(day.boleto_sales)
+                        }
+                        onChange={(e) =>
+                          onChangeDailyField(
+                            idx,
+                            'boleto_sales',
+                            e.target.value.replace(/[^0-9.,]/g, ''),
+                          )
+                        }
+                        onBlur={() => {
+                          if (
+                            day.boleto_sales !== '' &&
+                            day.boleto_sales !== undefined &&
+                            day.boleto_sales !== null
+                          ) {
+                            const parsed = parsePtBrNumber(day.boleto_sales)
+                            if (parsed > 0) {
+                              onChangeDailyField(idx, 'boleto_sales', formatNumber(parsed, 0))
+                            }
+                          }
+                        }}
+                        className="h-8 text-center font-semibold tabular-nums text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                       />
                     </TableCell>
                   ))}
@@ -389,15 +512,36 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                           R$
                         </span>
                         <Input
-                          type="number"
-                          step="0.01"
-                          min={0}
-                          placeholder="0"
-                          value={day.boleto_revenue}
-                          onChange={(e) =>
-                            onChangeDailyField(idx, 'boleto_revenue', e.target.value)
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="0,00"
+                          value={
+                            day.boleto_revenue === '' ||
+                            day.boleto_revenue === undefined ||
+                            day.boleto_revenue === null
+                              ? ''
+                              : String(day.boleto_revenue)
                           }
-                          className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                          onChange={(e) =>
+                            onChangeDailyField(
+                              idx,
+                              'boleto_revenue',
+                              e.target.value.replace(/[^0-9.,]/g, ''),
+                            )
+                          }
+                          onBlur={() => {
+                            if (
+                              day.boleto_revenue !== '' &&
+                              day.boleto_revenue !== undefined &&
+                              day.boleto_revenue !== null
+                            ) {
+                              const parsed = parsePtBrNumber(day.boleto_revenue)
+                              if (parsed > 0) {
+                                onChangeDailyField(idx, 'boleto_revenue', formatNumber(parsed, 2))
+                              }
+                            }
+                          }}
+                          className="pl-6 h-8 text-center font-semibold tabular-nums text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                         />
                       </div>
                     </TableCell>

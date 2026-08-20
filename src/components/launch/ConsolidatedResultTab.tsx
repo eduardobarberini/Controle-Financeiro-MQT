@@ -28,6 +28,7 @@ import {
   formatCalculatedPercent,
   formatCalculatedNumber,
 } from '@/lib/launch-format'
+import { formatNumber, parsePtBrNumber } from '@/lib/financial-utils'
 
 export interface ConsolidatedCalculations {
   trafficInvestment: number
@@ -84,12 +85,26 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
   launchId,
 }) => {
   const calc = useMemo<ConsolidatedCalculations>(() => {
-    const apiCost = Number(apiOfficialCost) || 0
-    const commCost = Number(commercialCommission) || 0
+    const apiCost =
+      typeof apiOfficialCost === 'string'
+        ? parsePtBrNumber(apiOfficialCost)
+        : Number(apiOfficialCost) || 0
+    const commCost =
+      typeof commercialCommission === 'string'
+        ? parsePtBrNumber(commercialCommission)
+        : Number(commercialCommission) || 0
     const revTaxRate =
-      revenueTaxRate !== '' && !isNaN(Number(revenueTaxRate)) ? Number(revenueTaxRate) : 9.0
+      revenueTaxRate !== '' && revenueTaxRate !== undefined && revenueTaxRate !== null
+        ? typeof revenueTaxRate === 'string'
+          ? parsePtBrNumber(revenueTaxRate)
+          : Number(revenueTaxRate)
+        : 9.0
     const trafTaxRate =
-      trafficTaxRate !== '' && !isNaN(Number(trafficTaxRate)) ? Number(trafficTaxRate) : 12.15
+      trafficTaxRate !== '' && trafficTaxRate !== undefined && trafficTaxRate !== null
+        ? typeof trafficTaxRate === 'string'
+          ? parsePtBrNumber(trafficTaxRate)
+          : Number(trafficTaxRate)
+        : 12.15
 
     const trafInvestment = Number(trafficInvestment) || 0
 
@@ -272,12 +287,34 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                           R$
                         </span>
                         <Input
-                          type="number"
-                          step="0.01"
-                          min={0}
-                          placeholder="0"
-                          value={apiOfficialCost}
-                          onChange={(e) => onChangeField('api_official_cost', e.target.value)}
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="0,00"
+                          value={
+                            apiOfficialCost === '' ||
+                            apiOfficialCost === undefined ||
+                            apiOfficialCost === null
+                              ? ''
+                              : String(apiOfficialCost)
+                          }
+                          onChange={(e) =>
+                            onChangeField(
+                              'api_official_cost',
+                              e.target.value.replace(/[^0-9.,]/g, ''),
+                            )
+                          }
+                          onBlur={() => {
+                            if (
+                              apiOfficialCost !== '' &&
+                              apiOfficialCost !== undefined &&
+                              apiOfficialCost !== null
+                            ) {
+                              const parsed = parsePtBrNumber(apiOfficialCost)
+                              if (parsed > 0) {
+                                onChangeField('api_official_cost', formatNumber(parsed, 2))
+                              }
+                            }
+                          }}
                           className="pl-8 h-8 text-right font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                         />
                       </div>
@@ -295,12 +332,34 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                           R$
                         </span>
                         <Input
-                          type="number"
-                          step="0.01"
-                          min={0}
-                          placeholder="0"
-                          value={commercialCommission}
-                          onChange={(e) => onChangeField('commercial_commission', e.target.value)}
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="0,00"
+                          value={
+                            commercialCommission === '' ||
+                            commercialCommission === undefined ||
+                            commercialCommission === null
+                              ? ''
+                              : String(commercialCommission)
+                          }
+                          onChange={(e) =>
+                            onChangeField(
+                              'commercial_commission',
+                              e.target.value.replace(/[^0-9.,]/g, ''),
+                            )
+                          }
+                          onBlur={() => {
+                            if (
+                              commercialCommission !== '' &&
+                              commercialCommission !== undefined &&
+                              commercialCommission !== null
+                            ) {
+                              const parsed = parsePtBrNumber(commercialCommission)
+                              if (parsed > 0) {
+                                onChangeField('commercial_commission', formatNumber(parsed, 2))
+                              }
+                            }
+                          }}
                           className="pl-8 h-8 text-right font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                         />
                       </div>
@@ -310,8 +369,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                   {/* Imposto Sobre Faturamento */}
                   <TableRow className="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
                     <TableCell className="py-2.5 px-3 pl-6 font-medium text-xs text-slate-700">
-                      Imposto Sobre Faturamento ({calc.revenueTaxRate.toFixed(1).replace('.', ',')}
-                      %)
+                      Imposto Sobre Faturamento ({formatNumber(calc.revenueTaxRate, 1)}%)
                     </TableCell>
                     <TableCell className="py-2.5 px-3 text-right tabular-nums text-slate-800 font-semibold border-l border-slate-100 text-xs">
                       {formatCurrency(calc.revenueTaxAmount)}
@@ -321,7 +379,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                   {/* Imposto Sobre Tráfego */}
                   <TableRow className="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
                     <TableCell className="py-2.5 px-3 pl-6 font-medium text-xs text-slate-700">
-                      Imposto Sobre Tráfego ({calc.trafficTaxRate.toFixed(2).replace('.', ',')}%)
+                      Imposto Sobre Tráfego ({formatNumber(calc.trafficTaxRate, 2)}%)
                     </TableCell>
                     <TableCell className="py-2.5 px-3 text-right tabular-nums text-slate-800 font-semibold border-l border-slate-100 text-xs">
                       {formatCurrency(calc.trafficTaxAmount)}
@@ -354,9 +412,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                       Lucro Líquido
                     </TableCell>
                     <TableCell className="py-2.5 px-3 text-right tabular-nums text-emerald-950 font-black border-l border-emerald-200 text-xs">
-                      {calc.lucroLiquido < 0
-                        ? `-R$ ${Math.abs(calc.lucroLiquido).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                        : formatCurrency(calc.lucroLiquido)}
+                      {formatCurrency(calc.lucroLiquido)}
                     </TableCell>
                   </TableRow>
 
@@ -397,13 +453,32 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                   </label>
                   <div className="relative">
                     <Input
-                      type="number"
-                      step="0.1"
-                      min={0}
-                      max={100}
-                      value={revenueTaxRate}
-                      onChange={(e) => onChangeField('revenue_tax_rate', e.target.value)}
-                      className="pr-8 h-8 text-xs font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="9,0"
+                      value={
+                        revenueTaxRate === '' ||
+                        revenueTaxRate === undefined ||
+                        revenueTaxRate === null
+                          ? ''
+                          : String(revenueTaxRate)
+                      }
+                      onChange={(e) =>
+                        onChangeField('revenue_tax_rate', e.target.value.replace(/[^0-9.,]/g, ''))
+                      }
+                      onBlur={() => {
+                        if (
+                          revenueTaxRate !== '' &&
+                          revenueTaxRate !== undefined &&
+                          revenueTaxRate !== null
+                        ) {
+                          const parsed = parsePtBrNumber(revenueTaxRate)
+                          if (parsed > 0) {
+                            onChangeField('revenue_tax_rate', formatNumber(parsed, 1))
+                          }
+                        }
+                      }}
+                      className="pr-8 h-8 text-xs font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs tabular-nums"
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold pointer-events-none">
                       %
@@ -421,13 +496,32 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                   </label>
                   <div className="relative">
                     <Input
-                      type="number"
-                      step="0.01"
-                      min={0}
-                      max={100}
-                      value={trafficTaxRate}
-                      onChange={(e) => onChangeField('traffic_tax_rate', e.target.value)}
-                      className="pr-8 h-8 text-xs font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="12,15"
+                      value={
+                        trafficTaxRate === '' ||
+                        trafficTaxRate === undefined ||
+                        trafficTaxRate === null
+                          ? ''
+                          : String(trafficTaxRate)
+                      }
+                      onChange={(e) =>
+                        onChangeField('traffic_tax_rate', e.target.value.replace(/[^0-9.,]/g, ''))
+                      }
+                      onBlur={() => {
+                        if (
+                          trafficTaxRate !== '' &&
+                          trafficTaxRate !== undefined &&
+                          trafficTaxRate !== null
+                        ) {
+                          const parsed = parsePtBrNumber(trafficTaxRate)
+                          if (parsed > 0) {
+                            onChangeField('traffic_tax_rate', formatNumber(parsed, 2))
+                          }
+                        }
+                      }}
+                      className="pr-8 h-8 text-xs font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs tabular-nums"
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold pointer-events-none">
                       %
@@ -533,13 +627,12 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
           </p>
           <p>
             • <strong>Imposto Sobre Faturamento</strong> = Faturamento Total ×{' '}
-            {calc.revenueTaxRate.toFixed(1).replace('.', ',')}% (auto, calculado sobre o faturamento
+            {formatNumber(calc.revenueTaxRate, 1)}% (auto, calculado sobre o faturamento
             consolidado).
           </p>
           <p>
             • <strong>Imposto Sobre Tráfego</strong> = Investimento Tráfego ×{' '}
-            {calc.trafficTaxRate.toFixed(2).replace('.', ',')}% (auto, calculado sobre os anúncios
-            em tráfego).
+            {formatNumber(calc.trafficTaxRate, 2)}% (auto, calculado sobre os anúncios em tráfego).
           </p>
           <p>
             • <strong>Investimento Total</strong> = Tráfego + API Oficial + Comissão Comercial +
