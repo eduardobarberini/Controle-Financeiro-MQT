@@ -1,9 +1,17 @@
 import React, { useMemo } from 'react'
 import { ArrowUpCircle, Save, Loader2, DollarSign, Percent, CalendarDays, Lock } from 'lucide-react'
-import { Card } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { KpiCard } from '@/components/dashboard/KpiCard'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { PlatformDailyChart } from '@/components/launch/PlatformDailyChart'
 import type { UpsellPlatform, UpsellDailyEntry } from '@/types/paidLaunches'
 import { formatCurrency, formatCalculatedPercent } from '@/lib/launch-format'
@@ -94,10 +102,15 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
       {/* Main Form Card */}
       <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
         {/* Header */}
-        <div className="bg-slate-50/80 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider text-center flex items-center justify-center gap-2">
-          <ArrowUpCircle className="w-4 h-4 text-[#6D49F2]" />
-          <span>Vendas Plataforma</span>
-        </div>
+        <CardHeader className="p-5 pb-3 border-b border-slate-100">
+          <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <ArrowUpCircle className="w-4 h-4 text-[#6D49F2]" />
+            Vendas Plataforma
+          </CardTitle>
+          <CardDescription className="text-xs text-slate-500 mt-0.5">
+            Consolidação e conversão das vendas realizadas na plataforma
+          </CardDescription>
+        </CardHeader>
 
         <div className="p-4 sm:p-6 space-y-2.5">
           {/* % Conversão Geral (Calculated) */}
@@ -223,204 +236,222 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
 
       {/* CONTROLE DIÁRIO VENDAS - Table below upper consolidated form */}
       <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
-        <div className="bg-slate-50/80 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider flex items-center justify-between">
-          <span className="flex items-center gap-2">
-            <CalendarDays className="w-4 h-4 text-[#6D49F2]" />
-            Controle Diário Vendas
-          </span>
-          <span className="text-[11px] text-slate-500 font-normal normal-case">
-            Acompanhamento diário das vendas e faturamento da plataforma
-          </span>
-        </div>
+        <CardHeader className="p-5 pb-3 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div>
+            <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <CalendarDays className="w-4 h-4 text-[#6D49F2]" />
+              Controle Diário Vendas
+            </CardTitle>
+            <CardDescription className="text-xs text-slate-500 mt-0.5">
+              Acompanhamento diário das vendas e faturamento da plataforma
+            </CardDescription>
+          </div>
+        </CardHeader>
 
-        <div className="p-4 sm:p-6 overflow-x-auto">
-          <table className="w-full text-xs border-collapse min-w-[800px] border border-slate-200">
-            <thead>
-              <tr className="border-b border-slate-200">
-                <th className="p-2.5 text-center font-bold text-slate-800 bg-slate-100/80 min-w-[220px] text-xs border-r border-slate-200">
-                  Controle Diário Vendas
-                </th>
-                {dailySalesList.map((day, idx) => {
-                  const isPrimeiraHora =
-                    day.isPrimeiraHora ||
-                    (idx === 0 && day.dayLabel?.toLowerCase().includes('primeira'))
-                  if (isPrimeiraHora) {
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table className="min-w-[800px]">
+              <TableHeader className="bg-slate-50/80">
+                <TableRow className="hover:bg-transparent border-b border-slate-200">
+                  <TableHead className="py-2.5 px-3 text-center font-bold text-slate-800 bg-slate-100/80 min-w-[220px] text-xs border-r border-slate-200">
+                    Controle Diário Vendas
+                  </TableHead>
+                  {dailySalesList.map((day, idx) => {
+                    const isPrimeiraHora =
+                      day.isPrimeiraHora ||
+                      (idx === 0 && day.dayLabel?.toLowerCase().includes('primeira'))
+                    if (isPrimeiraHora) {
+                      return (
+                        <TableHead
+                          key={idx}
+                          className="py-2.5 px-3 text-center font-bold text-slate-800 bg-slate-100/80 border-r border-slate-200 min-w-[120px] text-xs"
+                        >
+                          Primeira Hora
+                        </TableHead>
+                      )
+                    }
                     return (
-                      <th
+                      <TableHead
                         key={idx}
-                        className="p-2.5 text-center font-bold text-slate-800 bg-slate-100/80 border-r border-slate-200 min-w-[120px] text-xs"
+                        className="py-2 px-2.5 text-center font-bold text-slate-800 bg-slate-50 border-r border-slate-200 min-w-[110px] text-xs"
                       >
-                        Primeira Hora
-                      </th>
+                        <div className="flex items-center justify-center gap-1">
+                          <input
+                            type="text"
+                            value={day.dayLabel || ''}
+                            onChange={(e) => onChangeDailyField(idx, 'dayLabel', e.target.value)}
+                            className="w-12 text-center font-bold text-slate-800 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2] text-xs"
+                            placeholder="Dia"
+                          />
+                        </div>
+                        <div className="text-[11px] text-slate-800 font-medium mt-0.5">
+                          <input
+                            type="text"
+                            value={day.dateLabel || ''}
+                            onChange={(e) => onChangeDailyField(idx, 'dateLabel', e.target.value)}
+                            className="w-12 text-center text-slate-800 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2] text-[11px]"
+                            placeholder="Data"
+                          />
+                        </div>
+                      </TableHead>
                     )
-                  }
-                  return (
-                    <th
+                  })}
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
+                {/* Vendas Cartão / PIX */}
+                <TableRow className="bg-white hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                  <TableCell className="py-2.5 px-3 font-medium text-xs text-slate-900 border-r border-slate-200">
+                    Vendas Cartão / PIX
+                  </TableCell>
+                  {dailySalesList.map((day, idx) => (
+                    <TableCell
                       key={idx}
-                      className="p-2 text-center font-bold text-slate-800 bg-slate-50 border-r border-slate-200 min-w-[110px]"
+                      className="py-2 px-2.5 border-r border-slate-200 text-center text-xs"
                     >
-                      <div className="flex items-center justify-center gap-1">
-                        <input
-                          type="text"
-                          value={day.dayLabel || ''}
-                          onChange={(e) => onChangeDailyField(idx, 'dayLabel', e.target.value)}
-                          className="w-12 text-center font-bold text-slate-800 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2] text-xs"
-                          placeholder="Dia"
-                        />
-                      </div>
-                      <div className="text-[11px] text-slate-800 font-medium mt-0.5">
-                        <input
-                          type="text"
-                          value={day.dateLabel || ''}
-                          onChange={(e) => onChangeDailyField(idx, 'dateLabel', e.target.value)}
-                          className="w-12 text-center text-slate-800 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2] text-[11px]"
-                          placeholder="Data"
-                        />
-                      </div>
-                    </th>
-                  )
-                })}
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-slate-200">
-              {/* Vendas Cartão / PIX */}
-              <tr className="bg-white hover:bg-slate-50/50 transition-colors">
-                <td className="p-2.5 font-medium text-slate-900 border-r border-slate-200">
-                  Vendas Cartão / PIX
-                </td>
-                {dailySalesList.map((day, idx) => (
-                  <td key={idx} className="p-2 border-r border-slate-200 text-center">
-                    <Input
-                      type="number"
-                      min={0}
-                      placeholder="0"
-                      value={day.card_pix_sales}
-                      onChange={(e) => onChangeDailyField(idx, 'card_pix_sales', e.target.value)}
-                      className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
-                    />
-                  </td>
-                ))}
-              </tr>
-
-              {/* Faturamento Cartão / PIX */}
-              <tr className="bg-slate-50/40 hover:bg-slate-50 transition-colors">
-                <td className="p-2.5 font-medium text-slate-900 border-r border-slate-200">
-                  Faturamento Cartão / PIX
-                </td>
-                {dailySalesList.map((day, idx) => (
-                  <td key={idx} className="p-2 border-r border-slate-200 text-center">
-                    <div className="relative">
-                      <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">
-                        R$
-                      </span>
                       <Input
                         type="number"
-                        step="0.01"
                         min={0}
                         placeholder="0"
-                        value={day.card_pix_revenue}
-                        onChange={(e) =>
-                          onChangeDailyField(idx, 'card_pix_revenue', e.target.value)
-                        }
-                        className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                        value={day.card_pix_sales}
+                        onChange={(e) => onChangeDailyField(idx, 'card_pix_sales', e.target.value)}
+                        className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                       />
-                    </div>
-                  </td>
-                ))}
-              </tr>
+                    </TableCell>
+                  ))}
+                </TableRow>
 
-              {/* Vendas Boleto Parcelado */}
-              <tr className="bg-white hover:bg-slate-50/50 transition-colors">
-                <td className="p-2.5 font-medium text-slate-900 border-r border-slate-200">
-                  Vendas Boleto Parcelado
-                </td>
-                {dailySalesList.map((day, idx) => (
-                  <td key={idx} className="p-2 border-r border-slate-200 text-center">
-                    <Input
-                      type="number"
-                      min={0}
-                      placeholder="0"
-                      value={day.boleto_sales}
-                      onChange={(e) => onChangeDailyField(idx, 'boleto_sales', e.target.value)}
-                      className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
-                    />
-                  </td>
-                ))}
-              </tr>
+                {/* Faturamento Cartão / PIX */}
+                <TableRow className="bg-slate-50/40 hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                  <TableCell className="py-2.5 px-3 font-medium text-xs text-slate-900 border-r border-slate-200">
+                    Faturamento Cartão / PIX
+                  </TableCell>
+                  {dailySalesList.map((day, idx) => (
+                    <TableCell
+                      key={idx}
+                      className="py-2 px-2.5 border-r border-slate-200 text-center text-xs"
+                    >
+                      <div className="relative">
+                        <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">
+                          R$
+                        </span>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min={0}
+                          placeholder="0"
+                          value={day.card_pix_revenue}
+                          onChange={(e) =>
+                            onChangeDailyField(idx, 'card_pix_revenue', e.target.value)
+                          }
+                          className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                        />
+                      </div>
+                    </TableCell>
+                  ))}
+                </TableRow>
 
-              {/* Faturamento Boleto Parcelado */}
-              <tr className="bg-slate-50/40 hover:bg-slate-50 transition-colors">
-                <td className="p-2.5 font-medium text-slate-900 border-r border-slate-200">
-                  Faturamento Boleto Parcelado
-                </td>
-                {dailySalesList.map((day, idx) => (
-                  <td key={idx} className="p-2 border-r border-slate-200 text-center">
-                    <div className="relative">
-                      <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">
-                        R$
-                      </span>
+                {/* Vendas Boleto Parcelado */}
+                <TableRow className="bg-white hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                  <TableCell className="py-2.5 px-3 font-medium text-xs text-slate-900 border-r border-slate-200">
+                    Vendas Boleto Parcelado
+                  </TableCell>
+                  {dailySalesList.map((day, idx) => (
+                    <TableCell
+                      key={idx}
+                      className="py-2 px-2.5 border-r border-slate-200 text-center text-xs"
+                    >
                       <Input
                         type="number"
-                        step="0.01"
                         min={0}
                         placeholder="0"
-                        value={day.boleto_revenue}
-                        onChange={(e) => onChangeDailyField(idx, 'boleto_revenue', e.target.value)}
-                        className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                        value={day.boleto_sales}
+                        onChange={(e) => onChangeDailyField(idx, 'boleto_sales', e.target.value)}
+                        className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                       />
-                    </div>
-                  </td>
-                ))}
-              </tr>
+                    </TableCell>
+                  ))}
+                </TableRow>
 
-              {/* Vendas Totais */}
-              <tr className="bg-slate-100/90 border-t-2 border-slate-200 text-slate-900 font-bold">
-                <td className="p-2.5 font-bold text-slate-900 border-r border-slate-200 text-xs">
-                  Vendas Totais
-                </td>
-                {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
-                  <td
-                    key={idx}
-                    className="p-2.5 border-r border-slate-200 text-center tabular-nums text-slate-900 font-bold text-xs"
-                  >
-                    {calcDay.totalSales}
-                  </td>
-                ))}
-              </tr>
+                {/* Faturamento Boleto Parcelado */}
+                <TableRow className="bg-slate-50/40 hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                  <TableCell className="py-2.5 px-3 font-medium text-xs text-slate-900 border-r border-slate-200">
+                    Faturamento Boleto Parcelado
+                  </TableCell>
+                  {dailySalesList.map((day, idx) => (
+                    <TableCell
+                      key={idx}
+                      className="py-2 px-2.5 border-r border-slate-200 text-center text-xs"
+                    >
+                      <div className="relative">
+                        <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">
+                          R$
+                        </span>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min={0}
+                          placeholder="0"
+                          value={day.boleto_revenue}
+                          onChange={(e) =>
+                            onChangeDailyField(idx, 'boleto_revenue', e.target.value)
+                          }
+                          className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                        />
+                      </div>
+                    </TableCell>
+                  ))}
+                </TableRow>
 
-              {/* % Conversão Desafio / Plataforma */}
-              <tr className="bg-amber-50 text-amber-950 font-bold border-t border-amber-200">
-                <td className="p-2.5 font-bold text-amber-950 border-r border-amber-200 text-xs">
-                  % Conversão Desafio / Plataforma
-                </td>
-                {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
-                  <td
-                    key={idx}
-                    className="p-2.5 border-r border-amber-200 text-center tabular-nums text-amber-950 font-extrabold text-xs"
-                  >
-                    {formatCalculatedPercent(calcDay.conversionRate)}
-                  </td>
-                ))}
-              </tr>
+                {/* Vendas Totais */}
+                <TableRow className="bg-slate-100/90 border-b border-slate-200 text-slate-900 font-bold hover:bg-slate-100">
+                  <TableCell className="py-2.5 px-3 font-bold text-slate-900 border-r border-slate-200 text-xs">
+                    Vendas Totais
+                  </TableCell>
+                  {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
+                    <TableCell
+                      key={idx}
+                      className="py-2.5 px-3 border-r border-slate-200 text-center tabular-nums text-slate-900 font-bold text-xs"
+                    >
+                      {calcDay.totalSales}
+                    </TableCell>
+                  ))}
+                </TableRow>
 
-              {/* Faturamento Total */}
-              <tr className="bg-emerald-50 text-emerald-950 font-bold border-t border-b border-emerald-200">
-                <td className="p-2.5 text-emerald-950 font-bold text-xs border-r border-emerald-200">
-                  Faturamento Total
-                </td>
-                {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
-                  <td
-                    key={idx}
-                    className="p-2.5 border-r border-emerald-200 text-center tabular-nums text-emerald-950 font-extrabold text-xs"
-                  >
-                    {formatCurrency(calcDay.totalRevenue)}
-                  </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>{' '}
-        </div>
+                {/* % Conversão Desafio / Plataforma */}
+                <TableRow className="bg-amber-50 text-amber-950 font-bold border-b border-amber-200 hover:bg-amber-50">
+                  <TableCell className="py-2.5 px-3 font-bold text-amber-950 border-r border-amber-200 text-xs">
+                    % Conversão Desafio / Plataforma
+                  </TableCell>
+                  {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
+                    <TableCell
+                      key={idx}
+                      className="py-2.5 px-3 border-r border-amber-200 text-center tabular-nums text-amber-950 font-extrabold text-xs"
+                    >
+                      {formatCalculatedPercent(calcDay.conversionRate)}
+                    </TableCell>
+                  ))}
+                </TableRow>
+
+                {/* Faturamento Total */}
+                <TableRow className="bg-emerald-50 text-emerald-950 font-bold border-b border-emerald-200 hover:bg-emerald-50">
+                  <TableCell className="py-2.5 px-3 text-emerald-950 font-bold text-xs border-r border-emerald-200">
+                    Faturamento Total
+                  </TableCell>
+                  {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
+                    <TableCell
+                      key={idx}
+                      className="py-2.5 px-3 border-r border-emerald-200 text-center tabular-nums text-emerald-950 font-extrabold text-xs"
+                    >
+                      {formatCurrency(calcDay.totalRevenue)}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
 
         {/* Action Bar */}
         <div className="p-4 sm:p-6 bg-slate-50/80 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">

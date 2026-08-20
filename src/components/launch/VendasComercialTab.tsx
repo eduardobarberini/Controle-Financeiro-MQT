@@ -10,10 +10,18 @@ import {
   Loader2,
   ShoppingBag,
 } from 'lucide-react'
-import { Card } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { KpiCard } from '@/components/dashboard/KpiCard'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import type {
   CommercialSales,
   CommercialSellerEntry,
@@ -284,302 +292,315 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
               key={seller.id || idx}
               className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden"
             >
-              {/* Table Header / Title Bar */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs border-collapse min-w-[620px]">
-                  <thead>
-                    {/* Header Row: Vendedor [idx + 1] ([name]) */}
-                    <tr className="bg-slate-50/80 border-b border-slate-200">
-                      <th className="p-2.5 text-left font-extrabold text-slate-900 text-xs border-r border-slate-200">
-                        Vendedor {idx + 1} ({seller.name || 'Sem nome'})
-                      </th>
-                      <th className="p-2.5 text-center font-bold text-slate-900 w-28 border-r border-slate-200 text-xs">
-                        Vendas
-                      </th>
-                      <th className="p-2.5 text-center font-bold text-slate-900 w-32 border-r border-slate-200 text-xs">
-                        Ticket
-                      </th>
-                      <th className="p-2.5 text-center font-bold text-slate-900 w-36 border-r border-slate-200 text-xs">
-                        Faturamento
-                      </th>
-                      <th className="p-2.5 text-center font-bold text-slate-900 w-36 text-xs">
-                        Comissão
-                      </th>
-                    </tr>
-                  </thead>
+              <CardHeader className="p-5 pb-3 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <div>
+                  <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <Users className="w-4 h-4 text-[#6D49F2]" />
+                    Vendedor {idx + 1} ({seller.name || 'Sem nome'})
+                  </CardTitle>
+                  <CardDescription className="text-xs text-slate-500 mt-0.5">
+                    Comissão configurada em {metrics.commRate}% sobre vendas realizadas
+                  </CardDescription>
+                </div>
+              </CardHeader>
 
-                  <tbody className="divide-y divide-slate-200 text-slate-800">
-                    {/* CATEGORY 1: Plataforma Header Row */}
-                    <tr className="font-bold bg-slate-50/90 border-t border-b border-slate-200">
-                      <td className="p-2.5 pl-4 text-slate-900 border-r border-slate-200 text-xs">
-                        Plataforma
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200 text-xs">
-                        {metrics.platTotalSales}
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200 text-xs">
-                        {formatCurrency(metrics.platAvgTicket)}
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200 text-xs">
-                        {formatCurrency(metrics.platTotalRevenue)}
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums text-slate-900 text-xs">
-                        {formatCurrency(metrics.platTotalComm)}
-                      </td>
-                    </tr>
+              {/* Table Body */}
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <Table className="min-w-[620px]">
+                    <TableHeader className="bg-slate-50/80">
+                      <TableRow className="hover:bg-transparent border-b border-slate-200">
+                        <TableHead className="py-2.5 px-3 text-left font-bold text-slate-900 text-xs border-r border-slate-200">
+                          Categoria / Canal
+                        </TableHead>
+                        <TableHead className="py-2.5 px-3 text-center font-bold text-slate-900 w-28 border-r border-slate-200 text-xs">
+                          Vendas
+                        </TableHead>
+                        <TableHead className="py-2.5 px-3 text-center font-bold text-slate-900 w-32 border-r border-slate-200 text-xs">
+                          Ticket
+                        </TableHead>
+                        <TableHead className="py-2.5 px-3 text-center font-bold text-slate-900 w-36 border-r border-slate-200 text-xs">
+                          Faturamento
+                        </TableHead>
+                        <TableHead className="py-2.5 px-3 text-center font-bold text-slate-900 w-36 text-xs">
+                          Comissão
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
 
-                    {/* Vendas Cartão / Pix */}
-                    <tr className="hover:bg-slate-50/60 transition-colors">
-                      <td className="p-2 pl-8 font-medium text-slate-700 border-r border-slate-200 text-xs">
-                        Vendas Cartão / Pix
-                      </td>
-                      <td className="p-2 border-r border-slate-200">
-                        <Input
-                          type="number"
-                          min={0}
-                          placeholder="0"
-                          value={seller.plataforma?.card_pix_sales ?? ''}
-                          onChange={(e) =>
-                            handleCategoryFieldChange(
-                              idx,
-                              'plataforma',
-                              'card_pix_sales',
-                              e.target.value,
-                            )
-                          }
-                          className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
-                        />
-                      </td>
-                      <td className="p-2 border-r border-slate-200">
-                        <div className="relative">
-                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
-                            R$
-                          </span>
+                    <TableBody>
+                      {/* CATEGORY 1: Plataforma Header Row */}
+                      <TableRow className="font-bold bg-slate-50/90 border-b border-slate-200 hover:bg-slate-100">
+                        <TableCell className="py-2.5 px-3 pl-4 text-slate-900 font-bold border-r border-slate-200 text-xs">
+                          Plataforma
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums text-slate-900 font-bold border-r border-slate-200 text-xs">
+                          {metrics.platTotalSales}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums text-slate-900 font-bold border-r border-slate-200 text-xs">
+                          {formatCurrency(metrics.platAvgTicket)}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums text-slate-900 font-bold border-r border-slate-200 text-xs">
+                          {formatCurrency(metrics.platTotalRevenue)}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums text-slate-900 font-bold text-xs">
+                          {formatCurrency(metrics.platTotalComm)}
+                        </TableCell>
+                      </TableRow>
+
+                      {/* Vendas Cartão / Pix */}
+                      <TableRow className="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                        <TableCell className="py-2 px-3 pl-8 font-medium text-slate-700 border-r border-slate-200 text-xs">
+                          Vendas Cartão / Pix
+                        </TableCell>
+                        <TableCell className="py-2 px-2.5 border-r border-slate-200 text-center text-xs">
                           <Input
                             type="number"
-                            step="0.01"
                             min={0}
                             placeholder="0"
-                            value={seller.plataforma?.card_pix_ticket ?? ''}
+                            value={seller.plataforma?.card_pix_sales ?? ''}
                             onChange={(e) =>
                               handleCategoryFieldChange(
                                 idx,
                                 'plataforma',
-                                'card_pix_ticket',
+                                'card_pix_sales',
                                 e.target.value,
                               )
                             }
-                            className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                            className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                           />
-                        </div>
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums font-semibold text-slate-800 border-r border-slate-200 bg-slate-50/50 text-xs">
-                        {formatCurrency(metrics.platCardRevenue)}
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums font-semibold text-slate-800 bg-slate-50/50 text-xs">
-                        {formatCurrency(metrics.platCardComm)}
-                      </td>
-                    </tr>
+                        </TableCell>
+                        <TableCell className="py-2 px-2.5 border-r border-slate-200 text-center text-xs">
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
+                              R$
+                            </span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min={0}
+                              placeholder="0"
+                              value={seller.plataforma?.card_pix_ticket ?? ''}
+                              onChange={(e) =>
+                                handleCategoryFieldChange(
+                                  idx,
+                                  'plataforma',
+                                  'card_pix_ticket',
+                                  e.target.value,
+                                )
+                              }
+                              className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums font-semibold text-slate-800 border-r border-slate-200 bg-slate-50/50 text-xs">
+                          {formatCurrency(metrics.platCardRevenue)}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums font-semibold text-slate-800 bg-slate-50/50 text-xs">
+                          {formatCurrency(metrics.platCardComm)}
+                        </TableCell>
+                      </TableRow>
 
-                    {/* Vendas Boleto 3x */}
-                    <tr className="hover:bg-slate-50/60 transition-colors">
-                      <td className="p-2 pl-8 font-medium text-slate-700 border-r border-slate-200 text-xs">
-                        Vendas Boleto 3x
-                      </td>
-                      <td className="p-2 border-r border-slate-200">
-                        <Input
-                          type="number"
-                          min={0}
-                          placeholder="0"
-                          value={seller.plataforma?.boleto_sales ?? ''}
-                          onChange={(e) =>
-                            handleCategoryFieldChange(
-                              idx,
-                              'plataforma',
-                              'boleto_sales',
-                              e.target.value,
-                            )
-                          }
-                          className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
-                        />
-                      </td>
-                      <td className="p-2 border-r border-slate-200">
-                        <div className="relative">
-                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
-                            R$
-                          </span>
+                      {/* Vendas Boleto 3x */}
+                      <TableRow className="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                        <TableCell className="py-2 px-3 pl-8 font-medium text-slate-700 border-r border-slate-200 text-xs">
+                          Vendas Boleto 3x
+                        </TableCell>
+                        <TableCell className="py-2 px-2.5 border-r border-slate-200 text-center text-xs">
                           <Input
                             type="number"
-                            step="0.01"
                             min={0}
                             placeholder="0"
-                            value={seller.plataforma?.boleto_ticket ?? ''}
+                            value={seller.plataforma?.boleto_sales ?? ''}
                             onChange={(e) =>
                               handleCategoryFieldChange(
                                 idx,
                                 'plataforma',
-                                'boleto_ticket',
+                                'boleto_sales',
                                 e.target.value,
                               )
                             }
-                            className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                            className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                           />
-                        </div>
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums font-semibold text-slate-800 border-r border-slate-200 bg-slate-50/50 text-xs">
-                        {formatCurrency(metrics.platBoletoRevenue)}
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums font-semibold text-slate-800 bg-slate-50/50 text-xs">
-                        {formatCurrency(metrics.platBoletoComm)}
-                      </td>
-                    </tr>
+                        </TableCell>
+                        <TableCell className="py-2 px-2.5 border-r border-slate-200 text-center text-xs">
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
+                              R$
+                            </span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min={0}
+                              placeholder="0"
+                              value={seller.plataforma?.boleto_ticket ?? ''}
+                              onChange={(e) =>
+                                handleCategoryFieldChange(
+                                  idx,
+                                  'plataforma',
+                                  'boleto_ticket',
+                                  e.target.value,
+                                )
+                              }
+                              className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums font-semibold text-slate-800 border-r border-slate-200 bg-slate-50/50 text-xs">
+                          {formatCurrency(metrics.platBoletoRevenue)}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums font-semibold text-slate-800 bg-slate-50/50 text-xs">
+                          {formatCurrency(metrics.platBoletoComm)}
+                        </TableCell>
+                      </TableRow>
 
-                    {/* CATEGORY 2: Renovação Header Row */}
-                    <tr className="font-bold bg-slate-50/90 border-t border-b border-slate-200">
-                      <td className="p-2.5 pl-4 text-slate-900 border-r border-slate-200 text-xs">
-                        Renovação
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200 text-xs">
-                        {metrics.renoTotalSales}
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200 text-xs">
-                        {formatCurrency(metrics.renoAvgTicket)}
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200 text-xs">
-                        {formatCurrency(metrics.renoTotalRevenue)}
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums text-slate-900 text-xs">
-                        {formatCurrency(metrics.renoTotalComm)}
-                      </td>
-                    </tr>
+                      {/* CATEGORY 2: Renovação Header Row */}
+                      <TableRow className="font-bold bg-slate-50/90 border-b border-slate-200 hover:bg-slate-100">
+                        <TableCell className="py-2.5 px-3 pl-4 text-slate-900 font-bold border-r border-slate-200 text-xs">
+                          Renovação
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums text-slate-900 font-bold border-r border-slate-200 text-xs">
+                          {metrics.renoTotalSales}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums text-slate-900 font-bold border-r border-slate-200 text-xs">
+                          {formatCurrency(metrics.renoAvgTicket)}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums text-slate-900 font-bold border-r border-slate-200 text-xs">
+                          {formatCurrency(metrics.renoTotalRevenue)}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums text-slate-900 font-bold text-xs">
+                          {formatCurrency(metrics.renoTotalComm)}
+                        </TableCell>
+                      </TableRow>
 
-                    {/* Vendas Cartão / Pix */}
-                    <tr className="hover:bg-slate-50/60 transition-colors">
-                      <td className="p-2 pl-8 font-medium text-slate-700 border-r border-slate-200 text-xs">
-                        Vendas Cartão / Pix
-                      </td>
-                      <td className="p-2 border-r border-slate-200">
-                        <Input
-                          type="number"
-                          min={0}
-                          placeholder="0"
-                          value={seller.renovacao?.card_pix_sales ?? ''}
-                          onChange={(e) =>
-                            handleCategoryFieldChange(
-                              idx,
-                              'renovacao',
-                              'card_pix_sales',
-                              e.target.value,
-                            )
-                          }
-                          className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
-                        />
-                      </td>
-                      <td className="p-2 border-r border-slate-200">
-                        <div className="relative">
-                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
-                            R$
-                          </span>
+                      {/* Vendas Cartão / Pix */}
+                      <TableRow className="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                        <TableCell className="py-2 px-3 pl-8 font-medium text-slate-700 border-r border-slate-200 text-xs">
+                          Vendas Cartão / Pix
+                        </TableCell>
+                        <TableCell className="py-2 px-2.5 border-r border-slate-200 text-center text-xs">
                           <Input
                             type="number"
-                            step="0.01"
                             min={0}
                             placeholder="0"
-                            value={seller.renovacao?.card_pix_ticket ?? ''}
+                            value={seller.renovacao?.card_pix_sales ?? ''}
                             onChange={(e) =>
                               handleCategoryFieldChange(
                                 idx,
                                 'renovacao',
-                                'card_pix_ticket',
+                                'card_pix_sales',
                                 e.target.value,
                               )
                             }
-                            className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                            className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                           />
-                        </div>
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums font-semibold text-slate-800 border-r border-slate-200 bg-slate-50/50 text-xs">
-                        {formatCurrency(metrics.renoCardRevenue)}
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums font-semibold text-slate-800 bg-slate-50/50 text-xs">
-                        {formatCurrency(metrics.renoCardComm)}
-                      </td>
-                    </tr>
+                        </TableCell>
+                        <TableCell className="py-2 px-2.5 border-r border-slate-200 text-center text-xs">
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
+                              R$
+                            </span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min={0}
+                              placeholder="0"
+                              value={seller.renovacao?.card_pix_ticket ?? ''}
+                              onChange={(e) =>
+                                handleCategoryFieldChange(
+                                  idx,
+                                  'renovacao',
+                                  'card_pix_ticket',
+                                  e.target.value,
+                                )
+                              }
+                              className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums font-semibold text-slate-800 border-r border-slate-200 bg-slate-50/50 text-xs">
+                          {formatCurrency(metrics.renoCardRevenue)}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums font-semibold text-slate-800 bg-slate-50/50 text-xs">
+                          {formatCurrency(metrics.renoCardComm)}
+                        </TableCell>
+                      </TableRow>
 
-                    {/* Vendas Boleto 3x */}
-                    <tr className="hover:bg-slate-50/60 transition-colors">
-                      <td className="p-2 pl-8 font-medium text-slate-700 border-r border-slate-200 text-xs">
-                        Vendas Boleto 3x
-                      </td>
-                      <td className="p-2 border-r border-slate-200">
-                        <Input
-                          type="number"
-                          min={0}
-                          placeholder="0"
-                          value={seller.renovacao?.boleto_sales ?? ''}
-                          onChange={(e) =>
-                            handleCategoryFieldChange(
-                              idx,
-                              'renovacao',
-                              'boleto_sales',
-                              e.target.value,
-                            )
-                          }
-                          className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
-                        />
-                      </td>
-                      <td className="p-2 border-r border-slate-200">
-                        <div className="relative">
-                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
-                            R$
-                          </span>
+                      {/* Vendas Boleto 3x */}
+                      <TableRow className="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                        <TableCell className="py-2 px-3 pl-8 font-medium text-slate-700 border-r border-slate-200 text-xs">
+                          Vendas Boleto 3x
+                        </TableCell>
+                        <TableCell className="py-2 px-2.5 border-r border-slate-200 text-center text-xs">
                           <Input
                             type="number"
-                            step="0.01"
                             min={0}
                             placeholder="0"
-                            value={seller.renovacao?.boleto_ticket ?? ''}
+                            value={seller.renovacao?.boleto_sales ?? ''}
                             onChange={(e) =>
                               handleCategoryFieldChange(
                                 idx,
                                 'renovacao',
-                                'boleto_ticket',
+                                'boleto_sales',
                                 e.target.value,
                               )
                             }
-                            className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                            className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                           />
-                        </div>
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums font-semibold text-slate-800 border-r border-slate-200 bg-slate-50/50 text-xs">
-                        {formatCurrency(metrics.renoBoletoRevenue)}
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums font-semibold text-slate-800 bg-slate-50/50 text-xs">
-                        {formatCurrency(metrics.renoBoletoComm)}
-                      </td>
-                    </tr>
+                        </TableCell>
+                        <TableCell className="py-2 px-2.5 border-r border-slate-200 text-center text-xs">
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
+                              R$
+                            </span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min={0}
+                              placeholder="0"
+                              value={seller.renovacao?.boleto_ticket ?? ''}
+                              onChange={(e) =>
+                                handleCategoryFieldChange(
+                                  idx,
+                                  'renovacao',
+                                  'boleto_ticket',
+                                  e.target.value,
+                                )
+                              }
+                              className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums font-semibold text-slate-800 border-r border-slate-200 bg-slate-50/50 text-xs">
+                          {formatCurrency(metrics.renoBoletoRevenue)}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums font-semibold text-slate-800 bg-slate-50/50 text-xs">
+                          {formatCurrency(metrics.renoBoletoComm)}
+                        </TableCell>
+                      </TableRow>
 
-                    {/* TOTAL ROW per seller */}
-                    <tr className="bg-emerald-50 font-bold text-emerald-950 text-xs border-t-2 border-slate-200">
-                      <td className="p-2.5 pl-4 text-emerald-950 font-bold border-r border-slate-200">
-                        Total
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums text-emerald-950 font-bold border-r border-slate-200">
-                        {metrics.sellerTotalSales}
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums text-emerald-950 font-bold border-r border-slate-200">
-                        {formatCurrency(metrics.sellerAvgTicket)}
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums text-emerald-950 font-extrabold border-r border-slate-200">
-                        {formatCurrency(metrics.sellerTotalRevenue)}
-                      </td>
-                      <td className="p-2.5 text-center tabular-nums text-emerald-950 font-bold">
-                        {formatCurrency(metrics.sellerTotalComm)}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                      {/* TOTAL ROW per seller */}
+                      <TableRow className="bg-emerald-50 font-bold text-emerald-950 text-xs border-t-2 border-slate-200 hover:bg-emerald-50">
+                        <TableCell className="py-2.5 px-3 pl-4 text-emerald-950 font-bold border-r border-slate-200">
+                          Total
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums text-emerald-950 font-bold border-r border-slate-200">
+                          {metrics.sellerTotalSales}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums text-emerald-950 font-bold border-r border-slate-200">
+                          {formatCurrency(metrics.sellerAvgTicket)}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums text-emerald-950 font-extrabold border-r border-slate-200">
+                          {formatCurrency(metrics.sellerTotalRevenue)}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center tabular-nums text-emerald-950 font-bold">
+                          {formatCurrency(metrics.sellerTotalComm)}
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
             </Card>
           )
         })}
@@ -587,14 +608,16 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
 
       {/* 3. Management Section (Bottom) */}
       <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl p-5 sm:p-6 space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-            <Users className="w-4 h-4 text-[#6D49F2]" />
-            Gerenciamento de Vendedores e Comissões
-          </h3>
-          <span className="text-[11px] text-slate-500 font-medium">
-            Configure os nomes dos vendedores e suas alíquotas de comissão
-          </span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-1">
+          <div>
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <Users className="w-4 h-4 text-[#6D49F2]" />
+              Gerenciamento de Vendedores e Comissões
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Configure os nomes dos vendedores e suas alíquotas de comissão
+            </p>
+          </div>
         </div>
 
         <div className="space-y-3">
@@ -612,7 +635,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                   placeholder="Nome do vendedor"
                   value={seller.name}
                   onChange={(e) => handleSellerInfoChange(idx, 'name', e.target.value)}
-                  className="max-w-[220px] h-8 text-xs font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                  className="max-w-[220px] h-8 text-xs font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                 />
               </div>
 
@@ -629,7 +652,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                       onChange={(e) =>
                         handleSellerInfoChange(idx, 'commission_rate', e.target.value)
                       }
-                      className="pr-6 h-8 text-xs text-right font-bold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                      className="pr-6 h-8 text-xs text-right font-bold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                     />
                     <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">
                       %

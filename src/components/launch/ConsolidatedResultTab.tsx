@@ -9,10 +9,19 @@ import {
   Calculator,
   Lock,
 } from 'lucide-react'
-import { Card } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { KpiCard } from '@/components/dashboard/KpiCard'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Info } from 'lucide-react'
 import {
   formatCurrency,
   formatCalculatedCurrency,
@@ -206,246 +215,283 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 1. Summary Table ("Resultado Lançamento") */}
         <Card className="lg:col-span-2 bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
-          <div className="bg-slate-50/80 border-b border-slate-200 text-slate-800 px-6 py-3 font-bold text-xs uppercase tracking-wider flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <Calculator className="w-4 h-4 text-[#6D49F2]" />
-              Resultado Lançamento
-            </span>
-            <span className="text-[11px] text-slate-500 font-normal normal-case">
-              Consolidação financeira global
-            </span>
-          </div>
+          <CardHeader className="p-5 pb-3 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div>
+              <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <Calculator className="w-4 h-4 text-[#6D49F2]" />
+                Resultado Lançamento
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-500 mt-0.5">
+                Consolidação financeira global
+              </CardDescription>
+            </div>
+          </CardHeader>
 
-          <div className="p-4 sm:p-6 overflow-x-auto">
-            <table className="w-full text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200">
-                  <th className="p-2.5 text-left font-bold text-slate-800 text-xs">
-                    Item / Métrica
-                  </th>
-                  <th className="p-2.5 text-right font-bold text-slate-800 bg-slate-100/80 w-44 sm:w-56 text-xs border-l border-slate-200">
-                    Resultado
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {/* Investimento (Calculated Sum) */}
-                <tr className="bg-slate-100/90 font-bold text-slate-900 text-xs border-t border-b border-slate-200">
-                  <td className="p-2.5 text-slate-900 flex items-center gap-2">
-                    <span>Investimento</span>
-                  </td>
-                  <td className="p-2.5 text-right tabular-nums text-slate-900 font-extrabold border-l border-slate-200">
-                    {formatCurrency(calc.totalInvestment)}
-                  </td>
-                </tr>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-slate-50/80">
+                  <TableRow className="hover:bg-transparent border-b border-slate-200">
+                    <TableHead className="py-2.5 px-3 text-left font-bold text-slate-800 text-xs">
+                      Item / Métrica
+                    </TableHead>
+                    <TableHead className="py-2.5 px-3 text-right font-bold text-slate-800 bg-slate-100/80 w-44 sm:w-56 text-xs border-l border-slate-200">
+                      Resultado
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {/* Investimento (Calculated Sum) */}
+                  <TableRow className="bg-slate-100/90 font-bold text-slate-900 text-xs border-b border-slate-200 hover:bg-slate-100">
+                    <TableCell className="py-2.5 px-3 text-slate-900 font-bold">
+                      Investimento
+                    </TableCell>
+                    <TableCell className="py-2.5 px-3 text-right tabular-nums text-slate-900 font-extrabold border-l border-slate-200">
+                      {formatCurrency(calc.totalInvestment)}
+                    </TableCell>
+                  </TableRow>
 
-                {/* Tráfego */}
-                <tr className="hover:bg-slate-50/60 transition-colors">
-                  <td className="p-2.5 pl-6 font-medium text-slate-700">Tráfego</td>
-                  <td className="p-2.5 text-right tabular-nums text-slate-800 font-semibold border-l border-slate-100">
-                    {formatCurrency(calc.trafficInvestment)}
-                  </td>
-                </tr>
+                  {/* Tráfego */}
+                  <TableRow className="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                    <TableCell className="py-2.5 px-3 pl-6 font-medium text-xs text-slate-700">
+                      Tráfego
+                    </TableCell>
+                    <TableCell className="py-2.5 px-3 text-right tabular-nums text-slate-800 font-semibold border-l border-slate-100 text-xs">
+                      {formatCurrency(calc.trafficInvestment)}
+                    </TableCell>
+                  </TableRow>
 
-                {/* API Oficial */}
-                <tr className="hover:bg-slate-50/60 transition-colors">
-                  <td className="p-2 pl-6 font-medium text-slate-700 align-middle">API Oficial</td>
-                  <td className="p-2 text-right border-l border-slate-100">
-                    <div className="relative ml-auto max-w-[160px]">
-                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">
-                        R$
-                      </span>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min={0}
-                        placeholder="0"
-                        value={apiOfficialCost}
-                        onChange={(e) => onChangeField('api_official_cost', e.target.value)}
-                        className="pl-8 h-8 text-right font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
-                      />
-                    </div>
-                  </td>
-                </tr>
+                  {/* API Oficial */}
+                  <TableRow className="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                    <TableCell className="py-2 px-3 pl-6 font-medium text-xs text-slate-700 align-middle">
+                      API Oficial
+                    </TableCell>
+                    <TableCell className="py-2 px-3 text-right border-l border-slate-100">
+                      <div className="relative ml-auto max-w-[160px]">
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">
+                          R$
+                        </span>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min={0}
+                          placeholder="0"
+                          value={apiOfficialCost}
+                          onChange={(e) => onChangeField('api_official_cost', e.target.value)}
+                          className="pl-8 h-8 text-right font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
 
-                {/* Comissão Comercial */}
-                <tr className="hover:bg-slate-50/60 transition-colors">
-                  <td className="p-2 pl-6 font-medium text-slate-700 align-middle">
-                    Comissão Comercial
-                  </td>
-                  <td className="p-2 text-right border-l border-slate-100">
-                    <div className="relative ml-auto max-w-[160px]">
-                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">
-                        R$
-                      </span>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min={0}
-                        placeholder="0"
-                        value={commercialCommission}
-                        onChange={(e) => onChangeField('commercial_commission', e.target.value)}
-                        className="pl-8 h-8 text-right font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
-                      />
-                    </div>
-                  </td>
-                </tr>
+                  {/* Comissão Comercial */}
+                  <TableRow className="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                    <TableCell className="py-2 px-3 pl-6 font-medium text-xs text-slate-700 align-middle">
+                      Comissão Comercial
+                    </TableCell>
+                    <TableCell className="py-2 px-3 text-right border-l border-slate-100">
+                      <div className="relative ml-auto max-w-[160px]">
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">
+                          R$
+                        </span>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min={0}
+                          placeholder="0"
+                          value={commercialCommission}
+                          onChange={(e) => onChangeField('commercial_commission', e.target.value)}
+                          className="pl-8 h-8 text-right font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
 
-                {/* Imposto Sobre Faturamento */}
-                <tr className="hover:bg-slate-50/60 transition-colors">
-                  <td className="p-2.5 pl-6 font-medium text-slate-700">
-                    Imposto Sobre Faturamento ({calc.revenueTaxRate.toFixed(1).replace('.', ',')}%)
-                  </td>
-                  <td className="p-2.5 text-right tabular-nums text-slate-800 font-semibold border-l border-slate-100">
-                    {formatCurrency(calc.revenueTaxAmount)}
-                  </td>
-                </tr>
+                  {/* Imposto Sobre Faturamento */}
+                  <TableRow className="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                    <TableCell className="py-2.5 px-3 pl-6 font-medium text-xs text-slate-700">
+                      Imposto Sobre Faturamento ({calc.revenueTaxRate.toFixed(1).replace('.', ',')}
+                      %)
+                    </TableCell>
+                    <TableCell className="py-2.5 px-3 text-right tabular-nums text-slate-800 font-semibold border-l border-slate-100 text-xs">
+                      {formatCurrency(calc.revenueTaxAmount)}
+                    </TableCell>
+                  </TableRow>
 
-                {/* Imposto Sobre Tráfego */}
-                <tr className="hover:bg-slate-50/60 transition-colors">
-                  <td className="p-2.5 pl-6 font-medium text-slate-700">
-                    Imposto Sobre Tráfego ({calc.trafficTaxRate.toFixed(2).replace('.', ',')}%)
-                  </td>
-                  <td className="p-2.5 text-right tabular-nums text-slate-800 font-semibold border-l border-slate-100">
-                    {formatCurrency(calc.trafficTaxAmount)}
-                  </td>
-                </tr>
+                  {/* Imposto Sobre Tráfego */}
+                  <TableRow className="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                    <TableCell className="py-2.5 px-3 pl-6 font-medium text-xs text-slate-700">
+                      Imposto Sobre Tráfego ({calc.trafficTaxRate.toFixed(2).replace('.', ',')}%)
+                    </TableCell>
+                    <TableCell className="py-2.5 px-3 text-right tabular-nums text-slate-800 font-semibold border-l border-slate-100 text-xs">
+                      {formatCurrency(calc.trafficTaxAmount)}
+                    </TableCell>
+                  </TableRow>
 
-                {/* Faturamento */}
-                <tr className="bg-emerald-50 font-bold text-emerald-950 border-t border-b border-emerald-200">
-                  <td className="p-2.5 text-emerald-950">Faturamento</td>
-                  <td className="p-2.5 text-right tabular-nums text-emerald-950 font-extrabold border-l border-emerald-200">
-                    {formatCurrency(calc.totalFaturamento)}
-                  </td>
-                </tr>
+                  {/* Faturamento */}
+                  <TableRow className="bg-emerald-50 font-bold text-emerald-950 border-b border-emerald-200 hover:bg-emerald-50">
+                    <TableCell className="py-2.5 px-3 text-xs text-emerald-950 font-bold">
+                      Faturamento
+                    </TableCell>
+                    <TableCell className="py-2.5 px-3 text-right tabular-nums text-emerald-950 font-extrabold border-l border-emerald-200 text-xs">
+                      {formatCurrency(calc.totalFaturamento)}
+                    </TableCell>
+                  </TableRow>
 
-                {/* ROAS (Média) */}
-                <tr className="bg-amber-50 hover:bg-amber-50/80 transition-colors">
-                  <td className="p-2.5 font-bold text-amber-950">ROAS (Média)</td>
-                  <td className="p-2.5 text-right tabular-nums font-extrabold text-amber-950 border-l border-amber-200">
-                    {formatCalculatedNumber(calc.roasMedia, 1)}
-                  </td>
-                </tr>
+                  {/* ROAS (Média) */}
+                  <TableRow className="bg-amber-50 hover:bg-amber-50/80 transition-colors border-b border-amber-200">
+                    <TableCell className="py-2.5 px-3 font-bold text-xs text-amber-950">
+                      ROAS (Média)
+                    </TableCell>
+                    <TableCell className="py-2.5 px-3 text-right tabular-nums font-extrabold text-amber-950 border-l border-amber-200 text-xs">
+                      {formatCalculatedNumber(calc.roasMedia, 1)}
+                    </TableCell>
+                  </TableRow>
 
-                {/* Lucro Líquido */}
-                <tr className="bg-emerald-50 font-bold text-emerald-950 text-xs border-t border-b border-emerald-200">
-                  <td className="p-2.5 text-emerald-950 font-extrabold">Lucro Líquido</td>
-                  <td className="p-2.5 text-right tabular-nums text-emerald-950 font-black border-l border-emerald-200">
-                    {calc.lucroLiquido < 0
-                      ? `-R$ ${Math.abs(calc.lucroLiquido).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                      : formatCurrency(calc.lucroLiquido)}
-                  </td>
-                </tr>
+                  {/* Lucro Líquido */}
+                  <TableRow className="bg-emerald-50 font-bold text-emerald-950 text-xs border-b border-emerald-200 hover:bg-emerald-50">
+                    <TableCell className="py-2.5 px-3 text-emerald-950 font-extrabold">
+                      Lucro Líquido
+                    </TableCell>
+                    <TableCell className="py-2.5 px-3 text-right tabular-nums text-emerald-950 font-black border-l border-emerald-200 text-xs">
+                      {calc.lucroLiquido < 0
+                        ? `-R$ ${Math.abs(calc.lucroLiquido).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        : formatCurrency(calc.lucroLiquido)}
+                    </TableCell>
+                  </TableRow>
 
-                {/* % Margem de Lucro */}
-                <tr className="bg-amber-50 font-bold border-t border-amber-200">
-                  <td className="p-2.5 text-amber-950 font-bold">% Margem de Lucro</td>
-                  <td className="p-2.5 text-right tabular-nums font-extrabold text-amber-950 border-l border-amber-200">
-                    {formatCalculatedPercent(calc.margemLucroPercent)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                  {/* % Margem de Lucro */}
+                  <TableRow className="bg-amber-50 font-bold border-b border-amber-200 hover:bg-amber-50">
+                    <TableCell className="py-2.5 px-3 text-amber-950 font-bold text-xs">
+                      % Margem de Lucro
+                    </TableCell>
+                    <TableCell className="py-2.5 px-3 text-right tabular-nums font-extrabold text-amber-950 border-l border-amber-200 text-xs">
+                      {formatCalculatedPercent(calc.margemLucroPercent)}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
         </Card>
 
         {/* Configuration Panel for Tax Percentages & Revenue Breakout */}
         <div className="space-y-6">
           {/* Configuração de Alíquotas de Imposto */}
-          <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden p-5 space-y-4">
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-3">
-              <Percent className="w-4 h-4 text-[#6D49F2]" />
-              Configurar Alíquotas de Impostos
-            </h3>
+          <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
+            <CardHeader className="p-5 pb-3 border-b border-slate-100">
+              <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <Percent className="w-4 h-4 text-[#6D49F2]" />
+                Alíquotas de Impostos
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-500 mt-0.5">
+                Defina os percentuais de tributação aplicados
+              </CardDescription>
+            </CardHeader>
 
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Imposto sobre Faturamento (%)
-                </label>
-                <div className="relative">
-                  <Input
-                    type="number"
-                    step="0.1"
-                    min={0}
-                    max={100}
-                    value={revenueTaxRate}
-                    onChange={(e) => onChangeField('revenue_tax_rate', e.target.value)}
-                    className="pr-8 h-8 text-xs font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold pointer-events-none">
-                    %
-                  </span>
+            <CardContent className="p-5 space-y-4">
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                    Imposto sobre Faturamento (%)
+                  </label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      step="0.1"
+                      min={0}
+                      max={100}
+                      value={revenueTaxRate}
+                      onChange={(e) => onChangeField('revenue_tax_rate', e.target.value)}
+                      className="pr-8 h-8 text-xs font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold pointer-events-none">
+                      %
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Aplicado sobre o Faturamento Consolidado (
+                    {formatCurrency(calc.revenueTaxAmount)})
+                  </p>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1">
-                  Aplicado sobre o Faturamento Consolidado ({formatCurrency(calc.revenueTaxAmount)})
-                </p>
-              </div>
 
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Imposto sobre Tráfego (%)
-                </label>
-                <div className="relative">
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min={0}
-                    max={100}
-                    value={trafficTaxRate}
-                    onChange={(e) => onChangeField('traffic_tax_rate', e.target.value)}
-                    className="pr-8 h-8 text-xs font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold pointer-events-none">
-                    %
-                  </span>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                    Imposto sobre Tráfego (%)
+                  </label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min={0}
+                      max={100}
+                      value={trafficTaxRate}
+                      onChange={(e) => onChangeField('traffic_tax_rate', e.target.value)}
+                      className="pr-8 h-8 text-xs font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold pointer-events-none">
+                      %
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Aplicado sobre o Investimento em Tráfego (
+                    {formatCurrency(calc.trafficTaxAmount)})
+                  </p>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1">
-                  Aplicado sobre o Investimento em Tráfego ({formatCurrency(calc.trafficTaxAmount)})
-                </p>
               </div>
-            </div>
+            </CardContent>
           </Card>
 
           {/* Origem do Faturamento Consolidado */}
-          <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden p-5 space-y-3">
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-3">
-              <TrendingUp className="w-4 h-4 text-[#FF2AFF]" />
-              Composição do Faturamento
-            </h3>
+          <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
+            <CardHeader className="p-5 pb-3 border-b border-slate-100">
+              <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-[#FF2AFF]" />
+                Composição do Faturamento
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-500 mt-0.5">
+                Origem das receitas do lançamento
+              </CardDescription>
+            </CardHeader>
 
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between items-center py-1 border-b border-slate-100">
-                <span className="text-slate-600 flex items-center gap-1.5">
-                  <Lock className="w-3 h-3 text-slate-400" />
-                  Venda Ingressos
-                </span>
-                <span className="font-bold text-slate-900">{formatCurrency(ingressosRevenue)}</span>
-              </div>
+            <CardContent className="p-5">
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                  <span className="text-slate-600 flex items-center gap-1.5">
+                    <Lock className="w-3 h-3 text-slate-400" />
+                    Venda Ingressos
+                  </span>
+                  <span className="font-bold text-slate-900">
+                    {formatCurrency(ingressosRevenue)}
+                  </span>
+                </div>
 
-              <div className="flex justify-between items-center py-1 border-b border-slate-100">
-                <span className="text-slate-600 flex items-center gap-1.5">
-                  <Lock className="w-3 h-3 text-slate-400" />
-                  Order Bumps
-                </span>
-                <span className="font-bold text-slate-900">{formatCurrency(orderBumpRevenue)}</span>
-              </div>
+                <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                  <span className="text-slate-600 flex items-center gap-1.5">
+                    <Lock className="w-3 h-3 text-slate-400" />
+                    Order Bumps
+                  </span>
+                  <span className="font-bold text-slate-900">
+                    {formatCurrency(orderBumpRevenue)}
+                  </span>
+                </div>
 
-              <div className="flex justify-between items-center py-1 border-b border-slate-100">
-                <span className="text-slate-600 flex items-center gap-1.5">
-                  <Lock className="w-3 h-3 text-slate-400" />
-                  Venda Plataforma (Upsell)
-                </span>
-                <span className="font-bold text-slate-900">
-                  {formatCurrency(upsellPlatformRevenue)}
-                </span>
-              </div>
+                <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                  <span className="text-slate-600 flex items-center gap-1.5">
+                    <Lock className="w-3 h-3 text-slate-400" />
+                    Venda Plataforma (Upsell)
+                  </span>
+                  <span className="font-bold text-slate-900">
+                    {formatCurrency(upsellPlatformRevenue)}
+                  </span>
+                </div>
 
-              <div className="flex justify-between items-center pt-2 font-extrabold text-sm text-[#6D49F2]">
-                <span>Total Consolidado</span>
-                <span>{formatCurrency(calc.totalFaturamento)}</span>
+                <div className="flex justify-between items-center pt-2 font-extrabold text-sm text-[#6D49F2]">
+                  <span>Total Consolidado</span>
+                  <span>{formatCurrency(calc.totalFaturamento)}</span>
+                </div>
               </div>
-            </div>
+            </CardContent>
           </Card>
         </div>
       </div>
@@ -475,6 +521,43 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
           )}
         </Button>
       </Card>
+
+      {/* 5. Explanatory Footer */}
+      <div className="bg-slate-100/80 border border-slate-200/90 rounded-2xl p-4 sm:p-5 flex items-start gap-3 text-xs text-slate-600">
+        <Info className="w-4 h-4 text-[#6D49F2] shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <p className="font-semibold text-slate-800">Regras de Cálculo Automático</p>
+          <p>
+            • <strong>Faturamento Total</strong> = Venda Ingressos + Order Bumps + Venda Plataforma
+            (Upsell).
+          </p>
+          <p>
+            • <strong>Imposto Sobre Faturamento</strong> = Faturamento Total ×{' '}
+            {calc.revenueTaxRate.toFixed(1).replace('.', ',')}% (auto, calculado sobre o faturamento
+            consolidado).
+          </p>
+          <p>
+            • <strong>Imposto Sobre Tráfego</strong> = Investimento Tráfego ×{' '}
+            {calc.trafficTaxRate.toFixed(2).replace('.', ',')}% (auto, calculado sobre os anúncios
+            em tráfego).
+          </p>
+          <p>
+            • <strong>Investimento Total</strong> = Tráfego + API Oficial + Comissão Comercial +
+            Imposto Sobre Faturamento + Imposto Sobre Tráfego.
+          </p>
+          <p>
+            • <strong>ROAS (Média)</strong> = Faturamento Total ÷ Investimento Tráfego. Exibe
+            &ldquo;—&rdquo; se o tráfego for 0.
+          </p>
+          <p>
+            • <strong>Lucro Líquido</strong> = Faturamento Total − Investimento Total.
+          </p>
+          <p>
+            • <strong>% Margem de Lucro</strong> = Lucro Líquido ÷ Faturamento Total × 100 (1 casa).
+            Exibe &ldquo;—&rdquo; se o faturamento for 0.
+          </p>
+        </div>
+      </div>
     </div>
   )
 }

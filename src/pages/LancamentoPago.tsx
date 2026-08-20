@@ -19,9 +19,17 @@ import { VendasComercialTab } from '@/components/launch/VendasComercialTab'
 import { UpsellPlatformTab } from '@/components/launch/UpsellPlatformTab'
 import { KpiCard } from '@/components/dashboard/KpiCard'
 import { DailySalesChart } from '@/components/dashboard/DailySalesChart'
-import { Card } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import {
   Select,
@@ -989,234 +997,279 @@ export default function LancamentoPago() {
 
               {/* ACOMPANHAMENTO DIÁRIO */}
               <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
-                <div className="bg-slate-50/80 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <CalendarDays className="w-4 h-4 text-[#6D49F2]" />
-                    Acompanhamento Diário - Vendas da Semana
-                  </span>
-                  <span className="text-[11px] text-slate-500 font-normal normal-case">
-                    Preencha Investimento, Vendas Ingresso e Order Bump por dia
-                  </span>
-                </div>
+                <CardHeader className="p-5 pb-3 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                  <div>
+                    <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+                      <CalendarDays className="w-4 h-4 text-[#6D49F2]" />
+                      Acompanhamento Diário - Vendas da Semana
+                    </CardTitle>
+                    <CardDescription className="text-xs text-slate-500 mt-0.5">
+                      Preencha Investimento, Vendas Ingresso e Order Bump por dia
+                    </CardDescription>
+                  </div>
+                </CardHeader>
 
-                <div className="p-4 sm:p-6 overflow-x-auto">
-                  <table className="w-full text-xs border-collapse min-w-[760px]">
-                    <thead>
-                      <tr className="bg-slate-50/80 border-b border-slate-200">
-                        <th className="p-2.5 text-left font-bold text-slate-800 bg-slate-100/80 w-48 text-xs">
-                          Venda Ingressos
-                        </th>
-                        {form.daily_data.map((day, idx) => (
-                          <th
-                            key={idx}
-                            className="p-2 text-center font-bold text-slate-800 bg-slate-50 border-l border-slate-200 min-w-[100px]"
-                          >
-                            <div className="flex items-center justify-center gap-1">
-                              <input
-                                type="text"
-                                value={day.dayLabel || ''}
-                                onChange={(e) => handleDailyChange(idx, 'dayLabel', e.target.value)}
-                                className="w-10 text-center font-bold text-slate-900 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2] text-xs"
-                                placeholder="Dia"
-                              />
-                            </div>
-                            <div className="text-[11px] text-slate-500 font-normal mt-0.5">
-                              <input
-                                type="text"
-                                value={day.dateLabel || ''}
-                                onChange={(e) =>
-                                  handleDailyChange(idx, 'dateLabel', e.target.value)
-                                }
-                                className="w-12 text-center text-slate-600 bg-transparent border-b border-dashed border-slate-200 focus:outline-none focus:border-[#6D49F2] text-[11px]"
-                                placeholder="Data"
-                              />
-                            </div>
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <Table className="min-w-[760px]">
+                      <TableHeader className="bg-slate-50/80">
+                        <TableRow className="hover:bg-transparent border-b border-slate-200">
+                          <TableHead className="py-2.5 px-3 text-left font-bold text-slate-800 bg-slate-100/80 w-48 text-xs">
+                            Venda Ingressos
+                          </TableHead>
+                          {form.daily_data.map((day, idx) => (
+                            <TableHead
+                              key={idx}
+                              className="py-2 px-2.5 text-center font-bold text-slate-800 bg-slate-50 border-l border-slate-200 min-w-[100px] text-xs"
+                            >
+                              <div className="flex items-center justify-center gap-1">
+                                <input
+                                  type="text"
+                                  value={day.dayLabel || ''}
+                                  onChange={(e) =>
+                                    handleDailyChange(idx, 'dayLabel', e.target.value)
+                                  }
+                                  className="w-10 text-center font-bold text-slate-900 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2] text-xs"
+                                  placeholder="Dia"
+                                />
+                              </div>
+                              <div className="text-[11px] text-slate-500 font-normal mt-0.5">
+                                <input
+                                  type="text"
+                                  value={day.dateLabel || ''}
+                                  onChange={(e) =>
+                                    handleDailyChange(idx, 'dateLabel', e.target.value)
+                                  }
+                                  className="w-12 text-center text-slate-600 bg-transparent border-b border-dashed border-slate-200 focus:outline-none focus:border-[#6D49F2] text-[11px]"
+                                  placeholder="Data"
+                                />
+                              </div>
+                            </TableHead>
+                          ))}
+                        </TableRow>
+                      </TableHeader>
 
-                    <tbody className="divide-y divide-slate-100">
-                      {/* Investimento */}
-                      <tr className="hover:bg-slate-50/50 transition-colors">
-                        <td className="p-2.5 font-medium text-slate-700">Investimento</td>
-                        {form.daily_data.map((day, idx) => (
-                          <td key={idx} className="p-2 border-l border-slate-100 text-center">
-                            <div className="relative">
-                              <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">
-                                R$
-                              </span>
+                      <TableBody>
+                        {/* Investimento */}
+                        <TableRow className="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                          <TableCell className="py-2.5 px-3 font-medium text-xs text-slate-700">
+                            Investimento
+                          </TableCell>
+                          {form.daily_data.map((day, idx) => (
+                            <TableCell
+                              key={idx}
+                              className="py-2 px-2.5 border-l border-slate-100 text-center text-xs"
+                            >
+                              <div className="relative">
+                                <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">
+                                  R$
+                                </span>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  min={0}
+                                  placeholder="0"
+                                  value={day.investment}
+                                  onChange={(e) =>
+                                    handleDailyChange(idx, 'investment', e.target.value)
+                                  }
+                                  className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                                />
+                              </div>
+                            </TableCell>
+                          ))}
+                        </TableRow>
+
+                        {/* Vendas Ingresso */}
+                        <TableRow className="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                          <TableCell className="py-2.5 px-3 font-medium text-xs text-slate-700">
+                            Vendas Ingresso
+                          </TableCell>
+                          {form.daily_data.map((day, idx) => (
+                            <TableCell
+                              key={idx}
+                              className="py-2 px-2.5 border-l border-slate-100 text-center text-xs"
+                            >
                               <Input
                                 type="number"
-                                step="0.01"
                                 min={0}
                                 placeholder="0"
-                                value={day.investment}
+                                value={day.ticket_sales}
                                 onChange={(e) =>
-                                  handleDailyChange(idx, 'investment', e.target.value)
+                                  handleDailyChange(idx, 'ticket_sales', e.target.value)
                                 }
-                                className="pl-6 h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                                className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
                               />
-                            </div>
-                          </td>
-                        ))}
-                      </tr>
+                            </TableCell>
+                          ))}
+                        </TableRow>
 
-                      {/* Vendas Ingresso */}
-                      <tr className="hover:bg-slate-50/50 transition-colors">
-                        <td className="p-2.5 font-medium text-slate-700">Vendas Ingresso</td>
-                        {form.daily_data.map((day, idx) => (
-                          <td key={idx} className="p-2 border-l border-slate-100 text-center">
-                            <Input
-                              type="number"
-                              min={0}
-                              placeholder="0"
-                              value={day.ticket_sales}
-                              onChange={(e) =>
-                                handleDailyChange(idx, 'ticket_sales', e.target.value)
-                              }
-                              className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
-                            />
-                          </td>
-                        ))}
-                      </tr>
+                        {/* Faturamento Ingresso */}
+                        <TableRow className="bg-emerald-50/80 font-bold border-b border-emerald-100 hover:bg-emerald-50">
+                          <TableCell className="py-2.5 px-3 text-xs text-emerald-950 font-bold">
+                            Faturamento Ingresso
+                          </TableCell>
+                          {dailyCalculated.days.map((dayCalc, idx) => (
+                            <TableCell
+                              key={idx}
+                              className="py-2.5 px-3 border-l border-emerald-100 text-center tabular-nums text-emerald-950 font-bold text-xs"
+                            >
+                              {formatCurrency(dayCalc.ticketRevenue)}
+                            </TableCell>
+                          ))}
+                        </TableRow>
 
-                      {/* Faturamento Ingresso */}
-                      <tr className="bg-emerald-50/80 font-bold border-t border-b border-emerald-100">
-                        <td className="p-2.5 text-emerald-950">Faturamento Ingresso</td>
-                        {dailyCalculated.days.map((dayCalc, idx) => (
-                          <td
-                            key={idx}
-                            className="p-2.5 border-l border-emerald-100 text-center tabular-nums text-emerald-950 font-bold text-xs"
-                          >
-                            {formatCurrency(dayCalc.ticketRevenue)}
-                          </td>
-                        ))}
-                      </tr>
+                        {/* Vendas Order Bump */}
+                        <TableRow className="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                          <TableCell className="py-2.5 px-3 font-medium text-xs text-slate-700">
+                            Vendas Order Bump
+                          </TableCell>
+                          {form.daily_data.map((day, idx) => (
+                            <TableCell
+                              key={idx}
+                              className="py-2 px-2.5 border-l border-slate-100 text-center text-xs"
+                            >
+                              <Input
+                                type="number"
+                                min={0}
+                                placeholder="0"
+                                value={day.bump_sales}
+                                onChange={(e) =>
+                                  handleDailyChange(idx, 'bump_sales', e.target.value)
+                                }
+                                className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                              />
+                            </TableCell>
+                          ))}
+                        </TableRow>
 
-                      {/* Vendas Order Bump */}
-                      <tr className="hover:bg-slate-50/50 transition-colors">
-                        <td className="p-2.5 font-medium text-slate-700">Vendas Order Bump</td>
-                        {form.daily_data.map((day, idx) => (
-                          <td key={idx} className="p-2 border-l border-slate-100 text-center">
-                            <Input
-                              type="number"
-                              min={0}
-                              placeholder="0"
-                              value={day.bump_sales}
-                              onChange={(e) => handleDailyChange(idx, 'bump_sales', e.target.value)}
-                              className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
-                            />
-                          </td>
-                        ))}
-                      </tr>
+                        {/* % Conversão Order Bump */}
+                        <TableRow className="bg-amber-50/70 hover:bg-amber-50 transition-colors border-b border-amber-100">
+                          <TableCell className="py-2.5 px-3 font-medium text-xs text-amber-950">
+                            % Conversão Order Bump
+                          </TableCell>
+                          {dailyCalculated.days.map((dayCalc, idx) => (
+                            <TableCell
+                              key={idx}
+                              className="py-2.5 px-3 border-l border-amber-100 text-center tabular-nums text-amber-950 font-semibold text-xs"
+                            >
+                              {formatPercent(dayCalc.bumpConversion)}
+                            </TableCell>
+                          ))}
+                        </TableRow>
 
-                      {/* % Conversão Order Bump */}
-                      <tr className="bg-amber-50/70 hover:bg-amber-50 transition-colors">
-                        <td className="p-2.5 font-medium text-amber-950">% Conversão Order Bump</td>
-                        {dailyCalculated.days.map((dayCalc, idx) => (
-                          <td
-                            key={idx}
-                            className="p-2.5 border-l border-amber-100 text-center tabular-nums text-amber-950 font-semibold text-xs"
-                          >
-                            {formatPercent(dayCalc.bumpConversion)}
-                          </td>
-                        ))}
-                      </tr>
+                        {/* Faturamento Order Bump */}
+                        <TableRow className="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                          <TableCell className="py-2.5 px-3 font-medium text-xs text-slate-700">
+                            Faturamento Order Bump
+                          </TableCell>
+                          {dailyCalculated.days.map((dayCalc, idx) => (
+                            <TableCell
+                              key={idx}
+                              className="py-2.5 px-3 border-l border-slate-100 text-center tabular-nums text-slate-700 font-medium text-xs"
+                            >
+                              {formatCurrency(dayCalc.bumpRevenue)}
+                            </TableCell>
+                          ))}
+                        </TableRow>
 
-                      {/* Faturamento Order Bump */}
-                      <tr className="hover:bg-slate-50/50 transition-colors">
-                        <td className="p-2.5 font-medium text-slate-700">Faturamento Order Bump</td>
-                        {dailyCalculated.days.map((dayCalc, idx) => (
-                          <td
-                            key={idx}
-                            className="p-2.5 border-l border-slate-100 text-center tabular-nums text-slate-700 font-medium text-xs"
-                          >
-                            {formatCurrency(dayCalc.bumpRevenue)}
-                          </td>
-                        ))}
-                      </tr>
+                        {/* Faturamento Total */}
+                        <TableRow className="bg-emerald-50 font-bold text-emerald-950 border-b border-emerald-200 hover:bg-emerald-50">
+                          <TableCell className="py-2.5 px-3 text-xs text-emerald-950 font-bold">
+                            Faturamento Total
+                          </TableCell>
+                          {dailyCalculated.days.map((dayCalc, idx) => (
+                            <TableCell
+                              key={idx}
+                              className="py-2.5 px-3 border-l border-emerald-200 text-center tabular-nums text-emerald-950 font-extrabold text-xs"
+                            >
+                              {formatCurrency(dayCalc.totalRevenue)}
+                            </TableCell>
+                          ))}
+                        </TableRow>
 
-                      {/* Faturamento Total */}
-                      <tr className="bg-emerald-50 font-bold text-emerald-950 border-t border-b border-emerald-200">
-                        <td className="p-2.5 text-emerald-950">Faturamento Total</td>
-                        {dailyCalculated.days.map((dayCalc, idx) => (
-                          <td
-                            key={idx}
-                            className="p-2.5 border-l border-emerald-200 text-center tabular-nums text-emerald-950 font-extrabold text-xs"
-                          >
-                            {formatCurrency(dayCalc.totalRevenue)}
-                          </td>
-                        ))}
-                      </tr>
+                        {/* Saldo Diário */}
+                        <TableRow className="bg-slate-50/90 font-bold text-slate-900 border-b border-slate-200 hover:bg-slate-50">
+                          <TableCell className="py-2.5 px-3 text-xs text-slate-900 font-bold">
+                            Saldo Diário
+                          </TableCell>
+                          {dailyCalculated.days.map((dayCalc, idx) => (
+                            <TableCell
+                              key={idx}
+                              className={`py-2.5 px-3 border-l border-slate-200 text-center tabular-nums text-xs ${
+                                dayCalc.dailyBalance < 0
+                                  ? 'text-rose-600 font-extrabold'
+                                  : 'text-slate-900 font-bold'
+                              }`}
+                            >
+                              {dayCalc.dailyBalance < 0
+                                ? `-R$ ${Math.abs(dayCalc.dailyBalance).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                : formatCurrency(dayCalc.dailyBalance)}
+                            </TableCell>
+                          ))}
+                        </TableRow>
 
-                      {/* Saldo Diário */}
-                      <tr className="bg-slate-50/90 font-bold text-slate-900 border-b border-slate-200">
-                        <td className="p-2.5 text-slate-900">Saldo Diário</td>
-                        {dailyCalculated.days.map((dayCalc, idx) => (
-                          <td
-                            key={idx}
-                            className={`p-2.5 border-l border-slate-200 text-center tabular-nums text-xs ${
-                              dayCalc.dailyBalance < 0
-                                ? 'text-rose-600 font-extrabold'
-                                : 'text-slate-900 font-bold'
-                            }`}
-                          >
-                            {dayCalc.dailyBalance < 0
-                              ? `-R$ ${Math.abs(dayCalc.dailyBalance).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                              : formatCurrency(dayCalc.dailyBalance)}
-                          </td>
-                        ))}
-                      </tr>
+                        {/* Ticket Médio */}
+                        <TableRow className="bg-slate-50/90 font-bold text-slate-900 border-b border-slate-200 hover:bg-slate-50">
+                          <TableCell className="py-2.5 px-3 text-xs text-slate-900 font-bold">
+                            Ticket Médio
+                          </TableCell>
+                          {dailyCalculated.days.map((dayCalc, idx) => (
+                            <TableCell
+                              key={idx}
+                              className="py-2.5 px-3 border-l border-slate-200 text-center tabular-nums text-slate-900 text-xs"
+                            >
+                              {formatCalculatedNumber(dayCalc.averageTicket, 1)}
+                            </TableCell>
+                          ))}
+                        </TableRow>
 
-                      {/* Ticket Médio */}
-                      <tr className="bg-slate-50/90 font-bold text-slate-900 border-b border-slate-200">
-                        <td className="p-2.5 text-slate-900">Ticket Médio</td>
-                        {dailyCalculated.days.map((dayCalc, idx) => (
-                          <td
-                            key={idx}
-                            className="p-2.5 border-l border-slate-200 text-center tabular-nums text-slate-900 text-xs"
-                          >
-                            {formatCalculatedNumber(dayCalc.averageTicket, 1)}
-                          </td>
-                        ))}
-                      </tr>
+                        {/* CAC */}
+                        <TableRow className="bg-slate-50/90 font-bold text-slate-900 border-b border-slate-200 hover:bg-slate-50">
+                          <TableCell className="py-2.5 px-3 text-xs text-slate-900 font-bold">
+                            CAC
+                          </TableCell>
+                          {dailyCalculated.days.map((dayCalc, idx) => (
+                            <TableCell
+                              key={idx}
+                              className="py-2.5 px-3 border-l border-slate-200 text-center tabular-nums text-slate-900 text-xs"
+                            >
+                              {formatCalculatedNumber(dayCalc.cac, 1)}
+                            </TableCell>
+                          ))}
+                        </TableRow>
 
-                      {/* CAC */}
-                      <tr className="bg-slate-50/90 font-bold text-slate-900 border-b border-slate-200">
-                        <td className="p-2.5 text-slate-900">CAC</td>
-                        {dailyCalculated.days.map((dayCalc, idx) => (
-                          <td
-                            key={idx}
-                            className="p-2.5 border-l border-slate-200 text-center tabular-nums text-slate-900 text-xs"
-                          >
-                            {formatCalculatedNumber(dayCalc.cac, 1)}
-                          </td>
-                        ))}
-                      </tr>
-
-                      {/* ROAS */}
-                      <tr className="bg-amber-50 font-bold text-amber-950 border-b border-amber-200">
-                        <td className="p-2.5 text-amber-950">ROAS</td>
-                        {dailyCalculated.days.map((dayCalc, idx) => (
-                          <td
-                            key={idx}
-                            className="p-2.5 border-l border-amber-200 text-center tabular-nums text-amber-950 font-extrabold text-xs"
-                          >
-                            {formatCalculatedNumber(dayCalc.roas, 2)}
-                          </td>
-                        ))}
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                        {/* ROAS */}
+                        <TableRow className="bg-amber-50 font-bold text-amber-950 border-b border-amber-200 hover:bg-amber-50">
+                          <TableCell className="py-2.5 px-3 text-xs text-amber-950 font-bold">
+                            ROAS
+                          </TableCell>
+                          {dailyCalculated.days.map((dayCalc, idx) => (
+                            <TableCell
+                              key={idx}
+                              className="py-2.5 px-3 border-l border-amber-200 text-center tabular-nums text-amber-950 font-extrabold text-xs"
+                            >
+                              {formatCalculatedNumber(dayCalc.roas, 2)}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
               </Card>
 
               {/* BLOCK 1: VENDA DE INGRESSOS */}
               <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
-                <div className="bg-slate-50/80 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider text-center">
-                  VENDA DE INGRESSOS
-                </div>
+                <CardHeader className="p-5 pb-3 border-b border-slate-100">
+                  <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <Ticket className="w-4 h-4 text-[#6D49F2]" />
+                    Venda de Ingressos
+                  </CardTitle>
+                  <CardDescription className="text-xs text-slate-500 mt-0.5">
+                    Métricas de captação e venda de ingressos do lançamento
+                  </CardDescription>
+                </CardHeader>
 
                 <div className="p-4 sm:p-6 space-y-2.5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-50/80 px-3 rounded-lg border border-slate-200/70">
@@ -1340,9 +1393,15 @@ export default function LancamentoPago() {
 
               {/* BLOCK 2: ORDER BUMP */}
               <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
-                <div className="bg-slate-50/80 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider text-center">
-                  ORDER BUMP
-                </div>
+                <CardHeader className="p-5 pb-3 border-b border-slate-100">
+                  <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <Percent className="w-4 h-4 text-[#FF2AFF]" />
+                    Order Bump
+                  </CardTitle>
+                  <CardDescription className="text-xs text-slate-500 mt-0.5">
+                    Taxas de conversão e faturamento adicional de order bumps
+                  </CardDescription>
+                </CardHeader>
 
                 <div className="p-4 sm:p-6 space-y-2.5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-amber-50 px-3 rounded-lg border border-amber-200">
@@ -1408,9 +1467,15 @@ export default function LancamentoPago() {
 
               {/* BLOCK 3: RESULTADO INGRESSOS + ORDER BUMPS */}
               <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
-                <div className="bg-slate-50/80 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider text-center">
-                  RESULTADO INGRESSOS + ORDER BUMPS
-                </div>
+                <CardHeader className="p-5 pb-3 border-b border-slate-100">
+                  <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-[#6D49F2]" />
+                    Resultado Ingressos + Order Bumps
+                  </CardTitle>
+                  <CardDescription className="text-xs text-slate-500 mt-0.5">
+                    Consolidação de faturamento, saldo e retorno da captação
+                  </CardDescription>
+                </CardHeader>
 
                 <div className="p-4 sm:p-6 space-y-2.5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-emerald-50 px-3 rounded-lg border border-emerald-200">
