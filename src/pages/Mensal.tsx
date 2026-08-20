@@ -40,6 +40,7 @@ import {
   MONTH_SHORT_NAMES_PT,
   formatCurrency,
   formatPercent,
+  formatNumber,
   formatRoas,
   computeMonthlyMetrics,
   parsePtBrNumber,

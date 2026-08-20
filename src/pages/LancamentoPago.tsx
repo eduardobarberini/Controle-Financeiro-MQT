@@ -60,6 +60,7 @@ import {
   calculateDailyDataDateLabels,
   calculateUpsellDailyDateLabels,
 } from '@/lib/launch-format'
+import { formatNumber, parsePtBrNumber } from '@/lib/financial-utils'
 
 const DEFAULT_CLASS_SESSIONS: ClassSession[] = [
   { label: 'Aula de Boas Vindas', live_attendees: '', unique_viewers: '' },
