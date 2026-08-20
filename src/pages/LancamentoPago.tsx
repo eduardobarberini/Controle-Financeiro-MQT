@@ -56,6 +56,9 @@ import {
   formatCalculatedCurrency,
   formatCalculatedPercent,
   formatCalculatedNumber,
+  extractDateFromBatch,
+  calculateDailyDataDateLabels,
+  calculateUpsellDailyDateLabels,
 } from '@/lib/launch-format'
 
 const DEFAULT_CLASS_SESSIONS: ClassSession[] = [
@@ -69,13 +72,13 @@ const DEFAULT_CLASS_SESSIONS: ClassSession[] = [
 ]
 
 const DEFAULT_DAYS: DailyEntry[] = [
-  { dayLabel: 'Seg', dateLabel: '8/6', investment: 18201, ticket_sales: 394, bump_sales: 116 },
-  { dayLabel: 'Ter', dateLabel: '9/6', investment: '', ticket_sales: '', bump_sales: '' },
-  { dayLabel: 'Qua', dateLabel: '10/6', investment: '', ticket_sales: '', bump_sales: '' },
-  { dayLabel: 'Qui', dateLabel: '11/6', investment: '', ticket_sales: '', bump_sales: '' },
-  { dayLabel: 'Sex', dateLabel: '12/6', investment: '', ticket_sales: '', bump_sales: '' },
-  { dayLabel: 'Sáb', dateLabel: '13/6', investment: '', ticket_sales: '', bump_sales: '' },
-  { dayLabel: 'Dom', dateLabel: '14/6', investment: '', ticket_sales: '', bump_sales: '' },
+  { dayLabel: 'Seg', dateLabel: '17/8', investment: 18201, ticket_sales: 394, bump_sales: 116 },
+  { dayLabel: 'Ter', dateLabel: '18/8', investment: '', ticket_sales: '', bump_sales: '' },
+  { dayLabel: 'Qua', dateLabel: '19/8', investment: '', ticket_sales: '', bump_sales: '' },
+  { dayLabel: 'Qui', dateLabel: '20/8', investment: '', ticket_sales: '', bump_sales: '' },
+  { dayLabel: 'Sex', dateLabel: '21/8', investment: '', ticket_sales: '', bump_sales: '' },
+  { dayLabel: 'Sáb', dateLabel: '22/8', investment: '', ticket_sales: '', bump_sales: '' },
+  { dayLabel: 'Dom', dateLabel: '23/8', investment: '', ticket_sales: '', bump_sales: '' },
 ]
 
 const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
@@ -137,6 +140,78 @@ const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
     boleto_revenue: '',
   },
 ]
+
+/**
+ * Helper to update date labels for both daily_data and upsell_platform.daily_sales
+ * when given a batch string.
+ */
+function applyBatchDateLabels(
+  batch: string,
+  dailyData: DailyEntry[],
+  upsellDailySales: UpsellDailyEntry[],
+): { dailyData: DailyEntry[]; upsellDailySales: UpsellDailyEntry[] } {
+  const sundayDate = extractDateFromBatch(batch)
+  if (!sundayDate) {
+    return { dailyData, upsellDailySales }
+  }
+
+  // 1. Calculate for daily_data (7 days: Seg, Ter, Qua, Qui, Sex, Sáb, Dom)
+  const ingressosLabels = calculateDailyDataDateLabels(sundayDate)
+  const defaultDayNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+  const updatedDailyData: DailyEntry[] = Array.from({ length: 7 }, (_, i) => {
+    const existing = dailyData?.[i] || {
+      dayLabel: defaultDayNames[i],
+      dateLabel: '',
+      investment: '',
+      ticket_sales: '',
+      bump_sales: '',
+    }
+    return {
+      ...existing,
+      dayLabel: existing.dayLabel || defaultDayNames[i],
+      dateLabel: ingressosLabels[i],
+    }
+  })
+
+  // 2. Calculate for upsell platform daily sales
+  // Columns: Primeira Hora, Qui, Sex, Sáb, Dom, Seg, Ter
+  const upsellLabels = calculateUpsellDailyDateLabels(sundayDate)
+  const updatedUpsellDaily: UpsellDailyEntry[] = (
+    upsellDailySales || DEFAULT_UPSELL_DAILY_SALES
+  ).map((item, idx) => {
+    if (item.isPrimeiraHora || (idx === 0 && item.dayLabel?.toLowerCase().includes('primeira'))) {
+      return {
+        ...item,
+        dateLabel: '',
+      }
+    }
+
+    // Map day label to corresponding dateLabel
+    const dayKey = item.dayLabel || ''
+    const mappedDate = upsellLabels[dayKey]
+
+    // Fallback by index if dayLabel is customized or missing:
+    // index 1 -> Qui, 2 -> Sex, 3 -> Sáb, 4 -> Dom, 5 -> Seg, 6 -> Ter
+    let dateLabel = mappedDate
+    if (!dateLabel) {
+      const order = ['Qui', 'Sex', 'Sáb', 'Dom', 'Seg', 'Ter']
+      const targetDay = order[idx - 1]
+      if (targetDay && upsellLabels[targetDay]) {
+        dateLabel = upsellLabels[targetDay]
+      }
+    }
+
+    return {
+      ...item,
+      dateLabel: dateLabel || item.dateLabel || '',
+    }
+  })
+
+  return {
+    dailyData: updatedDailyData,
+    upsellDailySales: updatedUpsellDaily,
+  }
+}
 
 interface FormState {
   id?: string
@@ -239,6 +314,24 @@ export default function LancamentoPago() {
       if (data.length > 0) {
         const target = preferredId ? data.find((r) => r.id === preferredId) || data[0] : data[0]
 
+        const rawDailyData =
+          target.daily_data && Array.isArray(target.daily_data) && target.daily_data.length === 7
+            ? target.daily_data
+            : DEFAULT_DAYS
+        const rawUpsellDaily =
+          target.upsell_platform &&
+          typeof target.upsell_platform === 'object' &&
+          Array.isArray(target.upsell_platform.daily_sales) &&
+          target.upsell_platform.daily_sales.length > 0
+            ? target.upsell_platform.daily_sales
+            : DEFAULT_UPSELL_DAILY_SALES
+
+        const { dailyData, upsellDailySales } = applyBatchDateLabels(
+          target.batch,
+          rawDailyData,
+          rawUpsellDaily,
+        )
+
         setSelectedLaunchId(target.id)
         setForm({
           id: target.id,
@@ -253,10 +346,7 @@ export default function LancamentoPago() {
           revenue_tax_rate: target.revenue_tax_rate ?? 9.0,
           traffic_tax_rate: target.traffic_tax_rate ?? 12.15,
           students_in_challenge: target.students_in_challenge ?? '',
-          daily_data:
-            target.daily_data && Array.isArray(target.daily_data) && target.daily_data.length === 7
-              ? target.daily_data
-              : DEFAULT_DAYS,
+          daily_data: dailyData,
           class_sessions:
             Array.isArray(target.class_sessions) && target.class_sessions.length > 0
               ? target.class_sessions
@@ -272,17 +362,28 @@ export default function LancamentoPago() {
               ? {
                   ...DEFAULT_UPSELL_PLATFORM,
                   ...target.upsell_platform,
-                  daily_sales:
-                    Array.isArray(target.upsell_platform.daily_sales) &&
-                    target.upsell_platform.daily_sales.length > 0
-                      ? target.upsell_platform.daily_sales
-                      : DEFAULT_UPSELL_DAILY_SALES,
+                  daily_sales: upsellDailySales,
                 }
-              : DEFAULT_UPSELL_PLATFORM,
+              : {
+                  ...DEFAULT_UPSELL_PLATFORM,
+                  daily_sales: upsellDailySales,
+                },
         })
       } else {
         setSelectedLaunchId('new')
-        setForm(DEFAULT_FORM)
+        const { dailyData, upsellDailySales } = applyBatchDateLabels(
+          DEFAULT_FORM.batch,
+          DEFAULT_DAYS,
+          DEFAULT_UPSELL_DAILY_SALES,
+        )
+        setForm({
+          ...DEFAULT_FORM,
+          daily_data: dailyData,
+          upsell_platform: {
+            ...DEFAULT_UPSELL_PLATFORM,
+            daily_sales: upsellDailySales,
+          },
+        })
       }
     } catch (err) {
       console.error(err)
@@ -304,14 +405,43 @@ export default function LancamentoPago() {
   const handleSelectLaunch = (id: string) => {
     setSelectedLaunchId(id)
     if (id === 'new') {
+      const newBatch = `Turma ${records.length + 1}`
+      const { dailyData, upsellDailySales } = applyBatchDateLabels(
+        newBatch,
+        DEFAULT_DAYS,
+        DEFAULT_UPSELL_DAILY_SALES,
+      )
       setForm({
         ...DEFAULT_FORM,
         id: undefined,
-        batch: `Turma ${records.length + 1}`,
+        batch: newBatch,
+        daily_data: dailyData,
+        upsell_platform: {
+          ...DEFAULT_UPSELL_PLATFORM,
+          daily_sales: upsellDailySales,
+        },
       })
     } else {
       const found = records.find((r) => r.id === id)
       if (found) {
+        const rawDailyData =
+          found.daily_data && Array.isArray(found.daily_data) && found.daily_data.length === 7
+            ? found.daily_data
+            : DEFAULT_DAYS
+        const rawUpsellDaily =
+          found.upsell_platform &&
+          typeof found.upsell_platform === 'object' &&
+          Array.isArray(found.upsell_platform.daily_sales) &&
+          found.upsell_platform.daily_sales.length > 0
+            ? found.upsell_platform.daily_sales
+            : DEFAULT_UPSELL_DAILY_SALES
+
+        const { dailyData, upsellDailySales } = applyBatchDateLabels(
+          found.batch,
+          rawDailyData,
+          rawUpsellDaily,
+        )
+
         setForm({
           id: found.id,
           capture_days: found.capture_days ?? 0,
@@ -325,10 +455,7 @@ export default function LancamentoPago() {
           revenue_tax_rate: found.revenue_tax_rate ?? 9.0,
           traffic_tax_rate: found.traffic_tax_rate ?? 12.15,
           students_in_challenge: found.students_in_challenge ?? '',
-          daily_data:
-            found.daily_data && Array.isArray(found.daily_data) && found.daily_data.length === 7
-              ? found.daily_data
-              : DEFAULT_DAYS,
+          daily_data: dailyData,
           class_sessions:
             Array.isArray(found.class_sessions) && found.class_sessions.length > 0
               ? found.class_sessions
@@ -344,13 +471,12 @@ export default function LancamentoPago() {
               ? {
                   ...DEFAULT_UPSELL_PLATFORM,
                   ...found.upsell_platform,
-                  daily_sales:
-                    Array.isArray(found.upsell_platform.daily_sales) &&
-                    found.upsell_platform.daily_sales.length > 0
-                      ? found.upsell_platform.daily_sales
-                      : DEFAULT_UPSELL_DAILY_SALES,
+                  daily_sales: upsellDailySales,
                 }
-              : DEFAULT_UPSELL_PLATFORM,
+              : {
+                  ...DEFAULT_UPSELL_PLATFORM,
+                  daily_sales: upsellDailySales,
+                },
         })
       }
     }
@@ -399,13 +525,31 @@ export default function LancamentoPago() {
   // Handle single field input changes
   const handleChange = (field: keyof FormState, value: string | number) => {
     setForm((prev) => {
-      const updated = { ...prev, [field]: value }
-
       if (field === 'batch' && typeof value === 'string') {
         const matchingRecord = records.find(
           (r) => r.batch.trim().toLowerCase() === value.trim().toLowerCase(),
         )
         if (matchingRecord && matchingRecord.id !== prev.id) {
+          const rawDailyData =
+            matchingRecord.daily_data &&
+            Array.isArray(matchingRecord.daily_data) &&
+            matchingRecord.daily_data.length === 7
+              ? matchingRecord.daily_data
+              : DEFAULT_DAYS
+          const rawUpsellDaily =
+            matchingRecord.upsell_platform &&
+            typeof matchingRecord.upsell_platform === 'object' &&
+            Array.isArray(matchingRecord.upsell_platform.daily_sales) &&
+            matchingRecord.upsell_platform.daily_sales.length > 0
+              ? matchingRecord.upsell_platform.daily_sales
+              : DEFAULT_UPSELL_DAILY_SALES
+
+          const { dailyData, upsellDailySales } = applyBatchDateLabels(
+            value,
+            rawDailyData,
+            rawUpsellDaily,
+          )
+
           return {
             ...matchingRecord,
             batch: value,
@@ -414,12 +558,7 @@ export default function LancamentoPago() {
             commercial_commission: matchingRecord.commercial_commission ?? 3752,
             revenue_tax_rate: matchingRecord.revenue_tax_rate ?? 9.0,
             traffic_tax_rate: matchingRecord.traffic_tax_rate ?? 12.15,
-            daily_data:
-              matchingRecord.daily_data &&
-              Array.isArray(matchingRecord.daily_data) &&
-              matchingRecord.daily_data.length === 7
-                ? matchingRecord.daily_data
-                : DEFAULT_DAYS,
+            daily_data: dailyData,
             students_in_challenge: matchingRecord.students_in_challenge ?? '',
             class_sessions:
               Array.isArray(matchingRecord.class_sessions) &&
@@ -438,18 +577,36 @@ export default function LancamentoPago() {
                 ? {
                     ...DEFAULT_UPSELL_PLATFORM,
                     ...matchingRecord.upsell_platform,
-                    daily_sales:
-                      Array.isArray(matchingRecord.upsell_platform.daily_sales) &&
-                      matchingRecord.upsell_platform.daily_sales.length > 0
-                        ? matchingRecord.upsell_platform.daily_sales
-                        : DEFAULT_UPSELL_DAILY_SALES,
+                    daily_sales: upsellDailySales,
                   }
-                : DEFAULT_UPSELL_PLATFORM,
+                : {
+                    ...DEFAULT_UPSELL_PLATFORM,
+                    daily_sales: upsellDailySales,
+                  },
           }
+        }
+
+        // Apply automatic date recalculation to current form when typing or pasting batch
+        const currentDaily = prev.daily_data || DEFAULT_DAYS
+        const currentUpsellDaily = prev.upsell_platform?.daily_sales || DEFAULT_UPSELL_DAILY_SALES
+        const { dailyData, upsellDailySales } = applyBatchDateLabels(
+          value,
+          currentDaily,
+          currentUpsellDaily,
+        )
+
+        return {
+          ...prev,
+          batch: value,
+          daily_data: dailyData,
+          upsell_platform: {
+            ...prev.upsell_platform,
+            daily_sales: upsellDailySales,
+          },
         }
       }
 
-      return updated
+      return { ...prev, [field]: value }
     })
   }
 

@@ -38,3 +38,69 @@ export const formatCalculatedNumber = (val: number, decimals = 2): string => {
     maximumFractionDigits: decimals,
   }).format(val)
 }
+
+/**
+ * Parses DD/MM/YYYY date from a Turma (batch) string.
+ * Example inputs: "S1 - 23/08/2026", "Turma 1 - 16/08/2026", "23/08/2026", "S1 - 16/8/2026"
+ * Returns a UTC Date or null if no valid date pattern is found.
+ */
+export const extractDateFromBatch = (batch: string): Date | null => {
+  if (!batch || typeof batch !== 'string') return null
+  const match = batch.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/)
+  if (!match) return null
+
+  const day = parseInt(match[1], 10)
+  const month = parseInt(match[2], 10) - 1 // 0-indexed in JS Date
+  const year = parseInt(match[3], 10)
+
+  const date = new Date(year, month, day)
+  if (isNaN(date.getTime())) return null
+  return date
+}
+
+/**
+ * Formats a Date object to "D/M" (e.g. 16/8).
+ */
+export const formatDateLabel = (date: Date): string => {
+  const d = date.getDate()
+  const m = date.getMonth() + 1
+  return `${d}/${m}`
+}
+
+/**
+ * Calculates date labels for the 7 days of "Acompanhamento Diário - Vendas da Semana"
+ * Table has 7 days: Seg, Ter, Qua, Qui, Sex, Sáb, Dom
+ * The date in batch is Dom (index 6, offset 0).
+ * Seg to Sáb are -6, -5, -4, -3, -2, -1 days.
+ */
+export const calculateDailyDataDateLabels = (sundayDate: Date): string[] => {
+  // Seg (-6), Ter (-5), Qua (-4), Qui (-3), Sex (-2), Sáb (-1), Dom (0)
+  const offsets = [-6, -5, -4, -3, -2, -1, 0]
+  return offsets.map((offset) => {
+    const d = new Date(sundayDate)
+    d.setDate(d.getDate() + offset)
+    return formatDateLabel(d)
+  })
+}
+
+/**
+ * Calculates date labels for the "Venda Plataforma" daily tracking table.
+ * Table structure: Primeira Hora (no date or empty), Qui (-3), Sex (-2), Sáb (-1), Dom (0), Seg (+1), Ter (+2)
+ * The date in batch is Dom (offset 0).
+ */
+export const calculateUpsellDailyDateLabels = (sundayDate: Date): { [key: string]: string } => {
+  const getOffsetDateLabel = (offset: number) => {
+    const d = new Date(sundayDate)
+    d.setDate(d.getDate() + offset)
+    return formatDateLabel(d)
+  }
+
+  return {
+    Qui: getOffsetDateLabel(-3),
+    Sex: getOffsetDateLabel(-2),
+    Sáb: getOffsetDateLabel(-1),
+    Dom: getOffsetDateLabel(0),
+    Seg: getOffsetDateLabel(1),
+    Ter: getOffsetDateLabel(2),
+  }
+}
