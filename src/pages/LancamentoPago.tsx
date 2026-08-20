@@ -817,11 +817,11 @@ export default function LancamentoPago() {
         </div>
 
         {/* Launch Switcher Dropdown in Header */}
-        <div className="flex items-center gap-2 bg-white border border-slate-200/90 shadow-2xs p-1.5 rounded-xl">
+        <div className="flex items-center gap-2 bg-white border border-slate-200/90 shadow-sm p-1.5 rounded-2xl">
           <Calendar className="w-4 h-4 text-[#6D49F2] ml-2 shrink-0" />
           <span className="text-xs font-semibold text-slate-600 shrink-0">Lançamento:</span>
           <Select value={selectedLaunchId} onValueChange={handleSelectLaunch}>
-            <SelectTrigger className="w-[180px] sm:w-[220px] h-9 bg-slate-50/80 border-slate-200 text-slate-900 font-bold text-xs focus:ring-[#6D49F2] rounded-lg truncate">
+            <SelectTrigger className="w-[180px] sm:w-[220px] h-9 bg-slate-50/80 border-slate-200 text-slate-900 font-bold text-xs focus:ring-[#6D49F2] rounded-xl truncate">
               <SelectValue placeholder="Selecione um lançamento" />
             </SelectTrigger>
             <SelectContent className="bg-white border-slate-200 text-slate-900 rounded-xl">
@@ -849,41 +849,41 @@ export default function LancamentoPago() {
       </div>
 
       {loading ? (
-        <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl p-16 flex flex-col items-center justify-center gap-3 text-slate-400">
+        <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl p-16 flex flex-col items-center justify-center gap-3 text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin text-[#6D49F2]" />
           <p className="text-sm text-slate-500 font-medium">Carregando dados do lançamento...</p>
         </Card>
       ) : (
         <Tabs defaultValue="consolidado" className="w-full">
           {/* Pills-style tab bar in MQT palette */}
-          <TabsList className="bg-white border border-slate-200/80 shadow-xs rounded-xl p-1.5 h-auto flex flex-col sm:flex-row w-full sm:w-fit gap-1">
+          <TabsList className="bg-white border border-slate-200/90 shadow-sm rounded-2xl p-1.5 h-auto flex flex-col sm:flex-row w-full sm:w-fit gap-1">
             <TabsTrigger
               value="consolidado"
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
+              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-xs text-xs font-bold px-4 py-2 text-slate-600"
             >
               Resultado Consolidado
             </TabsTrigger>
             <TabsTrigger
               value="ingressos"
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
+              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-xs text-xs font-bold px-4 py-2 text-slate-600"
             >
               Venda de Ingressos
             </TabsTrigger>
             <TabsTrigger
               value="upsell"
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
+              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-xs text-xs font-bold px-4 py-2 text-slate-600"
             >
               Venda Plataforma
             </TabsTrigger>
             <TabsTrigger
               value="aulas"
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
+              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-xs text-xs font-bold px-4 py-2 text-slate-600"
             >
               Controle Aulas
             </TabsTrigger>
             <TabsTrigger
               value="comercial"
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs font-bold px-4 py-2 text-slate-600 data-[state=active]:shadow-none"
+              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-xs text-xs font-bold px-4 py-2 text-slate-600"
             >
               Vendas Comercial
             </TabsTrigger>
@@ -937,7 +937,7 @@ export default function LancamentoPago() {
                   formatType="roas"
                   icon={Percent}
                   subtext="Faturamento / Investimento"
-                  iconBgColor="bg-emerald-50 text-emerald-600 border-emerald-200"
+                  iconBgColor="bg-slate-100 text-[#6D49F2] border-slate-200"
                 />
               </div>
 
@@ -951,7 +951,7 @@ export default function LancamentoPago() {
                   subtext="Faturamento - Investimento"
                   iconBgColor={
                     dashboardKpis.saldoCaptacao >= 0
-                      ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                      ? 'bg-slate-100 text-[#6D49F2] border-slate-200'
                       : 'bg-rose-50 text-rose-600 border-rose-200'
                   }
                 />
@@ -962,7 +962,7 @@ export default function LancamentoPago() {
                   formatType="raw"
                   icon={Ticket}
                   subtext="Vendas totais de ingresso"
-                  iconBgColor="bg-sky-50 text-sky-600 border-sky-200"
+                  iconBgColor="bg-slate-100 text-[#6D49F2] border-slate-200"
                 />
 
                 <KpiCard
@@ -972,7 +972,7 @@ export default function LancamentoPago() {
                   decimals={2}
                   icon={Percent}
                   subtext="Bumps / Ingressos Totais"
-                  iconBgColor="bg-amber-50 text-amber-600 border-amber-200"
+                  iconBgColor="bg-slate-100 text-[#6D49F2] border-slate-200"
                 />
               </div>
             </div>
@@ -988,10 +988,10 @@ export default function LancamentoPago() {
               />
 
               {/* ACOMPANHAMENTO DIÁRIO */}
-              <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
-                <div className="bg-slate-50 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider flex items-center justify-between">
+              <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
+                <div className="bg-slate-50/80 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider flex items-center justify-between">
                   <span className="flex items-center gap-2">
-                    <CalendarDays className="w-4 h-4 text-[#FF2AFF]" />
+                    <CalendarDays className="w-4 h-4 text-[#6D49F2]" />
                     Acompanhamento Diário - Vendas da Semana
                   </span>
                   <span className="text-[11px] text-slate-500 font-normal normal-case">
@@ -1002,14 +1002,14 @@ export default function LancamentoPago() {
                 <div className="p-4 sm:p-6 overflow-x-auto">
                   <table className="w-full text-xs border-collapse min-w-[760px]">
                     <thead>
-                      <tr className="bg-[#FAF8FF] border-b border-slate-200">
-                        <th className="p-3 text-left font-bold text-slate-800 bg-[#F2EBFF] w-48 text-sm">
+                      <tr className="bg-slate-50/80 border-b border-slate-200">
+                        <th className="p-3 text-left font-bold text-slate-800 bg-slate-100/80 w-48 text-sm">
                           Venda Ingressos
                         </th>
                         {form.daily_data.map((day, idx) => (
                           <th
                             key={idx}
-                            className="p-2 text-center font-bold text-slate-800 bg-[#F2EBFF] border-l border-slate-200/80 min-w-[100px]"
+                            className="p-2 text-center font-bold text-slate-800 bg-slate-50 border-l border-slate-200 min-w-[100px]"
                           >
                             <div className="flex items-center justify-center gap-1">
                               <input
@@ -1138,12 +1138,12 @@ export default function LancamentoPago() {
                       </tr>
 
                       {/* Faturamento Total */}
-                      <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-t border-b border-emerald-200">
-                        <td className="p-2.5 text-emerald-950">Faturamento Total</td>
+                      <tr className="bg-slate-100/90 font-bold text-slate-900 border-t border-b border-slate-200">
+                        <td className="p-2.5 text-slate-900">Faturamento Total</td>
                         {dailyCalculated.days.map((dayCalc, idx) => (
                           <td
                             key={idx}
-                            className="p-2 border-l border-emerald-200/80 text-center tabular-nums text-emerald-900"
+                            className="p-2 border-l border-slate-200 text-center tabular-nums text-slate-900"
                           >
                             {formatCurrency(dayCalc.totalRevenue)}
                           </td>
@@ -1151,15 +1151,15 @@ export default function LancamentoPago() {
                       </tr>
 
                       {/* Saldo Diário */}
-                      <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-b border-emerald-200">
-                        <td className="p-2.5 text-emerald-950">Saldo Diário</td>
+                      <tr className="bg-slate-50/90 font-bold text-slate-900 border-b border-slate-200">
+                        <td className="p-2.5 text-slate-900">Saldo Diário</td>
                         {dailyCalculated.days.map((dayCalc, idx) => (
                           <td
                             key={idx}
-                            className={`p-2 border-l border-emerald-200/80 text-center tabular-nums ${
+                            className={`p-2 border-l border-slate-200 text-center tabular-nums ${
                               dayCalc.dailyBalance < 0
                                 ? 'text-rose-600 font-extrabold'
-                                : 'text-emerald-900'
+                                : 'text-slate-900'
                             }`}
                           >
                             {dayCalc.dailyBalance < 0
@@ -1170,12 +1170,12 @@ export default function LancamentoPago() {
                       </tr>
 
                       {/* Ticket Médio */}
-                      <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-b border-emerald-200">
-                        <td className="p-2.5 text-emerald-950">Ticket Médio</td>
+                      <tr className="bg-slate-50/90 font-bold text-slate-900 border-b border-slate-200">
+                        <td className="p-2.5 text-slate-900">Ticket Médio</td>
                         {dailyCalculated.days.map((dayCalc, idx) => (
                           <td
                             key={idx}
-                            className="p-2 border-l border-emerald-200/80 text-center tabular-nums text-emerald-900"
+                            className="p-2 border-l border-slate-200 text-center tabular-nums text-slate-900"
                           >
                             {formatCalculatedNumber(dayCalc.averageTicket, 1)}
                           </td>
@@ -1183,12 +1183,12 @@ export default function LancamentoPago() {
                       </tr>
 
                       {/* CAC */}
-                      <tr className="bg-[#EBF9F1] font-bold text-slate-900 border-b border-emerald-200">
-                        <td className="p-2.5 text-emerald-950">CAC</td>
+                      <tr className="bg-slate-50/90 font-bold text-slate-900 border-b border-slate-200">
+                        <td className="p-2.5 text-slate-900">CAC</td>
                         {dailyCalculated.days.map((dayCalc, idx) => (
                           <td
                             key={idx}
-                            className="p-2 border-l border-emerald-200/80 text-center tabular-nums text-emerald-900"
+                            className="p-2 border-l border-slate-200 text-center tabular-nums text-slate-900"
                           >
                             {formatCalculatedNumber(dayCalc.cac, 1)}
                           </td>
@@ -1196,12 +1196,12 @@ export default function LancamentoPago() {
                       </tr>
 
                       {/* ROAS */}
-                      <tr className="bg-[#FDE8EC] font-bold text-rose-950 border-b border-rose-200">
-                        <td className="p-2.5 text-rose-950">ROAS</td>
+                      <tr className="bg-slate-100/80 font-bold text-slate-900 border-b border-slate-200">
+                        <td className="p-2.5 text-slate-900">ROAS</td>
                         {dailyCalculated.days.map((dayCalc, idx) => (
                           <td
                             key={idx}
-                            className="p-2 border-l border-rose-200/80 text-center tabular-nums text-rose-950"
+                            className="p-2 border-l border-slate-200 text-center tabular-nums text-slate-900"
                           >
                             {formatCalculatedNumber(dayCalc.roas, 2)}
                           </td>
@@ -1213,8 +1213,8 @@ export default function LancamentoPago() {
               </Card>
 
               {/* BLOCK 1: VENDA DE INGRESSOS */}
-              <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
-                <div className="bg-slate-50 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider text-center">
+              <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
+                <div className="bg-slate-50/80 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider text-center">
                   VENDA DE INGRESSOS
                 </div>
 
@@ -1293,11 +1293,11 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
-                    <span className="font-bold text-sm text-amber-950">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-slate-100/80 px-3.5 rounded-xl border border-slate-200">
+                    <span className="font-bold text-sm text-slate-900">
                       Média Vendas / Dia Ingresso
                     </span>
-                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
+                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-slate-900">
                       {formatCalculatedNumber(calc.avgSalesPerDay, 0)}
                     </div>
                   </div>
@@ -1320,7 +1320,7 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-100/80 px-3 rounded-lg border border-slate-200">
                     <span className="font-semibold text-xs text-slate-700">
                       Faturamento Ingressos
                     </span>
@@ -1329,9 +1329,9 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
-                    <span className="font-bold text-sm text-amber-950">ROAS Venda Ingresso</span>
-                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-slate-100/80 px-3.5 rounded-xl border border-slate-200">
+                    <span className="font-bold text-sm text-slate-900">ROAS Venda Ingresso</span>
+                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-slate-900">
                       {formatCalculatedNumber(calc.ticketRoas, 2)}
                     </div>
                   </div>
@@ -1339,13 +1339,13 @@ export default function LancamentoPago() {
               </Card>
 
               {/* BLOCK 2: ORDER BUMP */}
-              <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
-                <div className="bg-slate-50 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider text-center">
+              <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
+                <div className="bg-slate-50/80 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider text-center">
                   ORDER BUMP
                 </div>
 
                 <div className="p-4 sm:p-6 space-y-2.5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-100/80 px-3 rounded-lg border border-slate-200">
                     <span className="font-bold text-xs text-[#6D49F2]">Conversão Order Bump</span>
                     <div className="text-right font-bold tabular-nums text-xs text-[#FF2AFF]">
                       {formatCalculatedPercent(calc.bumpConversion)}
@@ -1397,7 +1397,7 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-purple-50/60 px-3 rounded-lg border border-[#6D49F2]/20">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-100/80 px-3 rounded-lg border border-slate-200">
                     <span className="font-bold text-xs text-slate-700">Faturamento Order Bump</span>
                     <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
                       {formatCurrency(calc.bumpRevenue)}
@@ -1407,40 +1407,40 @@ export default function LancamentoPago() {
               </Card>
 
               {/* BLOCK 3: RESULTADO INGRESSOS + ORDER BUMPS */}
-              <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
-                <div className="bg-slate-50 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider text-center">
+              <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
+                <div className="bg-slate-50/80 border-b border-slate-200 text-slate-800 font-bold px-6 py-3 text-xs uppercase tracking-wider text-center">
                   RESULTADO INGRESSOS + ORDER BUMPS
                 </div>
 
                 <div className="p-4 sm:p-6 space-y-2.5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-emerald-50/80 px-3.5 rounded-xl border border-emerald-200/90">
-                    <span className="font-bold text-xs text-emerald-900">Faturamento Total</span>
-                    <div className="text-right font-bold tabular-nums text-sm text-emerald-700">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-slate-100/80 px-3.5 rounded-xl border border-slate-200">
+                    <span className="font-bold text-xs text-slate-900">Faturamento Total</span>
+                    <div className="text-right font-bold tabular-nums text-sm text-[#6D49F2]">
                       {formatCurrency(calc.totalRevenue)}
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
-                    <span className="font-bold text-sm text-amber-950">Ticket Médio</span>
-                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-slate-100/80 px-3.5 rounded-xl border border-slate-200">
+                    <span className="font-bold text-sm text-slate-900">Ticket Médio</span>
+                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-slate-900">
                       {formatCalculatedCurrency(calc.averageTicket)}
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
-                    <span className="font-bold text-sm text-amber-950">Saldo da Captação</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-slate-100/80 px-3.5 rounded-xl border border-slate-200">
+                    <span className="font-bold text-sm text-slate-900">Saldo da Captação</span>
                     <div
                       className={`text-center sm:text-right font-bold tabular-nums text-base ${
-                        calc.captureBalance >= 0 ? 'text-emerald-700' : 'text-rose-600'
+                        calc.captureBalance >= 0 ? 'text-[#FF2AFF]' : 'text-rose-600'
                       }`}
                     >
                       {formatCurrency(calc.captureBalance)}
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-amber-50/90 px-3.5 rounded-xl border border-amber-200/90">
-                    <span className="font-bold text-sm text-amber-950">ROAS</span>
-                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-amber-950">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-slate-100/80 px-3.5 rounded-xl border border-slate-200">
+                    <span className="font-bold text-sm text-slate-900">ROAS</span>
+                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-slate-900">
                       {formatCalculatedNumber(calc.overallRoas, 2)}
                     </div>
                   </div>

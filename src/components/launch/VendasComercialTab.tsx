@@ -241,7 +241,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
           formatType="raw"
           icon={ShoppingBag}
           subtext="Soma de vendas de todos vendedores"
-          iconBgColor="bg-[#F4B183]/20 text-[#D66829] border-[#F4B183]/50"
+          iconBgColor="bg-slate-100 text-[#6D49F2] border-slate-200"
         />
 
         <KpiCard
@@ -250,7 +250,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
           formatType="currency"
           icon={DollarSign}
           subtext="Faturamento bruto comercial"
-          iconBgColor="bg-emerald-50 text-emerald-700 border-emerald-200"
+          iconBgColor="bg-slate-100 text-[#6D49F2] border-slate-200"
         />
 
         <KpiCard
@@ -259,7 +259,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
           formatType="currency"
           icon={TrendingUp}
           subtext="Comissões a pagar"
-          iconBgColor="bg-amber-50 text-amber-700 border-amber-200"
+          iconBgColor="bg-slate-100 text-slate-700 border-slate-200"
         />
 
         <KpiCard
@@ -269,7 +269,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
           decimals={2}
           icon={Percent}
           subtext="Comercial / Total (Ingressos + Upsell)"
-          iconBgColor="bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20"
+          iconBgColor="bg-slate-100 text-[#FF2AFF] border-slate-200"
         />
       </div>
 
@@ -282,78 +282,46 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
           return (
             <Card
               key={seller.id || idx}
-              className="bg-white border border-slate-200/90 shadow-xs rounded-xl overflow-hidden"
+              className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden"
             >
-              {/* Table Header / Title Bar matching Excel image layout */}
+              {/* Table Header / Title Bar */}
               <div className="overflow-x-auto">
                 <table className="w-full text-xs sm:text-sm border-collapse min-w-[620px]">
                   <thead>
                     {/* Header Row: Vendedor [idx + 1] ([name]) */}
-                    <tr className="border-b border-slate-300">
-                      <th
-                        className="p-3 text-left font-extrabold text-slate-900 text-sm sm:text-base border-r border-slate-300/80"
-                        style={{ backgroundColor: '#F4B183' }}
-                      >
+                    <tr className="bg-slate-50/80 border-b border-slate-200">
+                      <th className="p-3 text-left font-extrabold text-slate-900 text-sm sm:text-base border-r border-slate-200">
                         Vendedor {idx + 1} ({seller.name || 'Sem nome'})
                       </th>
-                      <th
-                        className="p-2.5 text-center font-bold text-slate-900 w-28 border-r border-slate-300/80"
-                        style={{ backgroundColor: '#F4B183' }}
-                      >
+                      <th className="p-2.5 text-center font-bold text-slate-900 w-28 border-r border-slate-200">
                         Vendas
                       </th>
-                      <th
-                        className="p-2.5 text-center font-bold text-slate-900 w-32 border-r border-slate-300/80"
-                        style={{ backgroundColor: '#F4B183' }}
-                      >
+                      <th className="p-2.5 text-center font-bold text-slate-900 w-32 border-r border-slate-200">
                         Ticket
                       </th>
-                      <th
-                        className="p-2.5 text-center font-bold text-slate-900 w-36 border-r border-slate-300/80"
-                        style={{ backgroundColor: '#F4B183' }}
-                      >
+                      <th className="p-2.5 text-center font-bold text-slate-900 w-36 border-r border-slate-200">
                         Faturamento
                       </th>
-                      <th
-                        className="p-2.5 text-center font-bold text-slate-900 w-36"
-                        style={{ backgroundColor: '#F4B183' }}
-                      >
-                        Comissão
-                      </th>
+                      <th className="p-2.5 text-center font-bold text-slate-900 w-36">Comissão</th>
                     </tr>
                   </thead>
 
                   <tbody className="divide-y divide-slate-200 text-slate-800">
                     {/* CATEGORY 1: Plataforma Header Row */}
-                    <tr className="font-extrabold border-t border-b border-slate-300">
-                      <td
-                        className="p-2.5 pl-4 text-slate-900 border-r border-slate-300/80"
-                        style={{ backgroundColor: '#C6E0B4' }}
-                      >
+                    <tr className="font-extrabold bg-slate-50/90 border-t border-b border-slate-200">
+                      <td className="p-2.5 pl-4 text-slate-900 border-r border-slate-200">
                         Plataforma
                       </td>
-                      <td
-                        className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-300/80"
-                        style={{ backgroundColor: '#C6E0B4' }}
-                      >
+                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200">
                         {metrics.platTotalSales}
                       </td>
-                      <td
-                        className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-300/80"
-                        style={{ backgroundColor: '#C6E0B4' }}
-                      >
+                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200">
                         {formatCurrency(metrics.platAvgTicket)}
                       </td>
-                      <td
-                        className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-300/80"
-                        style={{ backgroundColor: '#C6E0B4' }}
-                      >
+                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200">
                         {formatCurrency(metrics.platTotalRevenue)}
                       </td>
-                      <td
-                        className="p-2.5 text-center tabular-nums text-slate-900"
-                        style={{ backgroundColor: '#C6E0B4' }}
-                      >
+                      <td className="p-2.5 text-center tabular-nums text-slate-900">
                         {formatCurrency(metrics.platTotalComm)}
                       </td>
                     </tr>
@@ -465,35 +433,20 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                     </tr>
 
                     {/* CATEGORY 2: Renovação Header Row */}
-                    <tr className="font-extrabold border-t border-b border-slate-300">
-                      <td
-                        className="p-2.5 pl-4 text-slate-900 border-r border-slate-300/80"
-                        style={{ backgroundColor: '#C6E0B4' }}
-                      >
+                    <tr className="font-extrabold bg-slate-50/90 border-t border-b border-slate-200">
+                      <td className="p-2.5 pl-4 text-slate-900 border-r border-slate-200">
                         Renovação
                       </td>
-                      <td
-                        className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-300/80"
-                        style={{ backgroundColor: '#C6E0B4' }}
-                      >
+                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200">
                         {metrics.renoTotalSales}
                       </td>
-                      <td
-                        className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-300/80"
-                        style={{ backgroundColor: '#C6E0B4' }}
-                      >
+                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200">
                         {formatCurrency(metrics.renoAvgTicket)}
                       </td>
-                      <td
-                        className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-300/80"
-                        style={{ backgroundColor: '#C6E0B4' }}
-                      >
+                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200">
                         {formatCurrency(metrics.renoTotalRevenue)}
                       </td>
-                      <td
-                        className="p-2.5 text-center tabular-nums text-slate-900"
-                        style={{ backgroundColor: '#C6E0B4' }}
-                      >
+                      <td className="p-2.5 text-center tabular-nums text-slate-900">
                         {formatCurrency(metrics.renoTotalComm)}
                       </td>
                     </tr>
@@ -605,21 +558,18 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                     </tr>
 
                     {/* TOTAL ROW per seller */}
-                    <tr
-                      className="font-black text-white text-sm"
-                      style={{ backgroundColor: '#A6A6A6' }}
-                    >
-                      <td className="p-3 pl-4 text-white border-r border-slate-400">Total</td>
-                      <td className="p-3 text-center tabular-nums text-white border-r border-slate-400">
+                    <tr className="bg-slate-100/90 font-bold text-slate-900 text-sm border-t-2 border-slate-300">
+                      <td className="p-3 pl-4 text-slate-900 border-r border-slate-300">Total</td>
+                      <td className="p-3 text-center tabular-nums text-slate-900 border-r border-slate-300">
                         {metrics.sellerTotalSales}
                       </td>
-                      <td className="p-3 text-center tabular-nums text-white border-r border-slate-400">
+                      <td className="p-3 text-center tabular-nums text-slate-900 border-r border-slate-300">
                         {formatCurrency(metrics.sellerAvgTicket)}
                       </td>
-                      <td className="p-3 text-center tabular-nums text-white border-r border-slate-400">
+                      <td className="p-3 text-center tabular-nums text-slate-900 border-r border-slate-300">
                         {formatCurrency(metrics.sellerTotalRevenue)}
                       </td>
-                      <td className="p-3 text-center tabular-nums text-white">
+                      <td className="p-3 text-center tabular-nums text-slate-900">
                         {formatCurrency(metrics.sellerTotalComm)}
                       </td>
                     </tr>
@@ -632,7 +582,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
       </div>
 
       {/* 3. Management Section (Bottom) */}
-      <Card className="bg-white border border-slate-200/90 shadow-xs rounded-xl p-5 sm:p-6 space-y-4">
+      <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl p-5 sm:p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
             <Users className="w-4 h-4 text-[#6D49F2]" />

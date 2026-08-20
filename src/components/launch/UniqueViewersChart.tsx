@@ -18,10 +18,10 @@ interface UniqueViewersChartProps {
   studentsInChallenge: number | string
 }
 
-// Orange used for the "Espectadores Únicos" table header — same color family for line 1.
-const ORANGE = '#ED7D31'
-// Complementary orange for the percentage line (line 2, right axis).
-const ORANGE_COMPLEMENT = '#FF6B35'
+// Primary MQT Palette purple for absolute unique viewers line
+const PURPLE = '#6D49F2'
+// Accent pink for percentage line (right axis)
+const PINK = '#FF2AFF'
 
 export const UniqueViewersChart: React.FC<UniqueViewersChartProps> = ({
   sessions,
@@ -46,19 +46,19 @@ export const UniqueViewersChart: React.FC<UniqueViewersChartProps> = ({
   const hasAnyData = chartData.some((d) => d.unicos > 0)
 
   return (
-    <Card className="bg-white border border-slate-200/80 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-shadow">
-      <CardHeader className="p-5 pb-2">
+    <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
+      <CardHeader className="bg-slate-50/80 border-b border-slate-200 p-5 pb-3">
         <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-          <BarChart3 className="w-4 h-4" style={{ color: ORANGE }} />
+          <BarChart3 className="w-4 h-4 text-[#6D49F2]" />
           Espectadores Únicos por Aula
         </CardTitle>
         <CardDescription className="text-xs text-slate-500 mt-0.5">
-          Linha laranja: espectadores únicos (valor absoluto) • Linha complementar: % espectadores
+          Linha principal: espectadores únicos (valor absoluto) • Linha tracejada: % espectadores
           únicos / alunas no desafio
           {!hasAnyData ? ' • Nenhum dado preenchido ainda' : ''}
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-5 pt-2">
+      <CardContent className="p-5">
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 15, right: 8, left: 0, bottom: 0 }}>
@@ -111,7 +111,7 @@ export const UniqueViewersChart: React.FC<UniqueViewersChartProps> = ({
                 }}
                 itemStyle={{ color: '#e2e8f0' }}
                 labelStyle={{ color: '#f8fafc', fontWeight: 600 }}
-                cursor={{ fill: ORANGE, fillOpacity: 0.05 }}
+                cursor={{ fill: PURPLE, fillOpacity: 0.05 }}
               />
               <Legend
                 verticalAlign="top"
@@ -129,10 +129,10 @@ export const UniqueViewersChart: React.FC<UniqueViewersChartProps> = ({
                 type="monotone"
                 dataKey="unicos"
                 name="unicos"
-                stroke={ORANGE}
+                stroke={PURPLE}
                 strokeWidth={3}
-                dot={{ r: 4, fill: ORANGE, stroke: '#FFFFFF', strokeWidth: 1.5 }}
-                activeDot={{ r: 6, fill: ORANGE, stroke: '#FFFFFF', strokeWidth: 2 }}
+                dot={{ r: 4, fill: PURPLE, stroke: '#FFFFFF', strokeWidth: 1.5 }}
+                activeDot={{ r: 6, fill: PURPLE, stroke: '#FFFFFF', strokeWidth: 2 }}
                 animationDuration={600}
               />
               {/* Line 2: percentage of unique viewers vs. students (right axis) */}
@@ -141,11 +141,11 @@ export const UniqueViewersChart: React.FC<UniqueViewersChartProps> = ({
                 type="monotone"
                 dataKey="percentual"
                 name="percentual"
-                stroke={ORANGE_COMPLEMENT}
+                stroke={PINK}
                 strokeWidth={3}
                 strokeDasharray="5 4"
-                dot={{ r: 4, fill: ORANGE_COMPLEMENT, stroke: '#FFFFFF', strokeWidth: 1.5 }}
-                activeDot={{ r: 6, fill: ORANGE_COMPLEMENT, stroke: '#FFFFFF', strokeWidth: 2 }}
+                dot={{ r: 4, fill: PINK, stroke: '#FFFFFF', strokeWidth: 1.5 }}
+                activeDot={{ r: 6, fill: PINK, stroke: '#FFFFFF', strokeWidth: 2 }}
                 animationDuration={600}
               />
             </LineChart>

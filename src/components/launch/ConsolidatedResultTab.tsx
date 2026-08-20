@@ -150,7 +150,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
             subtext="Faturamento Consolidado - Investimento Total"
             iconBgColor={
               calc.lucroLiquido >= 0
-                ? 'bg-[#C6E0B4]/60 text-emerald-800 border-emerald-300'
+                ? 'bg-slate-100 text-[#6D49F2] border-slate-200'
                 : 'bg-rose-50 text-rose-600 border-rose-200'
             }
           />
@@ -165,7 +165,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
             subtext="Lucro Líquido / Total Faturamento"
             iconBgColor={
               calc.margemLucroPercent >= 0
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                ? 'bg-slate-100 text-[#6D49F2] border-slate-200'
                 : 'bg-rose-50 text-rose-700 border-rose-200'
             }
           />
@@ -179,7 +179,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
             formatType="currency"
             icon={Calculator}
             subtext="Tráfego + API + Comissão + Impostos"
-            iconBgColor="bg-[#FF2AFF]/10 text-[#FF2AFF] border-[#FF2AFF]/20"
+            iconBgColor="bg-slate-100 text-slate-700 border-slate-200"
           />
 
           <KpiCard
@@ -188,7 +188,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
             formatType="currency"
             icon={TrendingUp}
             subtext="Soma de Ingressos, Bumps e Upsell"
-            iconBgColor="bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20"
+            iconBgColor="bg-slate-100 text-[#6D49F2] border-slate-200"
           />
 
           <KpiCard
@@ -197,7 +197,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
             formatType="roas"
             icon={PieChart}
             subtext="Total Faturamento / Investimento Tráfego"
-            iconBgColor="bg-amber-50 text-amber-700 border-amber-200"
+            iconBgColor="bg-slate-100 text-[#6D49F2] border-slate-200"
           />
         </div>
       </div>
@@ -205,8 +205,8 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
       {/* Main Container: Summary Table + Settings */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 1. Summary Table ("Resultado Lançamento") */}
-        <Card className="lg:col-span-2 bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden">
-          <div className="bg-[#FAF8FF] border-b border-slate-200 text-slate-800 px-6 py-3 font-bold text-xs uppercase tracking-wider flex items-center justify-between">
+        <Card className="lg:col-span-2 bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
+          <div className="bg-slate-50/80 border-b border-slate-200 text-slate-800 px-6 py-3 font-bold text-xs uppercase tracking-wider flex items-center justify-between">
             <span className="flex items-center gap-2">
               <Calculator className="w-4 h-4 text-[#6D49F2]" />
               Resultado Lançamento
@@ -219,22 +219,22 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
           <div className="p-4 sm:p-6 overflow-x-auto">
             <table className="w-full text-xs sm:text-sm border-collapse">
               <thead>
-                <tr className="bg-[#FAF8FF] border-b border-slate-200">
+                <tr className="bg-slate-50/80 border-b border-slate-200">
                   <th className="p-3 text-left font-bold text-slate-800 text-xs sm:text-sm">
                     Item / Métrica
                   </th>
-                  <th className="p-3 text-right font-bold text-slate-800 bg-[#C6E0B4]/40 w-44 sm:w-56 text-xs sm:text-sm border-l border-slate-200">
+                  <th className="p-3 text-right font-bold text-slate-800 bg-slate-100/80 w-44 sm:w-56 text-xs sm:text-sm border-l border-slate-200">
                     Resultado
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {/* Investimento (Calculated Sum) - Highlighted in bold green (#C6E0B4) */}
-                <tr className="bg-[#C6E0B4] font-bold text-slate-900 text-sm sm:text-base border-t border-b border-emerald-300">
-                  <td className="p-3 text-slate-950 flex items-center gap-2">
+                {/* Investimento (Calculated Sum) */}
+                <tr className="bg-slate-100/90 font-bold text-slate-900 text-sm sm:text-base border-t border-b border-slate-200">
+                  <td className="p-3 text-slate-900 flex items-center gap-2">
                     <span>Investimento</span>
                   </td>
-                  <td className="p-3 text-right tabular-nums text-slate-950 font-extrabold border-l border-emerald-300/60">
+                  <td className="p-3 text-right tabular-nums text-slate-900 font-extrabold border-l border-slate-200">
                     {formatCurrency(calc.totalInvestment)}
                   </td>
                 </tr>
@@ -327,10 +327,10 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                   </td>
                 </tr>
 
-                {/* Lucro Líquido - Highlighted in bold green (#C6E0B4) */}
-                <tr className="bg-[#C6E0B4] font-bold text-slate-900 text-sm sm:text-base border-t border-b border-emerald-300">
-                  <td className="p-3 text-slate-950 font-extrabold">Lucro Líquido</td>
-                  <td className="p-3 text-right tabular-nums text-slate-950 font-black border-l border-emerald-300/60">
+                {/* Lucro Líquido */}
+                <tr className="bg-slate-100/90 font-bold text-slate-900 text-sm sm:text-base border-t border-b border-slate-200">
+                  <td className="p-3 text-slate-900 font-extrabold">Lucro Líquido</td>
+                  <td className="p-3 text-right tabular-nums text-slate-900 font-black border-l border-slate-200">
                     {calc.lucroLiquido < 0
                       ? `-R$ ${Math.abs(calc.lucroLiquido).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                       : formatCurrency(calc.lucroLiquido)}
@@ -352,7 +352,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
         {/* Configuration Panel for Tax Percentages & Revenue Breakout */}
         <div className="space-y-6">
           {/* Configuração de Alíquotas de Imposto */}
-          <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden p-5 space-y-4">
+          <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden p-5 space-y-4">
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-3">
               <Percent className="w-4 h-4 text-[#6D49F2]" />
               Configurar Alíquotas de Impostos
@@ -408,7 +408,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
           </Card>
 
           {/* Origem do Faturamento Consolidado */}
-          <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl overflow-hidden p-5 space-y-3">
+          <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden p-5 space-y-3">
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-3">
               <TrendingUp className="w-4 h-4 text-[#FF2AFF]" />
               Composição do Faturamento
@@ -451,7 +451,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
       </div>
 
       {/* 4. Bottom Action Bar ("Salvar Lançamento" Button) */}
-      <Card className="bg-white border border-slate-200/80 shadow-xs rounded-xl p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="text-xs text-slate-500 font-medium">
           Lançamento: <span className="font-bold text-[#6D49F2]">{launchBatch || 'Sem nome'}</span>
           {launchId ? ' (Salvo no BD)' : ' (Novo Lançamento)'}

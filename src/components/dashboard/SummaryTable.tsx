@@ -31,7 +31,7 @@ export const SummaryTable: React.FC<SummaryTableProps> = ({ summary }) => {
 
   return (
     <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
-      <CardHeader className="p-5 pb-3 border-b border-slate-100">
+      <CardHeader className="bg-slate-50/80 p-5 pb-3 border-b border-slate-200">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
             <TableProperties className="w-4 h-4 text-[#6D49F2]" />

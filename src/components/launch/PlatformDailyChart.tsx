@@ -45,8 +45,8 @@ export const PlatformDailyChart: React.FC<PlatformDailyChartProps> = ({ days }) 
   const hasAnyData = chartData.some((d) => d.vendas > 0 || d.conversao > 0)
 
   return (
-    <Card className="bg-white border border-slate-200/80 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-shadow">
-      <CardHeader className="p-5 pb-2">
+    <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
+      <CardHeader className="bg-slate-50/80 border-b border-slate-200 p-5 pb-3">
         <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-[#6D49F2]" />
           Vendas Diárias × Conversão
@@ -57,7 +57,7 @@ export const PlatformDailyChart: React.FC<PlatformDailyChartProps> = ({ days }) 
           {!hasAnyData ? ' • Nenhum dado preenchido ainda' : ''}
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-5 pt-2">
+      <CardContent className="p-5">
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 15, right: 8, left: 0, bottom: 0 }}>
