@@ -101,9 +101,9 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
 
         <div className="p-4 sm:p-6 space-y-2.5">
           {/* % Conversão Geral (Calculated) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-100/80 px-3 rounded-lg border border-slate-200">
-            <span className="font-bold text-xs text-[#6D49F2]">% Conversão Geral</span>
-            <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-amber-50 px-3 rounded-lg border border-amber-200">
+            <span className="font-bold text-xs text-amber-950">% Conversão Geral</span>
+            <div className="text-right font-extrabold tabular-nums text-xs text-amber-950">
               {formatCalculatedPercent(upsellCalc.conversionRate)}
             </div>
           </div>
@@ -121,7 +121,7 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
 
           {/* Ticket (Manual) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-            <span className="font-medium text-sm text-slate-700">Ticket</span>
+            <span className="font-medium text-xs text-slate-700">Ticket</span>
             <div className="relative">
               <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
                 R$
@@ -133,7 +133,7 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                 value={upsellData.ticket}
                 onChange={(e) => onChangeField('ticket', e.target.value)}
                 placeholder="0.00"
-                className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
               />
             </div>
           </div>
@@ -170,14 +170,14 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
 
           {/* Reembolsos (Manual) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-            <span className="font-medium text-sm text-slate-700">Reembolsos</span>
+            <span className="font-medium text-xs text-slate-700">Reembolsos</span>
             <Input
               type="number"
               min={0}
               value={upsellData.refunds}
               onChange={(e) => onChangeField('refunds', e.target.value)}
               placeholder="0"
-              className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+              className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
             />
           </div>
 
@@ -190,16 +190,16 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
           </div>
 
           {/* Faturamento Plataforma (Calculated) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-slate-100/80 px-3.5 rounded-xl border border-slate-200">
-            <span className="font-bold text-sm text-slate-900">Faturamento Plataforma</span>
-            <div className="text-center sm:text-right font-bold tabular-nums text-base text-[#6D49F2]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-emerald-50 px-3 rounded-lg border border-emerald-200">
+            <span className="font-bold text-xs text-emerald-950">Faturamento Plataforma</span>
+            <div className="text-right font-extrabold tabular-nums text-xs text-emerald-950">
               {formatCurrency(upsellCalc.platformRevenue)}
             </div>
           </div>
 
           {/* Taxa inadimplência boleto (%) (Manual) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-            <span className="font-medium text-sm text-slate-700">
+            <span className="font-medium text-xs text-slate-700">
               Taxa inadimplência boleto (%)
             </span>
             <div className="relative">
@@ -211,7 +211,7 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                 value={upsellData.inadimplencia_rate}
                 onChange={(e) => onChangeField('inadimplencia_rate', e.target.value)}
                 placeholder="0.00"
-                className="pr-7 bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                className="pr-7 bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
               />
               <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
                 %
@@ -237,7 +237,7 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
           <table className="w-full text-xs border-collapse min-w-[800px] border border-slate-200">
             <thead>
               <tr className="border-b border-slate-200">
-                <th className="p-3 text-center font-bold text-slate-800 bg-slate-100/80 min-w-[220px] text-sm border-r border-slate-200">
+                <th className="p-2.5 text-center font-bold text-slate-800 bg-slate-100/80 min-w-[220px] text-xs border-r border-slate-200">
                   Controle Diário Vendas
                 </th>
                 {dailySalesList.map((day, idx) => {
@@ -248,7 +248,7 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                     return (
                       <th
                         key={idx}
-                        className="p-3 text-center font-bold text-slate-800 bg-slate-100/80 border-r border-slate-200 min-w-[120px] text-sm"
+                        className="p-2.5 text-center font-bold text-slate-800 bg-slate-100/80 border-r border-slate-200 min-w-[120px] text-xs"
                       >
                         Primeira Hora
                       </th>
@@ -264,7 +264,7 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                           type="text"
                           value={day.dayLabel || ''}
                           onChange={(e) => onChangeDailyField(idx, 'dayLabel', e.target.value)}
-                          className="w-12 text-center font-bold text-slate-800 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2]"
+                          className="w-12 text-center font-bold text-slate-800 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2] text-xs"
                           placeholder="Dia"
                         />
                       </div>
@@ -273,7 +273,7 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                           type="text"
                           value={day.dateLabel || ''}
                           onChange={(e) => onChangeDailyField(idx, 'dateLabel', e.target.value)}
-                          className="w-12 text-center text-slate-800 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2]"
+                          className="w-12 text-center text-slate-800 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2] text-[11px]"
                           placeholder="Data"
                         />
                       </div>
@@ -283,14 +283,14 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-300">
+            <tbody className="divide-y divide-slate-200">
               {/* Vendas Cartão / PIX */}
               <tr className="bg-white hover:bg-slate-50/50 transition-colors">
                 <td className="p-2.5 font-medium text-slate-900 border-r border-slate-200">
                   Vendas Cartão / PIX
                 </td>
                 {dailySalesList.map((day, idx) => (
-                  <td key={idx} className="p-1.5 border-r border-slate-200 text-center">
+                  <td key={idx} className="p-2 border-r border-slate-200 text-center">
                     <Input
                       type="number"
                       min={0}
@@ -309,7 +309,7 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                   Faturamento Cartão / PIX
                 </td>
                 {dailySalesList.map((day, idx) => (
-                  <td key={idx} className="p-1.5 border-r border-slate-200 text-center">
+                  <td key={idx} className="p-2 border-r border-slate-200 text-center">
                     <div className="relative">
                       <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">
                         R$
@@ -336,7 +336,7 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                   Vendas Boleto Parcelado
                 </td>
                 {dailySalesList.map((day, idx) => (
-                  <td key={idx} className="p-1.5 border-r border-slate-200 text-center">
+                  <td key={idx} className="p-2 border-r border-slate-200 text-center">
                     <Input
                       type="number"
                       min={0}
@@ -355,7 +355,7 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                   Faturamento Boleto Parcelado
                 </td>
                 {dailySalesList.map((day, idx) => (
-                  <td key={idx} className="p-1.5 border-r border-slate-200 text-center">
+                  <td key={idx} className="p-2 border-r border-slate-200 text-center">
                     <div className="relative">
                       <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">
                         R$
@@ -382,7 +382,7 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                 {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
                   <td
                     key={idx}
-                    className="p-2 border-r border-slate-200 text-center tabular-nums text-slate-900 font-bold text-xs"
+                    className="p-2.5 border-r border-slate-200 text-center tabular-nums text-slate-900 font-bold text-xs"
                   >
                     {calcDay.totalSales}
                   </td>
@@ -390,14 +390,14 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
               </tr>
 
               {/* % Conversão Desafio / Plataforma */}
-              <tr className="bg-slate-50/90 text-slate-900 font-bold">
-                <td className="p-2.5 font-bold text-slate-900 border-r border-slate-200 text-xs">
+              <tr className="bg-amber-50 text-amber-950 font-bold border-t border-amber-200">
+                <td className="p-2.5 font-bold text-amber-950 border-r border-amber-200 text-xs">
                   % Conversão Desafio / Plataforma
                 </td>
                 {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
                   <td
                     key={idx}
-                    className="p-2 border-r border-slate-200 text-center tabular-nums text-slate-900 font-bold text-xs"
+                    className="p-2.5 border-r border-amber-200 text-center tabular-nums text-amber-950 font-extrabold text-xs"
                   >
                     {formatCalculatedPercent(calcDay.conversionRate)}
                   </td>
@@ -405,14 +405,14 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
               </tr>
 
               {/* Faturamento Total */}
-              <tr className="bg-slate-100/90 text-slate-900 font-bold border-t border-slate-200">
-                <td className="p-2.5 text-slate-900 font-bold text-xs border-r border-slate-200">
+              <tr className="bg-emerald-50 text-emerald-950 font-bold border-t border-b border-emerald-200">
+                <td className="p-2.5 text-emerald-950 font-bold text-xs border-r border-emerald-200">
                   Faturamento Total
                 </td>
                 {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
                   <td
                     key={idx}
-                    className="p-2 border-r border-slate-200 text-center tabular-nums text-slate-900 font-extrabold text-xs"
+                    className="p-2.5 border-r border-emerald-200 text-center tabular-nums text-emerald-950 font-extrabold text-xs"
                   >
                     {formatCurrency(calcDay.totalRevenue)}
                   </td>

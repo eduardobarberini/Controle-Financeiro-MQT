@@ -35,8 +35,8 @@ export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
   return (
     <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden p-6 space-y-6">
       {/* Top: Alunas no Desafio */}
-      <div className="flex items-center gap-4 bg-slate-50/80 p-4 rounded-xl border border-slate-200">
-        <label className="text-sm font-semibold text-slate-800 whitespace-nowrap">
+      <div className="flex items-center gap-4 bg-slate-50/80 p-3 sm:p-4 rounded-xl border border-slate-200">
+        <label className="text-xs font-semibold text-slate-800 whitespace-nowrap">
           Alunas no Desafio
         </label>
         <Input
@@ -45,7 +45,7 @@ export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
           placeholder="0"
           value={studentsInChallenge}
           onChange={(e) => onChangeStudents(e.target.value)}
-          className="w-36 h-9 font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] rounded-lg"
+          className="w-36 h-8 text-xs font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] rounded-lg"
         />
       </div>
 
@@ -58,21 +58,21 @@ export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
           <thead className="bg-slate-50/80">
             <tr className="border-b border-slate-200">
               {/* Comparecimento */}
-              <th className="text-slate-800 p-3 text-left font-bold border-r border-slate-200 w-1/3">
+              <th className="text-slate-800 p-2.5 text-left font-bold text-xs border-r border-slate-200 w-1/3">
                 Comparecimento
               </th>
               {/* Pessoal Ao Vivo & % */}
-              <th className="text-slate-800 p-3 text-center font-bold border-r border-slate-200 w-1/6">
+              <th className="text-slate-800 p-2.5 text-center font-bold text-xs border-r border-slate-200 w-1/6">
                 Pessoal Ao Vivo
               </th>
-              <th className="text-slate-800 p-3 text-center font-bold border-r border-slate-200 w-1/6">
+              <th className="text-slate-800 p-2.5 text-center font-bold text-xs border-r border-slate-200 w-1/6">
                 %
               </th>
               {/* Espectadores Únicos & % */}
-              <th className="text-slate-800 p-3 text-center font-bold border-r border-slate-200 w-1/6">
+              <th className="text-slate-800 p-2.5 text-center font-bold text-xs border-r border-slate-200 w-1/6">
                 Espectadores Únicos
               </th>
-              <th className="text-slate-800 p-3 text-center font-bold w-1/6">%</th>
+              <th className="text-slate-800 p-2.5 text-center font-bold text-xs w-1/6">%</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -87,7 +87,7 @@ export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
                   className={`hover:bg-slate-50/60 transition-colors ${isEven ? 'bg-white' : 'bg-slate-50/40'}`}
                 >
                   {/* Class Label */}
-                  <td className="p-3 font-medium text-slate-800 border-r border-slate-200">
+                  <td className="p-2.5 font-medium text-xs text-slate-800 border-r border-slate-200">
                     {session.label}
                   </td>
 
@@ -99,12 +99,12 @@ export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
                       placeholder="0"
                       value={session.live_attendees}
                       onChange={(e) => onChangeSession(idx, 'live_attendees', e.target.value)}
-                      className="h-8 text-center font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                      className="h-8 text-center font-semibold text-xs text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
                     />
                   </td>
 
                   {/* Live % */}
-                  <td className="p-3 border-r border-slate-200 text-center font-semibold text-slate-700 tabular-nums">
+                  <td className="p-2.5 border-r border-slate-200 text-center font-semibold text-xs text-slate-700 tabular-nums">
                     {livePct}
                   </td>
 
@@ -116,12 +116,12 @@ export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
                       placeholder="0"
                       value={session.unique_viewers}
                       onChange={(e) => onChangeSession(idx, 'unique_viewers', e.target.value)}
-                      className="h-8 text-center font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                      className="h-8 text-center font-semibold text-xs text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
                     />
                   </td>
 
                   {/* Unique % */}
-                  <td className="p-3 text-center font-semibold text-slate-700 tabular-nums">
+                  <td className="p-2.5 text-center font-semibold text-xs text-slate-700 tabular-nums">
                     {uniquePct}
                   </td>
                 </tr>

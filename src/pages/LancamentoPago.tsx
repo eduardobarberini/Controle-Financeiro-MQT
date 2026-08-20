@@ -821,7 +821,7 @@ export default function LancamentoPago() {
           <Calendar className="w-4 h-4 text-[#6D49F2] ml-2 shrink-0" />
           <span className="text-xs font-semibold text-slate-600 shrink-0">Lançamento:</span>
           <Select value={selectedLaunchId} onValueChange={handleSelectLaunch}>
-            <SelectTrigger className="w-[180px] sm:w-[220px] h-9 bg-slate-50/80 border-slate-200 text-slate-900 font-bold text-xs focus:ring-[#6D49F2] rounded-xl truncate">
+            <SelectTrigger className="w-[180px] sm:w-[220px] h-8 bg-slate-50/80 border-slate-200 text-slate-900 font-bold text-xs focus:ring-[#6D49F2] rounded-xl truncate">
               <SelectValue placeholder="Selecione um lançamento" />
             </SelectTrigger>
             <SelectContent className="bg-white border-slate-200 text-slate-900 rounded-xl">
@@ -1003,7 +1003,7 @@ export default function LancamentoPago() {
                   <table className="w-full text-xs border-collapse min-w-[760px]">
                     <thead>
                       <tr className="bg-slate-50/80 border-b border-slate-200">
-                        <th className="p-3 text-left font-bold text-slate-800 bg-slate-100/80 w-48 text-sm">
+                        <th className="p-2.5 text-left font-bold text-slate-800 bg-slate-100/80 w-48 text-xs">
                           Venda Ingressos
                         </th>
                         {form.daily_data.map((day, idx) => (
@@ -1016,7 +1016,7 @@ export default function LancamentoPago() {
                                 type="text"
                                 value={day.dayLabel || ''}
                                 onChange={(e) => handleDailyChange(idx, 'dayLabel', e.target.value)}
-                                className="w-10 text-center font-bold text-slate-900 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2]"
+                                className="w-10 text-center font-bold text-slate-900 bg-transparent border-b border-dashed border-slate-400 focus:outline-none focus:border-[#6D49F2] text-xs"
                                 placeholder="Dia"
                               />
                             </div>
@@ -1027,7 +1027,7 @@ export default function LancamentoPago() {
                                 onChange={(e) =>
                                   handleDailyChange(idx, 'dateLabel', e.target.value)
                                 }
-                                className="w-12 text-center text-slate-600 bg-transparent border-b border-dashed border-slate-300 focus:outline-none focus:border-[#6D49F2]"
+                                className="w-12 text-center text-slate-600 bg-transparent border-b border-dashed border-slate-200 focus:outline-none focus:border-[#6D49F2] text-[11px]"
                                 placeholder="Data"
                               />
                             </div>
@@ -1041,7 +1041,7 @@ export default function LancamentoPago() {
                       <tr className="hover:bg-slate-50/50 transition-colors">
                         <td className="p-2.5 font-medium text-slate-700">Investimento</td>
                         {form.daily_data.map((day, idx) => (
-                          <td key={idx} className="p-1.5 border-l border-slate-100 text-center">
+                          <td key={idx} className="p-2 border-l border-slate-100 text-center">
                             <div className="relative">
                               <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">
                                 R$
@@ -1066,7 +1066,7 @@ export default function LancamentoPago() {
                       <tr className="hover:bg-slate-50/50 transition-colors">
                         <td className="p-2.5 font-medium text-slate-700">Vendas Ingresso</td>
                         {form.daily_data.map((day, idx) => (
-                          <td key={idx} className="p-1.5 border-l border-slate-100 text-center">
+                          <td key={idx} className="p-2 border-l border-slate-100 text-center">
                             <Input
                               type="number"
                               min={0}
@@ -1082,12 +1082,12 @@ export default function LancamentoPago() {
                       </tr>
 
                       {/* Faturamento Ingresso */}
-                      <tr className="bg-slate-50/80 font-bold">
-                        <td className="p-2.5 text-slate-900">Faturamento Ingresso</td>
+                      <tr className="bg-emerald-50/80 font-bold border-t border-b border-emerald-100">
+                        <td className="p-2.5 text-emerald-950">Faturamento Ingresso</td>
                         {dailyCalculated.days.map((dayCalc, idx) => (
                           <td
                             key={idx}
-                            className="p-2 border-l border-slate-200/80 text-center tabular-nums text-slate-900"
+                            className="p-2.5 border-l border-emerald-100 text-center tabular-nums text-emerald-950 font-bold text-xs"
                           >
                             {formatCurrency(dayCalc.ticketRevenue)}
                           </td>
@@ -1098,7 +1098,7 @@ export default function LancamentoPago() {
                       <tr className="hover:bg-slate-50/50 transition-colors">
                         <td className="p-2.5 font-medium text-slate-700">Vendas Order Bump</td>
                         {form.daily_data.map((day, idx) => (
-                          <td key={idx} className="p-1.5 border-l border-slate-100 text-center">
+                          <td key={idx} className="p-2 border-l border-slate-100 text-center">
                             <Input
                               type="number"
                               min={0}
@@ -1112,12 +1112,12 @@ export default function LancamentoPago() {
                       </tr>
 
                       {/* % Conversão Order Bump */}
-                      <tr className="hover:bg-slate-50/50 transition-colors">
-                        <td className="p-2.5 font-medium text-slate-700">% Conversão Order Bump</td>
+                      <tr className="bg-amber-50/70 hover:bg-amber-50 transition-colors">
+                        <td className="p-2.5 font-medium text-amber-950">% Conversão Order Bump</td>
                         {dailyCalculated.days.map((dayCalc, idx) => (
                           <td
                             key={idx}
-                            className="p-2 border-l border-slate-100 text-center tabular-nums text-slate-600"
+                            className="p-2.5 border-l border-amber-100 text-center tabular-nums text-amber-950 font-semibold text-xs"
                           >
                             {formatPercent(dayCalc.bumpConversion)}
                           </td>
@@ -1130,7 +1130,7 @@ export default function LancamentoPago() {
                         {dailyCalculated.days.map((dayCalc, idx) => (
                           <td
                             key={idx}
-                            className="p-2 border-l border-slate-100 text-center tabular-nums text-slate-700"
+                            className="p-2.5 border-l border-slate-100 text-center tabular-nums text-slate-700 font-medium text-xs"
                           >
                             {formatCurrency(dayCalc.bumpRevenue)}
                           </td>
@@ -1138,12 +1138,12 @@ export default function LancamentoPago() {
                       </tr>
 
                       {/* Faturamento Total */}
-                      <tr className="bg-slate-100/90 font-bold text-slate-900 border-t border-b border-slate-200">
-                        <td className="p-2.5 text-slate-900">Faturamento Total</td>
+                      <tr className="bg-emerald-50 font-bold text-emerald-950 border-t border-b border-emerald-200">
+                        <td className="p-2.5 text-emerald-950">Faturamento Total</td>
                         {dailyCalculated.days.map((dayCalc, idx) => (
                           <td
                             key={idx}
-                            className="p-2 border-l border-slate-200 text-center tabular-nums text-slate-900"
+                            className="p-2.5 border-l border-emerald-200 text-center tabular-nums text-emerald-950 font-extrabold text-xs"
                           >
                             {formatCurrency(dayCalc.totalRevenue)}
                           </td>
@@ -1156,10 +1156,10 @@ export default function LancamentoPago() {
                         {dailyCalculated.days.map((dayCalc, idx) => (
                           <td
                             key={idx}
-                            className={`p-2 border-l border-slate-200 text-center tabular-nums ${
+                            className={`p-2.5 border-l border-slate-200 text-center tabular-nums text-xs ${
                               dayCalc.dailyBalance < 0
                                 ? 'text-rose-600 font-extrabold'
-                                : 'text-slate-900'
+                                : 'text-slate-900 font-bold'
                             }`}
                           >
                             {dayCalc.dailyBalance < 0
@@ -1175,7 +1175,7 @@ export default function LancamentoPago() {
                         {dailyCalculated.days.map((dayCalc, idx) => (
                           <td
                             key={idx}
-                            className="p-2 border-l border-slate-200 text-center tabular-nums text-slate-900"
+                            className="p-2.5 border-l border-slate-200 text-center tabular-nums text-slate-900 text-xs"
                           >
                             {formatCalculatedNumber(dayCalc.averageTicket, 1)}
                           </td>
@@ -1188,7 +1188,7 @@ export default function LancamentoPago() {
                         {dailyCalculated.days.map((dayCalc, idx) => (
                           <td
                             key={idx}
-                            className="p-2 border-l border-slate-200 text-center tabular-nums text-slate-900"
+                            className="p-2.5 border-l border-slate-200 text-center tabular-nums text-slate-900 text-xs"
                           >
                             {formatCalculatedNumber(dayCalc.cac, 1)}
                           </td>
@@ -1196,12 +1196,12 @@ export default function LancamentoPago() {
                       </tr>
 
                       {/* ROAS */}
-                      <tr className="bg-slate-100/80 font-bold text-slate-900 border-b border-slate-200">
-                        <td className="p-2.5 text-slate-900">ROAS</td>
+                      <tr className="bg-amber-50 font-bold text-amber-950 border-b border-amber-200">
+                        <td className="p-2.5 text-amber-950">ROAS</td>
                         {dailyCalculated.days.map((dayCalc, idx) => (
                           <td
                             key={idx}
-                            className="p-2 border-l border-slate-200 text-center tabular-nums text-slate-900"
+                            className="p-2.5 border-l border-amber-200 text-center tabular-nums text-amber-950 font-extrabold text-xs"
                           >
                             {formatCalculatedNumber(dayCalc.roas, 2)}
                           </td>
@@ -1230,20 +1230,20 @@ export default function LancamentoPago() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                    <span className="font-medium text-sm text-slate-700">Turma</span>
+                    <span className="font-medium text-xs text-slate-700">Turma</span>
                     <div className="relative">
                       <Input
                         type="text"
                         placeholder='ex: "S1 - 23/08/2026"'
                         value={form.batch}
                         onChange={(e) => handleChange('batch', e.target.value)}
-                        className="bg-white border-slate-200 text-slate-900 font-bold text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                        className="bg-white border-slate-200 text-slate-900 font-bold text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                    <span className="font-medium text-sm text-slate-700">Ticket Ingresso</span>
+                    <span className="font-medium text-xs text-slate-700">Ticket Ingresso</span>
                     <div className="relative">
                       <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
                         R$
@@ -1254,7 +1254,7 @@ export default function LancamentoPago() {
                         min={0}
                         value={form.ticket_ticket}
                         onChange={(e) => handleChange('ticket_ticket', e.target.value)}
-                        className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                        className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
                       />
                     </div>
                   </div>
@@ -1293,23 +1293,23 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-slate-100/80 px-3.5 rounded-xl border border-slate-200">
-                    <span className="font-bold text-sm text-slate-900">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-100/80 px-3 rounded-lg border border-slate-200">
+                    <span className="font-bold text-xs text-slate-900">
                       Média Vendas / Dia Ingresso
                     </span>
-                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-slate-900">
+                    <div className="text-center sm:text-right font-bold tabular-nums text-xs text-slate-900">
                       {formatCalculatedNumber(calc.avgSalesPerDay, 0)}
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                    <span className="font-medium text-sm text-slate-700">Reembolso</span>
+                    <span className="font-medium text-xs text-slate-700">Reembolso</span>
                     <Input
                       type="number"
                       min={0}
                       value={form.ticket_refunds}
                       onChange={(e) => handleChange('ticket_refunds', e.target.value)}
-                      className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                      className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
                     />
                   </div>
 
@@ -1320,18 +1320,18 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-100/80 px-3 rounded-lg border border-slate-200">
-                    <span className="font-semibold text-xs text-slate-700">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-emerald-50 px-3 rounded-lg border border-emerald-200">
+                    <span className="font-bold text-xs text-emerald-950">
                       Faturamento Ingressos
                     </span>
-                    <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
+                    <div className="text-right font-extrabold tabular-nums text-xs text-emerald-950">
                       {formatCurrency(calc.ticketRevenue)}
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-slate-100/80 px-3.5 rounded-xl border border-slate-200">
-                    <span className="font-bold text-sm text-slate-900">ROAS Venda Ingresso</span>
-                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-slate-900">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-amber-50 px-3 rounded-lg border border-amber-200">
+                    <span className="font-bold text-xs text-amber-950">ROAS Venda Ingresso</span>
+                    <div className="text-center sm:text-right font-extrabold tabular-nums text-xs text-amber-950">
                       {formatCalculatedNumber(calc.ticketRoas, 2)}
                     </div>
                   </div>
@@ -1345,15 +1345,15 @@ export default function LancamentoPago() {
                 </div>
 
                 <div className="p-4 sm:p-6 space-y-2.5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-100/80 px-3 rounded-lg border border-slate-200">
-                    <span className="font-bold text-xs text-[#6D49F2]">Conversão Order Bump</span>
-                    <div className="text-right font-bold tabular-nums text-xs text-[#FF2AFF]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-amber-50 px-3 rounded-lg border border-amber-200">
+                    <span className="font-bold text-xs text-amber-950">% Conversão Order Bump</span>
+                    <div className="text-right font-extrabold tabular-nums text-xs text-amber-950">
                       {formatCalculatedPercent(calc.bumpConversion)}
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                    <span className="font-medium text-sm text-slate-700">Ticket Order Bump</span>
+                    <span className="font-medium text-xs text-slate-700">Ticket Order Bump</span>
                     <div className="relative">
                       <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
                         R$
@@ -1364,7 +1364,7 @@ export default function LancamentoPago() {
                         min={0}
                         value={form.bump_ticket}
                         onChange={(e) => handleChange('bump_ticket', e.target.value)}
-                        className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                        className="pl-7 bg-white border-slate-200 text-slate-900 font-semibold tabular-nums text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
                       />
                     </div>
                   </div>
@@ -1380,13 +1380,13 @@ export default function LancamentoPago() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-1.5 border-b border-slate-100">
-                    <span className="font-medium text-sm text-slate-700">Reembolso</span>
+                    <span className="font-medium text-xs text-slate-700">Reembolso</span>
                     <Input
                       type="number"
                       min={0}
                       value={form.bump_refunds}
                       onChange={(e) => handleChange('bump_refunds', e.target.value)}
-                      className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-9 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
+                      className="bg-white border-slate-200 text-slate-900 font-semibold text-center text-xs h-8 rounded-lg focus-visible:ring-[#6D49F2] shadow-2xs"
                     />
                   </div>
 
@@ -1399,7 +1399,7 @@ export default function LancamentoPago() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-100/80 px-3 rounded-lg border border-slate-200">
                     <span className="font-bold text-xs text-slate-700">Faturamento Order Bump</span>
-                    <div className="text-right font-bold tabular-nums text-xs text-[#6D49F2]">
+                    <div className="text-right font-bold tabular-nums text-xs text-slate-900">
                       {formatCurrency(calc.bumpRevenue)}
                     </div>
                   </div>
@@ -1413,24 +1413,24 @@ export default function LancamentoPago() {
                 </div>
 
                 <div className="p-4 sm:p-6 space-y-2.5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-slate-100/80 px-3.5 rounded-xl border border-slate-200">
-                    <span className="font-bold text-xs text-slate-900">Faturamento Total</span>
-                    <div className="text-right font-bold tabular-nums text-sm text-[#6D49F2]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-emerald-50 px-3 rounded-lg border border-emerald-200">
+                    <span className="font-bold text-xs text-emerald-950">Faturamento Total</span>
+                    <div className="text-right font-extrabold tabular-nums text-xs text-emerald-950">
                       {formatCurrency(calc.totalRevenue)}
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-slate-100/80 px-3.5 rounded-xl border border-slate-200">
-                    <span className="font-bold text-sm text-slate-900">Ticket Médio</span>
-                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-slate-900">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-100/80 px-3 rounded-lg border border-slate-200">
+                    <span className="font-bold text-xs text-slate-900">Ticket Médio</span>
+                    <div className="text-center sm:text-right font-bold tabular-nums text-xs text-slate-900">
                       {formatCalculatedCurrency(calc.averageTicket)}
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-slate-100/80 px-3.5 rounded-xl border border-slate-200">
-                    <span className="font-bold text-sm text-slate-900">Saldo da Captação</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-slate-100/80 px-3 rounded-lg border border-slate-200">
+                    <span className="font-bold text-xs text-slate-900">Saldo da Captação</span>
                     <div
-                      className={`text-center sm:text-right font-bold tabular-nums text-base ${
+                      className={`text-center sm:text-right font-bold tabular-nums text-xs ${
                         calc.captureBalance >= 0 ? 'text-[#FF2AFF]' : 'text-rose-600'
                       }`}
                     >
@@ -1438,9 +1438,9 @@ export default function LancamentoPago() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2.5 bg-slate-100/80 px-3.5 rounded-xl border border-slate-200">
-                    <span className="font-bold text-sm text-slate-900">ROAS</span>
-                    <div className="text-center sm:text-right font-bold tabular-nums text-base text-slate-900">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 py-2 bg-amber-50 px-3 rounded-lg border border-amber-200">
+                    <span className="font-bold text-xs text-amber-950">ROAS</span>
+                    <div className="text-center sm:text-right font-extrabold tabular-nums text-xs text-amber-950">
                       {formatCalculatedNumber(calc.overallRoas, 2)}
                     </div>
                   </div>

@@ -217,24 +217,24 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
           </div>
 
           <div className="p-4 sm:p-6 overflow-x-auto">
-            <table className="w-full text-xs sm:text-sm border-collapse">
+            <table className="w-full text-xs border-collapse">
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-200">
-                  <th className="p-3 text-left font-bold text-slate-800 text-xs sm:text-sm">
+                  <th className="p-2.5 text-left font-bold text-slate-800 text-xs">
                     Item / Métrica
                   </th>
-                  <th className="p-3 text-right font-bold text-slate-800 bg-slate-100/80 w-44 sm:w-56 text-xs sm:text-sm border-l border-slate-200">
+                  <th className="p-2.5 text-right font-bold text-slate-800 bg-slate-100/80 w-44 sm:w-56 text-xs border-l border-slate-200">
                     Resultado
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {/* Investimento (Calculated Sum) */}
-                <tr className="bg-slate-100/90 font-bold text-slate-900 text-sm sm:text-base border-t border-b border-slate-200">
-                  <td className="p-3 text-slate-900 flex items-center gap-2">
+                <tr className="bg-slate-100/90 font-bold text-slate-900 text-xs border-t border-b border-slate-200">
+                  <td className="p-2.5 text-slate-900 flex items-center gap-2">
                     <span>Investimento</span>
                   </td>
-                  <td className="p-3 text-right tabular-nums text-slate-900 font-extrabold border-l border-slate-200">
+                  <td className="p-2.5 text-right tabular-nums text-slate-900 font-extrabold border-l border-slate-200">
                     {formatCurrency(calc.totalInvestment)}
                   </td>
                 </tr>
@@ -250,7 +250,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                 {/* API Oficial */}
                 <tr className="hover:bg-slate-50/60 transition-colors">
                   <td className="p-2 pl-6 font-medium text-slate-700 align-middle">API Oficial</td>
-                  <td className="p-1.5 text-right border-l border-slate-100">
+                  <td className="p-2 text-right border-l border-slate-100">
                     <div className="relative ml-auto max-w-[160px]">
                       <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">
                         R$
@@ -273,7 +273,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                   <td className="p-2 pl-6 font-medium text-slate-700 align-middle">
                     Comissão Comercial
                   </td>
-                  <td className="p-1.5 text-right border-l border-slate-100">
+                  <td className="p-2 text-right border-l border-slate-100">
                     <div className="relative ml-auto max-w-[160px]">
                       <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">
                         R$
@@ -312,25 +312,25 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                 </tr>
 
                 {/* Faturamento */}
-                <tr className="bg-slate-100/90 font-bold text-slate-900 border-t border-b border-slate-200">
-                  <td className="p-3 text-slate-900">Faturamento</td>
-                  <td className="p-3 text-right tabular-nums text-slate-900 font-extrabold border-l border-slate-200">
+                <tr className="bg-emerald-50 font-bold text-emerald-950 border-t border-b border-emerald-200">
+                  <td className="p-2.5 text-emerald-950">Faturamento</td>
+                  <td className="p-2.5 text-right tabular-nums text-emerald-950 font-extrabold border-l border-emerald-200">
                     {formatCurrency(calc.totalFaturamento)}
                   </td>
                 </tr>
 
                 {/* ROAS (Média) */}
-                <tr className="hover:bg-slate-50/60 transition-colors">
-                  <td className="p-2.5 font-medium text-slate-700">ROAS (Média)</td>
-                  <td className="p-2.5 text-right tabular-nums font-bold text-slate-800 border-l border-slate-100">
+                <tr className="bg-amber-50 hover:bg-amber-50/80 transition-colors">
+                  <td className="p-2.5 font-bold text-amber-950">ROAS (Média)</td>
+                  <td className="p-2.5 text-right tabular-nums font-extrabold text-amber-950 border-l border-amber-200">
                     {formatCalculatedNumber(calc.roasMedia, 1)}
                   </td>
                 </tr>
 
                 {/* Lucro Líquido */}
-                <tr className="bg-slate-100/90 font-bold text-slate-900 text-sm sm:text-base border-t border-b border-slate-200">
-                  <td className="p-3 text-slate-900 font-extrabold">Lucro Líquido</td>
-                  <td className="p-3 text-right tabular-nums text-slate-900 font-black border-l border-slate-200">
+                <tr className="bg-emerald-50 font-bold text-emerald-950 text-xs border-t border-b border-emerald-200">
+                  <td className="p-2.5 text-emerald-950 font-extrabold">Lucro Líquido</td>
+                  <td className="p-2.5 text-right tabular-nums text-emerald-950 font-black border-l border-emerald-200">
                     {calc.lucroLiquido < 0
                       ? `-R$ ${Math.abs(calc.lucroLiquido).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                       : formatCurrency(calc.lucroLiquido)}
@@ -338,9 +338,9 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                 </tr>
 
                 {/* % Margem de Lucro */}
-                <tr className="bg-slate-50/80 font-bold border-t border-slate-200">
-                  <td className="p-3 text-slate-800">% Margem de Lucro</td>
-                  <td className="p-3 text-right tabular-nums font-extrabold text-slate-900 border-l border-slate-200">
+                <tr className="bg-amber-50 font-bold border-t border-amber-200">
+                  <td className="p-2.5 text-amber-950 font-bold">% Margem de Lucro</td>
+                  <td className="p-2.5 text-right tabular-nums font-extrabold text-amber-950 border-l border-amber-200">
                     {formatCalculatedPercent(calc.margemLucroPercent)}
                   </td>
                 </tr>
@@ -371,7 +371,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                     max={100}
                     value={revenueTaxRate}
                     onChange={(e) => onChangeField('revenue_tax_rate', e.target.value)}
-                    className="pr-8 h-9 text-xs font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                    className="pr-8 h-8 text-xs font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold pointer-events-none">
                     %
@@ -394,7 +394,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                     max={100}
                     value={trafficTaxRate}
                     onChange={(e) => onChangeField('traffic_tax_rate', e.target.value)}
-                    className="pr-8 h-9 text-xs font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                    className="pr-8 h-8 text-xs font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold pointer-events-none">
                     %

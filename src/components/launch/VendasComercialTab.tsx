@@ -286,52 +286,54 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
             >
               {/* Table Header / Title Bar */}
               <div className="overflow-x-auto">
-                <table className="w-full text-xs sm:text-sm border-collapse min-w-[620px]">
+                <table className="w-full text-xs border-collapse min-w-[620px]">
                   <thead>
                     {/* Header Row: Vendedor [idx + 1] ([name]) */}
                     <tr className="bg-slate-50/80 border-b border-slate-200">
-                      <th className="p-3 text-left font-extrabold text-slate-900 text-sm sm:text-base border-r border-slate-200">
+                      <th className="p-2.5 text-left font-extrabold text-slate-900 text-xs border-r border-slate-200">
                         Vendedor {idx + 1} ({seller.name || 'Sem nome'})
                       </th>
-                      <th className="p-2.5 text-center font-bold text-slate-900 w-28 border-r border-slate-200">
+                      <th className="p-2.5 text-center font-bold text-slate-900 w-28 border-r border-slate-200 text-xs">
                         Vendas
                       </th>
-                      <th className="p-2.5 text-center font-bold text-slate-900 w-32 border-r border-slate-200">
+                      <th className="p-2.5 text-center font-bold text-slate-900 w-32 border-r border-slate-200 text-xs">
                         Ticket
                       </th>
-                      <th className="p-2.5 text-center font-bold text-slate-900 w-36 border-r border-slate-200">
+                      <th className="p-2.5 text-center font-bold text-slate-900 w-36 border-r border-slate-200 text-xs">
                         Faturamento
                       </th>
-                      <th className="p-2.5 text-center font-bold text-slate-900 w-36">Comissão</th>
+                      <th className="p-2.5 text-center font-bold text-slate-900 w-36 text-xs">
+                        Comissão
+                      </th>
                     </tr>
                   </thead>
 
                   <tbody className="divide-y divide-slate-200 text-slate-800">
                     {/* CATEGORY 1: Plataforma Header Row */}
-                    <tr className="font-extrabold bg-slate-50/90 border-t border-b border-slate-200">
-                      <td className="p-2.5 pl-4 text-slate-900 border-r border-slate-200">
+                    <tr className="font-bold bg-slate-50/90 border-t border-b border-slate-200">
+                      <td className="p-2.5 pl-4 text-slate-900 border-r border-slate-200 text-xs">
                         Plataforma
                       </td>
-                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200">
+                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200 text-xs">
                         {metrics.platTotalSales}
                       </td>
-                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200">
+                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200 text-xs">
                         {formatCurrency(metrics.platAvgTicket)}
                       </td>
-                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200">
+                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200 text-xs">
                         {formatCurrency(metrics.platTotalRevenue)}
                       </td>
-                      <td className="p-2.5 text-center tabular-nums text-slate-900">
+                      <td className="p-2.5 text-center tabular-nums text-slate-900 text-xs">
                         {formatCurrency(metrics.platTotalComm)}
                       </td>
                     </tr>
 
                     {/* Vendas Cartão / Pix */}
                     <tr className="hover:bg-slate-50/60 transition-colors">
-                      <td className="p-2 pl-8 font-medium text-slate-700 border-r border-slate-200">
+                      <td className="p-2 pl-8 font-medium text-slate-700 border-r border-slate-200 text-xs">
                         Vendas Cartão / Pix
                       </td>
-                      <td className="p-1.5 border-r border-slate-200">
+                      <td className="p-2 border-r border-slate-200">
                         <Input
                           type="number"
                           min={0}
@@ -348,7 +350,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                           className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
                         />
                       </td>
-                      <td className="p-1.5 border-r border-slate-200">
+                      <td className="p-2 border-r border-slate-200">
                         <div className="relative">
                           <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
                             R$
@@ -371,20 +373,20 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                           />
                         </div>
                       </td>
-                      <td className="p-2 text-center tabular-nums font-semibold text-slate-800 border-r border-slate-200 bg-slate-50/50">
+                      <td className="p-2.5 text-center tabular-nums font-semibold text-slate-800 border-r border-slate-200 bg-slate-50/50 text-xs">
                         {formatCurrency(metrics.platCardRevenue)}
                       </td>
-                      <td className="p-2 text-center tabular-nums font-semibold text-slate-800 bg-slate-50/50">
+                      <td className="p-2.5 text-center tabular-nums font-semibold text-slate-800 bg-slate-50/50 text-xs">
                         {formatCurrency(metrics.platCardComm)}
                       </td>
                     </tr>
 
                     {/* Vendas Boleto 3x */}
                     <tr className="hover:bg-slate-50/60 transition-colors">
-                      <td className="p-2 pl-8 font-medium text-slate-700 border-r border-slate-200">
+                      <td className="p-2 pl-8 font-medium text-slate-700 border-r border-slate-200 text-xs">
                         Vendas Boleto 3x
                       </td>
-                      <td className="p-1.5 border-r border-slate-200">
+                      <td className="p-2 border-r border-slate-200">
                         <Input
                           type="number"
                           min={0}
@@ -401,7 +403,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                           className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
                         />
                       </td>
-                      <td className="p-1.5 border-r border-slate-200">
+                      <td className="p-2 border-r border-slate-200">
                         <div className="relative">
                           <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
                             R$
@@ -424,39 +426,39 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                           />
                         </div>
                       </td>
-                      <td className="p-2 text-center tabular-nums font-semibold text-slate-800 border-r border-slate-200 bg-slate-50/50">
+                      <td className="p-2.5 text-center tabular-nums font-semibold text-slate-800 border-r border-slate-200 bg-slate-50/50 text-xs">
                         {formatCurrency(metrics.platBoletoRevenue)}
                       </td>
-                      <td className="p-2 text-center tabular-nums font-semibold text-slate-800 bg-slate-50/50">
+                      <td className="p-2.5 text-center tabular-nums font-semibold text-slate-800 bg-slate-50/50 text-xs">
                         {formatCurrency(metrics.platBoletoComm)}
                       </td>
                     </tr>
 
                     {/* CATEGORY 2: Renovação Header Row */}
-                    <tr className="font-extrabold bg-slate-50/90 border-t border-b border-slate-200">
-                      <td className="p-2.5 pl-4 text-slate-900 border-r border-slate-200">
+                    <tr className="font-bold bg-slate-50/90 border-t border-b border-slate-200">
+                      <td className="p-2.5 pl-4 text-slate-900 border-r border-slate-200 text-xs">
                         Renovação
                       </td>
-                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200">
+                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200 text-xs">
                         {metrics.renoTotalSales}
                       </td>
-                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200">
+                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200 text-xs">
                         {formatCurrency(metrics.renoAvgTicket)}
                       </td>
-                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200">
+                      <td className="p-2.5 text-center tabular-nums text-slate-900 border-r border-slate-200 text-xs">
                         {formatCurrency(metrics.renoTotalRevenue)}
                       </td>
-                      <td className="p-2.5 text-center tabular-nums text-slate-900">
+                      <td className="p-2.5 text-center tabular-nums text-slate-900 text-xs">
                         {formatCurrency(metrics.renoTotalComm)}
                       </td>
                     </tr>
 
                     {/* Vendas Cartão / Pix */}
                     <tr className="hover:bg-slate-50/60 transition-colors">
-                      <td className="p-2 pl-8 font-medium text-slate-700 border-r border-slate-200">
+                      <td className="p-2 pl-8 font-medium text-slate-700 border-r border-slate-200 text-xs">
                         Vendas Cartão / Pix
                       </td>
-                      <td className="p-1.5 border-r border-slate-200">
+                      <td className="p-2 border-r border-slate-200">
                         <Input
                           type="number"
                           min={0}
@@ -473,7 +475,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                           className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
                         />
                       </td>
-                      <td className="p-1.5 border-r border-slate-200">
+                      <td className="p-2 border-r border-slate-200">
                         <div className="relative">
                           <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
                             R$
@@ -496,20 +498,20 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                           />
                         </div>
                       </td>
-                      <td className="p-2 text-center tabular-nums font-semibold text-slate-800 border-r border-slate-200 bg-slate-50/50">
+                      <td className="p-2.5 text-center tabular-nums font-semibold text-slate-800 border-r border-slate-200 bg-slate-50/50 text-xs">
                         {formatCurrency(metrics.renoCardRevenue)}
                       </td>
-                      <td className="p-2 text-center tabular-nums font-semibold text-slate-800 bg-slate-50/50">
+                      <td className="p-2.5 text-center tabular-nums font-semibold text-slate-800 bg-slate-50/50 text-xs">
                         {formatCurrency(metrics.renoCardComm)}
                       </td>
                     </tr>
 
                     {/* Vendas Boleto 3x */}
                     <tr className="hover:bg-slate-50/60 transition-colors">
-                      <td className="p-2 pl-8 font-medium text-slate-700 border-r border-slate-200">
+                      <td className="p-2 pl-8 font-medium text-slate-700 border-r border-slate-200 text-xs">
                         Vendas Boleto 3x
                       </td>
-                      <td className="p-1.5 border-r border-slate-200">
+                      <td className="p-2 border-r border-slate-200">
                         <Input
                           type="number"
                           min={0}
@@ -526,7 +528,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                           className="h-8 text-center font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
                         />
                       </td>
-                      <td className="p-1.5 border-r border-slate-200">
+                      <td className="p-2 border-r border-slate-200">
                         <div className="relative">
                           <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium pointer-events-none">
                             R$
@@ -549,27 +551,29 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                           />
                         </div>
                       </td>
-                      <td className="p-2 text-center tabular-nums font-semibold text-slate-800 border-r border-slate-200 bg-slate-50/50">
+                      <td className="p-2.5 text-center tabular-nums font-semibold text-slate-800 border-r border-slate-200 bg-slate-50/50 text-xs">
                         {formatCurrency(metrics.renoBoletoRevenue)}
                       </td>
-                      <td className="p-2 text-center tabular-nums font-semibold text-slate-800 bg-slate-50/50">
+                      <td className="p-2.5 text-center tabular-nums font-semibold text-slate-800 bg-slate-50/50 text-xs">
                         {formatCurrency(metrics.renoBoletoComm)}
                       </td>
                     </tr>
 
                     {/* TOTAL ROW per seller */}
-                    <tr className="bg-slate-100/90 font-bold text-slate-900 text-sm border-t-2 border-slate-300">
-                      <td className="p-3 pl-4 text-slate-900 border-r border-slate-300">Total</td>
-                      <td className="p-3 text-center tabular-nums text-slate-900 border-r border-slate-300">
+                    <tr className="bg-emerald-50 font-bold text-emerald-950 text-xs border-t-2 border-slate-200">
+                      <td className="p-2.5 pl-4 text-emerald-950 font-bold border-r border-slate-200">
+                        Total
+                      </td>
+                      <td className="p-2.5 text-center tabular-nums text-emerald-950 font-bold border-r border-slate-200">
                         {metrics.sellerTotalSales}
                       </td>
-                      <td className="p-3 text-center tabular-nums text-slate-900 border-r border-slate-300">
+                      <td className="p-2.5 text-center tabular-nums text-emerald-950 font-bold border-r border-slate-200">
                         {formatCurrency(metrics.sellerAvgTicket)}
                       </td>
-                      <td className="p-3 text-center tabular-nums text-slate-900 border-r border-slate-300">
+                      <td className="p-2.5 text-center tabular-nums text-emerald-950 font-extrabold border-r border-slate-200">
                         {formatCurrency(metrics.sellerTotalRevenue)}
                       </td>
-                      <td className="p-3 text-center tabular-nums text-slate-900">
+                      <td className="p-2.5 text-center tabular-nums text-emerald-950 font-bold">
                         {formatCurrency(metrics.sellerTotalComm)}
                       </td>
                     </tr>
@@ -608,7 +612,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                   placeholder="Nome do vendedor"
                   value={seller.name}
                   onChange={(e) => handleSellerInfoChange(idx, 'name', e.target.value)}
-                  className="max-w-[220px] h-9 text-xs font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                  className="max-w-[220px] h-8 text-xs font-semibold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
                 />
               </div>
 
@@ -625,7 +629,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                       onChange={(e) =>
                         handleSellerInfoChange(idx, 'commission_rate', e.target.value)
                       }
-                      className="pr-6 h-9 text-xs text-right font-bold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
+                      className="pr-6 h-8 text-xs text-right font-bold text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2]"
                     />
                     <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">
                       %
@@ -639,10 +643,10 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
                     variant="ghost"
                     size="icon"
                     onClick={() => handleRemoveSeller(idx)}
-                    className="h-9 w-9 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"
+                    className="h-8 w-8 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"
                     title="Remover vendedor"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 )}
               </div>
@@ -653,7 +657,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
             type="button"
             variant="outline"
             onClick={handleAddSeller}
-            className="w-full sm:w-auto mt-2 border-dashed border-slate-300 text-slate-700 hover:text-[#6D49F2] hover:border-[#6D49F2] hover:bg-purple-50/50 font-bold text-xs h-10 rounded-xl flex items-center justify-center gap-2 transition-all"
+            className="w-full sm:w-auto mt-2 border-dashed border-slate-200 text-slate-700 hover:text-[#6D49F2] hover:border-[#6D49F2] hover:bg-purple-50/50 font-bold text-xs h-8 rounded-xl flex items-center justify-center gap-2 transition-all"
           >
             <Plus className="w-4 h-4 text-[#6D49F2]" />
             <span>+ Add vendedor</span>
