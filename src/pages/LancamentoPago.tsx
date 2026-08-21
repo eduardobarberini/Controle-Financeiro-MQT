@@ -653,8 +653,8 @@ export default function LancamentoPago() {
 
   // Computed per-day metrics and consolidated totals
   const dailyCalculated = useMemo(() => {
-    const ticketTicket = Number(form.ticket_ticket) || 0
-    const bumpTicket = Number(form.bump_ticket) || 0
+    const ticketTicket = parsePtBrNumber(form.ticket_ticket)
+    const bumpTicket = parsePtBrNumber(form.bump_ticket)
 
     let totalInvestment = 0
     let totalTicketSales = 0
@@ -662,9 +662,9 @@ export default function LancamentoPago() {
     let activeDaysCount = 0
 
     const days = form.daily_data.map((day) => {
-      const inv = Number(day.investment) || 0
-      const ticketSales = Number(day.ticket_sales) || 0
-      const bumpSales = Number(day.bump_sales) || 0
+      const inv = parsePtBrNumber(day.investment)
+      const ticketSales = parsePtBrNumber(day.ticket_sales)
+      const bumpSales = parsePtBrNumber(day.bump_sales)
 
       const hasData = day.investment !== '' || day.ticket_sales !== '' || day.bump_sales !== ''
       if (hasData) {
@@ -712,9 +712,9 @@ export default function LancamentoPago() {
 
   // Upsell Platform Calculations
   const upsellCalc = useMemo(() => {
-    const ticket = Number(form.upsell_platform?.ticket) || 0
-    const refunds = Number(form.upsell_platform?.refunds) || 0
-    const inadimplenciaRate = Number(form.upsell_platform?.inadimplencia_rate) || 0
+    const ticket = parsePtBrNumber(form.upsell_platform?.ticket)
+    const refunds = parsePtBrNumber(form.upsell_platform?.refunds)
+    const inadimplenciaRate = parsePtBrNumber(form.upsell_platform?.inadimplencia_rate)
 
     const dailySales = Array.isArray(form.upsell_platform?.daily_sales)
       ? form.upsell_platform.daily_sales
@@ -728,10 +728,10 @@ export default function LancamentoPago() {
     const ingressosDays = form.daily_data || []
 
     const dailyCalculatedTotals = dailySales.map((day, idx) => {
-      const cardPixSales = Number(day.card_pix_sales) || 0
-      const cardPixRevenue = Number(day.card_pix_revenue) || 0
-      const boletoSales = Number(day.boleto_sales) || 0
-      const boletoRevenue = Number(day.boleto_revenue) || 0
+      const cardPixSales = parsePtBrNumber(day.card_pix_sales)
+      const cardPixRevenue = parsePtBrNumber(day.card_pix_revenue)
+      const boletoSales = parsePtBrNumber(day.boleto_sales)
+      const boletoRevenue = parsePtBrNumber(day.boleto_revenue)
 
       const totalSales = cardPixSales + boletoSales
       const totalRevenue = cardPixRevenue + boletoRevenue
@@ -742,25 +742,18 @@ export default function LancamentoPago() {
       calculatedBoletoRevenue += boletoRevenue
 
       // Corresponding ingressos sold for calculating % Conversão Desafio / Plataforma per column
-      // Note: "Primeira Hora" column uses total ingressos sold or sum/matching day if applicable,
-      // but for daily columns (or Primeira Hora) we map appropriately.
-      // If day is Primeira Hora, ingressos reference can be total ingressos sold or matching day 0.
-      // Standard practice: if day.isPrimeiraHora, compare with total ingressos sold (or matching day ticket sales if available).
-      // Let's get ingressos for that specific index or total.
       let dayIngressos = 0
       if (day.isPrimeiraHora) {
         // Primeira hora compares against total ticket sales or day 0
         dayIngressos = dailyCalculated?.totalTicketSales || 0
       } else {
         // Map normal days (offset by 1 if Primeira Hora is index 0, or find matching day label / index)
-        // If daily_data has entries, map by index or label.
-        // Let's find matching day in daily_data by dayLabel or index fallback:
         const normalDays = dailySales.filter((d) => !d.isPrimeiraHora)
         const normalIdx = normalDays.indexOf(day)
         if (normalIdx >= 0 && normalIdx < ingressosDays.length) {
-          dayIngressos = Number(ingressosDays[normalIdx]?.ticket_sales) || 0
+          dayIngressos = parsePtBrNumber(ingressosDays[normalIdx]?.ticket_sales)
         } else {
-          dayIngressos = Number(ingressosDays[idx]?.ticket_sales) || 0
+          dayIngressos = parsePtBrNumber(ingressosDays[idx]?.ticket_sales)
         }
       }
 
@@ -785,7 +778,7 @@ export default function LancamentoPago() {
     const totalSales =
       calculatedTotalSales > 0
         ? calculatedTotalSales
-        : Number(form.upsell_platform?.total_sales) || 0
+        : parsePtBrNumber(form.upsell_platform?.total_sales)
 
     const totalTicketSales = dailyCalculated?.totalTicketSales || 0
 
@@ -821,11 +814,11 @@ export default function LancamentoPago() {
     const bumpSales = dailyCalculated.totalBumpSales
     const captureDays = dailyCalculated.activeDaysCount
 
-    const ticketTicket = Number(form.ticket_ticket) || 0
-    const ticketRefunds = Number(form.ticket_refunds) || 0
+    const ticketTicket = parsePtBrNumber(form.ticket_ticket)
+    const ticketRefunds = parsePtBrNumber(form.ticket_refunds)
 
-    const bumpTicket = Number(form.bump_ticket) || 0
-    const bumpRefunds = Number(form.bump_refunds) || 0
+    const bumpTicket = parsePtBrNumber(form.bump_ticket)
+    const bumpRefunds = parsePtBrNumber(form.bump_refunds)
 
     const dailyTraffic = captureDays > 0 ? trafficInvestment / captureDays : 0
     const cac = totalTicketSales > 0 ? trafficInvestment / totalTicketSales : 0
@@ -898,20 +891,20 @@ export default function LancamentoPago() {
       const payload: PaidLaunchInput = {
         capture_days: calc.captureDays,
         batch: form.batch.trim(),
-        ticket_ticket: Number(form.ticket_ticket) || 0,
+        ticket_ticket: parsePtBrNumber(form.ticket_ticket),
         traffic_investment: calc.trafficInvestment,
         total_ticket_sales: calc.totalTicketSales,
-        ticket_refunds: Number(form.ticket_refunds) || 0,
-        bump_ticket: Number(form.bump_ticket) || 0,
+        ticket_refunds: parsePtBrNumber(form.ticket_refunds),
+        bump_ticket: parsePtBrNumber(form.bump_ticket),
         bump_sales: calc.bumpSales,
-        bump_refunds: Number(form.bump_refunds) || 0,
-        api_official_cost: Number(form.api_official_cost) || 0,
-        commercial_commission: Number(form.commercial_commission) || 0,
-        revenue_tax_rate: Number(form.revenue_tax_rate) || 0,
-        traffic_tax_rate: Number(form.traffic_tax_rate) || 0,
+        bump_refunds: parsePtBrNumber(form.bump_refunds),
+        api_official_cost: parsePtBrNumber(form.api_official_cost),
+        commercial_commission: parsePtBrNumber(form.commercial_commission),
+        revenue_tax_rate: parsePtBrNumber(form.revenue_tax_rate),
+        traffic_tax_rate: parsePtBrNumber(form.traffic_tax_rate),
         students_in_challenge:
           form.students_in_challenge !== ''
-            ? Number(form.students_in_challenge) || form.students_in_challenge
+            ? parsePtBrNumber(form.students_in_challenge) || form.students_in_challenge
             : '',
         daily_data: form.daily_data,
         class_sessions: form.class_sessions,
@@ -1446,9 +1439,9 @@ export default function LancamentoPago() {
                           {dailyCalculated.days.map((dayCalc, idx) => (
                             <TableCell
                               key={idx}
-                              className="py-2.5 px-3 border-l border-slate-200 text-center tabular-nums text-slate-900 text-xs"
+                              className="py-2.5 px-3 border-l border-slate-200 text-center tabular-nums text-slate-900 font-bold text-xs"
                             >
-                              {formatCalculatedNumber(dayCalc.averageTicket, 1)}
+                              {formatCalculatedNumber(dayCalc.averageTicket, 2)}
                             </TableCell>
                           ))}
                         </TableRow>
@@ -1461,9 +1454,9 @@ export default function LancamentoPago() {
                           {dailyCalculated.days.map((dayCalc, idx) => (
                             <TableCell
                               key={idx}
-                              className="py-2.5 px-3 border-l border-slate-200 text-center tabular-nums text-slate-900 text-xs"
+                              className="py-2.5 px-3 border-l border-slate-200 text-center tabular-nums text-slate-900 font-bold text-xs"
                             >
-                              {formatCalculatedNumber(dayCalc.cac, 1)}
+                              {formatCalculatedNumber(dayCalc.cac, 2)}
                             </TableCell>
                           ))}
                         </TableRow>

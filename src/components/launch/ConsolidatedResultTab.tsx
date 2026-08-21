@@ -402,7 +402,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                       ROAS (Média)
                     </TableCell>
                     <TableCell className="py-2.5 px-3 text-right tabular-nums font-extrabold text-amber-950 border-l border-amber-200 text-xs">
-                      {formatCalculatedNumber(calc.roasMedia, 1)}
+                      {formatCalculatedNumber(calc.roasMedia, 2)}
                     </TableCell>
                   </TableRow>
 
