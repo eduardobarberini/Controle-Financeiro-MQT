@@ -727,37 +727,31 @@ export default function LancamentoPago() {
 
     const ingressosDays = form.daily_data || []
 
-    const dailyCalculatedTotals = dailySales.map((day, idx) => {
-      const cardPixSales = parsePtBrNumber(day.card_pix_sales)
-      const cardPixRevenue = parsePtBrNumber(day.card_pix_revenue)
-      const boletoSales = parsePtBrNumber(day.boleto_sales)
-      const boletoRevenue = parsePtBrNumber(day.boleto_revenue)
+    const totalTicketSales = dailyCalculated?.totalTicketSales || 0
 
+    const dailyCalculatedTotals = dailySales.map((day) => {
+      const cardPixSales = parsePtBrNumber(day.card_pix_sales)
+      const boletoSales = parsePtBrNumber(day.boleto_sales)
+
+      // 1. Faturamento Vendas Cartão / PIX = Vendas Cartão / PIX * ticket plataforma
+      const cardPixRevenue = cardPixSales * ticket
+
+      // 2. Faturamento Boleto Parcelado = (Vendas Boleto Parcelado * ticket plataforma) * (1 - Taxa inadimplência boleto % / 100)
+      const boletoRevenue = boletoSales * ticket * (1 - inadimplenciaRate / 100)
+
+      // Vendas Totais (diário)
       const totalSales = cardPixSales + boletoSales
+
+      // 4. Faturamento Total (diário) = Faturamento Cartão / PIX (diário) + Faturamento Boleto Parcelado (diário)
       const totalRevenue = cardPixRevenue + boletoRevenue
+
+      // 3. % Conversão Desafio / Plataforma = vendas totais plataforma (diário) / total de ingressos vendidos (da aba Venda de Ingressos)
+      const conversionRate = totalTicketSales > 0 ? totalSales / totalTicketSales : 0
 
       calculatedCardPixSales += cardPixSales
       calculatedCardPixRevenue += cardPixRevenue
       calculatedBoletoSales += boletoSales
       calculatedBoletoRevenue += boletoRevenue
-
-      // Corresponding ingressos sold for calculating % Conversão Desafio / Plataforma per column
-      let dayIngressos = 0
-      if (day.isPrimeiraHora) {
-        // Primeira hora compares against total ticket sales or day 0
-        dayIngressos = dailyCalculated?.totalTicketSales || 0
-      } else {
-        // Map normal days (offset by 1 if Primeira Hora is index 0, or find matching day label / index)
-        const normalDays = dailySales.filter((d) => !d.isPrimeiraHora)
-        const normalIdx = normalDays.indexOf(day)
-        if (normalIdx >= 0 && normalIdx < ingressosDays.length) {
-          dayIngressos = parsePtBrNumber(ingressosDays[normalIdx]?.ticket_sales)
-        } else {
-          dayIngressos = parsePtBrNumber(ingressosDays[idx]?.ticket_sales)
-        }
-      }
-
-      const conversionRate = dayIngressos > 0 ? totalSales / dayIngressos : 0
 
       return {
         cardPixSales,
@@ -767,7 +761,7 @@ export default function LancamentoPago() {
         totalSales,
         totalRevenue,
         conversionRate,
-        dayIngressos,
+        dayIngressos: totalTicketSales,
       }
     })
 
@@ -780,18 +774,12 @@ export default function LancamentoPago() {
         ? calculatedTotalSales
         : parsePtBrNumber(form.upsell_platform?.total_sales)
 
-    const totalTicketSales = dailyCalculated?.totalTicketSales || 0
-
     const conversionRate = totalTicketSales > 0 ? totalSales / totalTicketSales : 0
     const boletoRate = totalSales > 0 ? calculatedBoletoSales / totalSales : 0
     const refundRate = totalSales > 0 ? refunds / totalSales : 0
 
-    // Platform revenue is total daily revenues (or calculated with ticket & inadimplencia if daily revenue is zero)
-    const platformRevenue =
-      sumDailyTotalRevenue > 0
-        ? sumDailyTotalRevenue
-        : calculatedCardPixSales * ticket +
-          calculatedBoletoSales * ticket * (1 - inadimplenciaRate / 100)
+    // Platform revenue is total daily revenues (Cartão/PIX + Boleto Parcelado)
+    const platformRevenue = sumDailyTotalRevenue
 
     return {
       conversionRate,
