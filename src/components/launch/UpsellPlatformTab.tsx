@@ -77,7 +77,7 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Upper Header / KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         <KpiCard
           title="Vendas Totais"
           value={upsellCalc.calculatedTotalSales}
@@ -94,6 +94,14 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
           icon={Percent}
           subtext="Vendas plataforma / Vendas de ingressos"
           iconBgColor="bg-slate-100 text-[#FF2AFF] border-slate-200"
+        />
+        <KpiCard
+          title="Faturamento Plataforma"
+          value={upsellCalc.platformRevenue}
+          formatType="currency"
+          icon={DollarSign}
+          subtext="Receita total gerada na plataforma"
+          iconBgColor="bg-slate-100 text-[#6D49F2] border-slate-200"
         />
       </div>
 

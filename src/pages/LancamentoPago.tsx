@@ -864,7 +864,7 @@ export default function LancamentoPago() {
       roasGeral: calc.overallRoas,
       saldoCaptacao: calc.captureBalance,
       totalIngressos: calc.totalTicketSales,
-      conversaoBump: calc.bumpConversion * 100,
+      conversaoBump: calc.bumpConversion,
     }
   }, [calc])
 
