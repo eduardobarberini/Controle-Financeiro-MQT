@@ -227,6 +227,7 @@ interface FormState {
   revenue_tax_rate: string | number
   traffic_tax_rate: string | number
   students_in_challenge: string | number
+  debriefing: string
   daily_data: DailyEntry[]
   class_sessions: ClassSessions
   commercial_sales: CommercialSales
@@ -255,6 +256,7 @@ const DEFAULT_FORM: FormState = {
   revenue_tax_rate: 9.0,
   traffic_tax_rate: 12.15,
   students_in_challenge: '',
+  debriefing: '',
   daily_data: DEFAULT_DAYS,
   class_sessions: DEFAULT_CLASS_SESSIONS,
   commercial_sales: [
@@ -347,6 +349,7 @@ export default function LancamentoPago() {
           revenue_tax_rate: target.revenue_tax_rate ?? 9.0,
           traffic_tax_rate: target.traffic_tax_rate ?? 12.15,
           students_in_challenge: target.students_in_challenge ?? '',
+          debriefing: target.debriefing ?? '',
           daily_data: dailyData,
           class_sessions:
             Array.isArray(target.class_sessions) && target.class_sessions.length > 0
@@ -456,6 +459,7 @@ export default function LancamentoPago() {
           revenue_tax_rate: found.revenue_tax_rate ?? 9.0,
           traffic_tax_rate: found.traffic_tax_rate ?? 12.15,
           students_in_challenge: found.students_in_challenge ?? '',
+          debriefing: found.debriefing ?? '',
           daily_data: dailyData,
           class_sessions:
             Array.isArray(found.class_sessions) && found.class_sessions.length > 0
@@ -561,6 +565,7 @@ export default function LancamentoPago() {
             traffic_tax_rate: matchingRecord.traffic_tax_rate ?? 12.15,
             daily_data: dailyData,
             students_in_challenge: matchingRecord.students_in_challenge ?? '',
+            debriefing: matchingRecord.debriefing ?? '',
             class_sessions:
               Array.isArray(matchingRecord.class_sessions) &&
               matchingRecord.class_sessions.length > 0
@@ -898,6 +903,7 @@ export default function LancamentoPago() {
           form.students_in_challenge !== ''
             ? parsePtBrNumber(form.students_in_challenge) || form.students_in_challenge
             : '',
+        debriefing: form.debriefing || '',
         daily_data: form.daily_data,
         class_sessions: form.class_sessions,
         commercial_sales: form.commercial_sales,
@@ -1051,6 +1057,7 @@ export default function LancamentoPago() {
               ingressosRevenue={calc.ticketRevenue}
               orderBumpRevenue={calc.bumpRevenue}
               upsellPlatformRevenue={upsellCalc.platformRevenue}
+              debriefing={form.debriefing}
               onChangeField={(field, val) => handleChange(field, val)}
               onSave={handleSave}
               saving={saving}

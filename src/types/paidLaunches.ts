@@ -75,6 +75,7 @@ export interface PaidLaunchRecord {
   revenue_tax_rate?: number
   traffic_tax_rate?: number
   students_in_challenge?: number | string
+  debriefing?: string
   daily_data?: DailyData
   class_sessions?: ClassSessions
   commercial_sales?: CommercialSales
@@ -98,6 +99,7 @@ export interface PaidLaunchInput {
   revenue_tax_rate?: number
   traffic_tax_rate?: number
   students_in_challenge?: number | string
+  debriefing?: string
   daily_data?: DailyData
   class_sessions?: ClassSessions
   commercial_sales?: CommercialSales

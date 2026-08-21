@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-21T13:44:49.150Z",
+  "generatedAt": "2026-08-21T14:24:43.637Z",
   "collections": [
     {
       "name": "users",
@@ -519,6 +519,12 @@
         {
           "name": "students_in_challenge",
           "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "debriefing",
+          "type": "text",
           "required": false,
           "system": false
         }

@@ -8,10 +8,12 @@ import {
   Loader2,
   Calculator,
   Lock,
+  FileText,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { KpiCard } from '@/components/dashboard/KpiCard'
 import {
   Table,
@@ -59,8 +61,14 @@ interface ConsolidatedResultTabProps {
   ingressosRevenue: number
   orderBumpRevenue: number
   upsellPlatformRevenue: number
+  debriefing?: string
   onChangeField: (
-    field: 'api_official_cost' | 'commercial_commission' | 'revenue_tax_rate' | 'traffic_tax_rate',
+    field:
+      | 'api_official_cost'
+      | 'commercial_commission'
+      | 'revenue_tax_rate'
+      | 'traffic_tax_rate'
+      | 'debriefing',
     value: string | number,
   ) => void
   onSave: () => Promise<void>
@@ -78,6 +86,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
   ingressosRevenue,
   orderBumpRevenue,
   upsellPlatformRevenue,
+  debriefing = '',
   onChangeField,
   onSave,
   saving,
@@ -588,6 +597,28 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
           </Card>
         </div>
       </div>
+
+      {/* 3. Debriefing Section */}
+      <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
+        <CardHeader className="p-5 pb-3 border-b border-slate-100">
+          <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <FileText className="w-4 h-4 text-[#6D49F2]" />
+            Debriefing
+          </CardTitle>
+          <CardDescription className="text-xs text-slate-500 mt-0.5">
+            Espaço para descrever o lançamento e observações importantes
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-5">
+          <Textarea
+            value={debriefing || ''}
+            onChange={(e) => onChangeField('debriefing', e.target.value)}
+            placeholder="Descreva aqui o resumo do lançamento, aprendizados, pontos positivos, gargalos, testes de criativos e ofertas, observações do time comercial e planos para a próxima turma..."
+            rows={8}
+            className="min-h-[160px] text-sm text-slate-800 bg-white border-slate-200 focus-visible:ring-[#6D49F2] rounded-xl resize-y leading-relaxed"
+          />
+        </CardContent>
+      </Card>
 
       {/* 4. Bottom Action Bar ("Salvar Lançamento" Button) */}
       <Card className="bg-white border-slate-200/90 shadow-sm rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
