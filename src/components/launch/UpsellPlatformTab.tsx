@@ -318,7 +318,7 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                       return (
                         <TableHead
                           key={idx}
-                          className="py-2.5 px-3 text-center font-bold text-slate-800 bg-slate-100/80 border-r border-slate-200 min-w-[120px] text-xs"
+                          className="py-2.5 px-3 text-center font-bold text-slate-900 bg-slate-100/80 min-w-[120px] text-xs border-x-2 border-t-2 border-black"
                         >
                           Primeira Hora
                         </TableHead>
@@ -359,45 +359,52 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                   <TableCell className="py-2.5 px-3 font-medium text-xs text-slate-900 border-r border-slate-200">
                     Vendas Cartão / PIX
                   </TableCell>
-                  {dailySalesList.map((day, idx) => (
-                    <TableCell
-                      key={idx}
-                      className="py-2 px-2.5 border-r border-slate-200 text-center text-xs"
-                    >
-                      <Input
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="0"
-                        value={
-                          day.card_pix_sales === '' ||
-                          day.card_pix_sales === undefined ||
-                          day.card_pix_sales === null
-                            ? ''
-                            : String(day.card_pix_sales)
-                        }
-                        onChange={(e) =>
-                          onChangeDailyField(
-                            idx,
-                            'card_pix_sales',
-                            e.target.value.replace(/[^0-9.,]/g, ''),
-                          )
-                        }
-                        onBlur={() => {
-                          if (
-                            day.card_pix_sales !== '' &&
-                            day.card_pix_sales !== undefined &&
-                            day.card_pix_sales !== null
-                          ) {
-                            const parsed = parsePtBrNumber(day.card_pix_sales)
-                            if (parsed > 0) {
-                              onChangeDailyField(idx, 'card_pix_sales', formatNumber(parsed, 0))
-                            }
+                  {dailySalesList.map((day, idx) => {
+                    const isPrimeiraHora =
+                      day.isPrimeiraHora ||
+                      (idx === 0 && day.dayLabel?.toLowerCase().includes('primeira'))
+                    return (
+                      <TableCell
+                        key={idx}
+                        className={`py-2 px-2.5 text-center text-xs ${
+                          isPrimeiraHora ? 'border-x-2 border-black' : 'border-r border-slate-200'
+                        }`}
+                      >
+                        <Input
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="0"
+                          value={
+                            day.card_pix_sales === '' ||
+                            day.card_pix_sales === undefined ||
+                            day.card_pix_sales === null
+                              ? ''
+                              : String(day.card_pix_sales)
                           }
-                        }}
-                        className="h-8 text-center font-semibold tabular-nums text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
-                      />
-                    </TableCell>
-                  ))}
+                          onChange={(e) =>
+                            onChangeDailyField(
+                              idx,
+                              'card_pix_sales',
+                              e.target.value.replace(/[^0-9.,]/g, ''),
+                            )
+                          }
+                          onBlur={() => {
+                            if (
+                              day.card_pix_sales !== '' &&
+                              day.card_pix_sales !== undefined &&
+                              day.card_pix_sales !== null
+                            ) {
+                              const parsed = parsePtBrNumber(day.card_pix_sales)
+                              if (parsed > 0) {
+                                onChangeDailyField(idx, 'card_pix_sales', formatNumber(parsed, 0))
+                              }
+                            }
+                          }}
+                          className="h-8 text-center font-semibold tabular-nums text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                        />
+                      </TableCell>
+                    )
+                  })}
                 </TableRow>
 
                 {/* Faturamento Cartão / PIX */}
@@ -405,14 +412,22 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                   <TableCell className="py-2.5 px-3 font-medium text-xs text-slate-900 border-r border-slate-200">
                     Faturamento Cartão / PIX
                   </TableCell>
-                  {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
-                    <TableCell
-                      key={idx}
-                      className="py-2.5 px-3 border-r border-slate-200 text-center tabular-nums text-slate-900 font-semibold text-xs"
-                    >
-                      {formatCurrency(calcDay.cardPixRevenue)}
-                    </TableCell>
-                  ))}
+                  {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => {
+                    const day = dailySalesList[idx]
+                    const isPrimeiraHora =
+                      day?.isPrimeiraHora ||
+                      (idx === 0 && day?.dayLabel?.toLowerCase().includes('primeira'))
+                    return (
+                      <TableCell
+                        key={idx}
+                        className={`py-2.5 px-3 text-center tabular-nums text-slate-900 font-semibold text-xs ${
+                          isPrimeiraHora ? 'border-x-2 border-black' : 'border-r border-slate-200'
+                        }`}
+                      >
+                        {formatCurrency(calcDay.cardPixRevenue)}
+                      </TableCell>
+                    )
+                  })}
                 </TableRow>
 
                 {/* Vendas Boleto Parcelado */}
@@ -420,45 +435,52 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                   <TableCell className="py-2.5 px-3 font-medium text-xs text-slate-900 border-r border-slate-200">
                     Vendas Boleto Parcelado
                   </TableCell>
-                  {dailySalesList.map((day, idx) => (
-                    <TableCell
-                      key={idx}
-                      className="py-2 px-2.5 border-r border-slate-200 text-center text-xs"
-                    >
-                      <Input
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="0"
-                        value={
-                          day.boleto_sales === '' ||
-                          day.boleto_sales === undefined ||
-                          day.boleto_sales === null
-                            ? ''
-                            : String(day.boleto_sales)
-                        }
-                        onChange={(e) =>
-                          onChangeDailyField(
-                            idx,
-                            'boleto_sales',
-                            e.target.value.replace(/[^0-9.,]/g, ''),
-                          )
-                        }
-                        onBlur={() => {
-                          if (
-                            day.boleto_sales !== '' &&
-                            day.boleto_sales !== undefined &&
-                            day.boleto_sales !== null
-                          ) {
-                            const parsed = parsePtBrNumber(day.boleto_sales)
-                            if (parsed > 0) {
-                              onChangeDailyField(idx, 'boleto_sales', formatNumber(parsed, 0))
-                            }
+                  {dailySalesList.map((day, idx) => {
+                    const isPrimeiraHora =
+                      day.isPrimeiraHora ||
+                      (idx === 0 && day.dayLabel?.toLowerCase().includes('primeira'))
+                    return (
+                      <TableCell
+                        key={idx}
+                        className={`py-2 px-2.5 text-center text-xs ${
+                          isPrimeiraHora ? 'border-x-2 border-black' : 'border-r border-slate-200'
+                        }`}
+                      >
+                        <Input
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="0"
+                          value={
+                            day.boleto_sales === '' ||
+                            day.boleto_sales === undefined ||
+                            day.boleto_sales === null
+                              ? ''
+                              : String(day.boleto_sales)
                           }
-                        }}
-                        className="h-8 text-center font-semibold tabular-nums text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
-                      />
-                    </TableCell>
-                  ))}
+                          onChange={(e) =>
+                            onChangeDailyField(
+                              idx,
+                              'boleto_sales',
+                              e.target.value.replace(/[^0-9.,]/g, ''),
+                            )
+                          }
+                          onBlur={() => {
+                            if (
+                              day.boleto_sales !== '' &&
+                              day.boleto_sales !== undefined &&
+                              day.boleto_sales !== null
+                            ) {
+                              const parsed = parsePtBrNumber(day.boleto_sales)
+                              if (parsed > 0) {
+                                onChangeDailyField(idx, 'boleto_sales', formatNumber(parsed, 0))
+                              }
+                            }
+                          }}
+                          className="h-8 text-center font-semibold tabular-nums text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
+                        />
+                      </TableCell>
+                    )
+                  })}
                 </TableRow>
 
                 {/* Faturamento Boleto Parcelado */}
@@ -466,14 +488,22 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                   <TableCell className="py-2.5 px-3 font-medium text-xs text-slate-900 border-r border-slate-200">
                     Faturamento Boleto Parcelado
                   </TableCell>
-                  {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
-                    <TableCell
-                      key={idx}
-                      className="py-2.5 px-3 border-r border-slate-200 text-center tabular-nums text-slate-900 font-semibold text-xs"
-                    >
-                      {formatCurrency(calcDay.boletoRevenue)}
-                    </TableCell>
-                  ))}
+                  {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => {
+                    const day = dailySalesList[idx]
+                    const isPrimeiraHora =
+                      day?.isPrimeiraHora ||
+                      (idx === 0 && day?.dayLabel?.toLowerCase().includes('primeira'))
+                    return (
+                      <TableCell
+                        key={idx}
+                        className={`py-2.5 px-3 text-center tabular-nums text-slate-900 font-semibold text-xs ${
+                          isPrimeiraHora ? 'border-x-2 border-black' : 'border-r border-slate-200'
+                        }`}
+                      >
+                        {formatCurrency(calcDay.boletoRevenue)}
+                      </TableCell>
+                    )
+                  })}
                 </TableRow>
 
                 {/* Vendas Totais */}
@@ -481,14 +511,22 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                   <TableCell className="py-2.5 px-3 font-bold text-slate-900 border-r border-slate-200 text-xs">
                     Vendas Totais
                   </TableCell>
-                  {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
-                    <TableCell
-                      key={idx}
-                      className="py-2.5 px-3 border-r border-slate-200 text-center tabular-nums text-slate-900 font-bold text-xs"
-                    >
-                      {calcDay.totalSales}
-                    </TableCell>
-                  ))}
+                  {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => {
+                    const day = dailySalesList[idx]
+                    const isPrimeiraHora =
+                      day?.isPrimeiraHora ||
+                      (idx === 0 && day?.dayLabel?.toLowerCase().includes('primeira'))
+                    return (
+                      <TableCell
+                        key={idx}
+                        className={`py-2.5 px-3 text-center tabular-nums text-slate-900 font-bold text-xs ${
+                          isPrimeiraHora ? 'border-x-2 border-black' : 'border-r border-slate-200'
+                        }`}
+                      >
+                        {calcDay.totalSales}
+                      </TableCell>
+                    )
+                  })}
                 </TableRow>
 
                 {/* % Conversão Desafio / Plataforma */}
@@ -496,14 +534,22 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                   <TableCell className="py-2.5 px-3 font-bold text-amber-950 border-r border-amber-200 text-xs">
                     % Conversão Desafio / Plataforma
                   </TableCell>
-                  {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
-                    <TableCell
-                      key={idx}
-                      className="py-2.5 px-3 border-r border-amber-200 text-center tabular-nums text-amber-950 font-extrabold text-xs"
-                    >
-                      {formatCalculatedPercent(calcDay.conversionRate)}
-                    </TableCell>
-                  ))}
+                  {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => {
+                    const day = dailySalesList[idx]
+                    const isPrimeiraHora =
+                      day?.isPrimeiraHora ||
+                      (idx === 0 && day?.dayLabel?.toLowerCase().includes('primeira'))
+                    return (
+                      <TableCell
+                        key={idx}
+                        className={`py-2.5 px-3 text-center tabular-nums text-amber-950 font-extrabold text-xs ${
+                          isPrimeiraHora ? 'border-x-2 border-black' : 'border-r border-amber-200'
+                        }`}
+                      >
+                        {formatCalculatedPercent(calcDay.conversionRate)}
+                      </TableCell>
+                    )
+                  })}
                 </TableRow>
 
                 {/* Faturamento Total */}
@@ -511,14 +557,24 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
                   <TableCell className="py-2.5 px-3 text-emerald-950 font-bold text-xs border-r border-emerald-200">
                     Faturamento Total
                   </TableCell>
-                  {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => (
-                    <TableCell
-                      key={idx}
-                      className="py-2.5 px-3 border-r border-emerald-200 text-center tabular-nums text-emerald-950 font-extrabold text-xs"
-                    >
-                      {formatCurrency(calcDay.totalRevenue)}
-                    </TableCell>
-                  ))}
+                  {upsellCalc.dailyCalculatedTotals.map((calcDay, idx) => {
+                    const day = dailySalesList[idx]
+                    const isPrimeiraHora =
+                      day?.isPrimeiraHora ||
+                      (idx === 0 && day?.dayLabel?.toLowerCase().includes('primeira'))
+                    return (
+                      <TableCell
+                        key={idx}
+                        className={`py-2.5 px-3 text-center tabular-nums text-emerald-950 font-extrabold text-xs ${
+                          isPrimeiraHora
+                            ? 'border-x-2 border-b-2 border-black'
+                            : 'border-r border-emerald-200'
+                        }`}
+                      >
+                        {formatCurrency(calcDay.totalRevenue)}
+                      </TableCell>
+                    )
+                  })}
                 </TableRow>
               </TableBody>
             </Table>

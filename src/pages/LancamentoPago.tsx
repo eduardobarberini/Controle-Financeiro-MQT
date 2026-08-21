@@ -729,7 +729,9 @@ export default function LancamentoPago() {
 
     const totalTicketSales = dailyCalculated?.totalTicketSales || 0
 
-    const dailyCalculatedTotals = dailySales.map((day) => {
+    const dailyCalculatedTotals = dailySales.map((day, idx) => {
+      const isPrimeiraHora =
+        day.isPrimeiraHora || (idx === 0 && day.dayLabel?.toLowerCase().includes('primeira'))
       const cardPixSales = parsePtBrNumber(day.card_pix_sales)
       const boletoSales = parsePtBrNumber(day.boleto_sales)
 
@@ -748,10 +750,13 @@ export default function LancamentoPago() {
       // 3. % Conversão Desafio / Plataforma = vendas totais plataforma (diário) / total de ingressos vendidos (da aba Venda de Ingressos)
       const conversionRate = totalTicketSales > 0 ? totalSales / totalTicketSales : 0
 
-      calculatedCardPixSales += cardPixSales
-      calculatedCardPixRevenue += cardPixRevenue
-      calculatedBoletoSales += boletoSales
-      calculatedBoletoRevenue += boletoRevenue
+      // Only accumulate regular days into consolidated totals (exclude Primeira Hora)
+      if (!isPrimeiraHora) {
+        calculatedCardPixSales += cardPixSales
+        calculatedCardPixRevenue += cardPixRevenue
+        calculatedBoletoSales += boletoSales
+        calculatedBoletoRevenue += boletoRevenue
+      }
 
       return {
         cardPixSales,
