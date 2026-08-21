@@ -103,8 +103,9 @@ export const calculateDailyDataDateLabels = (sundayDate: Date): string[] => {
 
 /**
  * Calculates date labels for the "Venda Plataforma" daily tracking table.
- * Table structure: Primeira Hora (no date or empty), Qui (-3), Sex (-2), Sáb (-1), Dom (0), Seg (+1), Ter (+2)
- * The date in batch is Dom (offset 0).
+ * Platform sales happen in the week following the launch Sunday.
+ * Table structure: Primeira Hora (no date or empty), Qui (+4), Sex (+5), Sáb (+6), Dom (+7), Seg (+8), Ter (+9)
+ * The date in batch is Sunday (launch start).
  */
 export const calculateUpsellDailyDateLabels = (sundayDate: Date): { [key: string]: string } => {
   const getOffsetDateLabel = (offset: number) => {
@@ -114,11 +115,11 @@ export const calculateUpsellDailyDateLabels = (sundayDate: Date): { [key: string
   }
 
   return {
-    Qui: getOffsetDateLabel(-3),
-    Sex: getOffsetDateLabel(-2),
-    Sáb: getOffsetDateLabel(-1),
-    Dom: getOffsetDateLabel(0),
-    Seg: getOffsetDateLabel(1),
-    Ter: getOffsetDateLabel(2),
+    Qui: getOffsetDateLabel(4),
+    Sex: getOffsetDateLabel(5),
+    Sáb: getOffsetDateLabel(6),
+    Dom: getOffsetDateLabel(7),
+    Seg: getOffsetDateLabel(8),
+    Ter: getOffsetDateLabel(9),
   }
 }

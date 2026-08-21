@@ -94,7 +94,7 @@ const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
   },
   {
     dayLabel: 'Qui',
-    dateLabel: '20/8',
+    dateLabel: '27/8',
     card_pix_sales: '',
     card_pix_revenue: '',
     boleto_sales: '',
@@ -102,7 +102,7 @@ const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
   },
   {
     dayLabel: 'Sex',
-    dateLabel: '21/8',
+    dateLabel: '28/8',
     card_pix_sales: '',
     card_pix_revenue: '',
     boleto_sales: '',
@@ -110,7 +110,7 @@ const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
   },
   {
     dayLabel: 'Sáb',
-    dateLabel: '22/8',
+    dateLabel: '29/8',
     card_pix_sales: '',
     card_pix_revenue: '',
     boleto_sales: '',
@@ -118,7 +118,7 @@ const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
   },
   {
     dayLabel: 'Dom',
-    dateLabel: '23/8',
+    dateLabel: '30/8',
     card_pix_sales: '',
     card_pix_revenue: '',
     boleto_sales: '',
@@ -126,7 +126,7 @@ const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
   },
   {
     dayLabel: 'Seg',
-    dateLabel: '24/8',
+    dateLabel: '31/8',
     card_pix_sales: '',
     card_pix_revenue: '',
     boleto_sales: '',
@@ -134,7 +134,7 @@ const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
   },
   {
     dayLabel: 'Ter',
-    dateLabel: '25/8',
+    dateLabel: '1/9',
     card_pix_sales: '',
     card_pix_revenue: '',
     boleto_sales: '',
