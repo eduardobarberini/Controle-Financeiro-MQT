@@ -88,7 +88,7 @@ export const UpsellPlatformTab: React.FC<UpsellPlatformTabProps> = ({
         />
         <KpiCard
           title="% Conversão Desafio / Plataforma"
-          value={upsellCalc.conversionRate}
+          value={upsellCalc.conversionRate * 100}
           formatType="percent"
           decimals={2}
           icon={Percent}

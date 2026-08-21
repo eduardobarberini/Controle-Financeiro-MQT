@@ -178,11 +178,10 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                 : 'bg-rose-50 text-rose-600 border-rose-200'
             }
           />
-
           <KpiCard
             size="large"
             title="Margem de Lucro"
-            value={calc.margemLucroPercent}
+            value={calc.margemLucroPercent * 100}
             formatType="percent"
             decimals={1}
             icon={Percent}
@@ -192,7 +191,7 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                 ? 'bg-slate-100 text-[#6D49F2] border-slate-200'
                 : 'bg-rose-50 text-rose-700 border-rose-200'
             }
-          />
+          />{' '}
         </div>
 
         {/* Bottom smaller cards (secondary KPIs): Investimento Total, Faturamento Total, ROAS */}

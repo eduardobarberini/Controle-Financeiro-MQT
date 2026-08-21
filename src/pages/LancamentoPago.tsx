@@ -864,10 +864,9 @@ export default function LancamentoPago() {
       roasGeral: calc.overallRoas,
       saldoCaptacao: calc.captureBalance,
       totalIngressos: calc.totalTicketSales,
-      conversaoBump: calc.bumpConversion,
+      conversaoBump: calc.bumpConversion * 100,
     }
   }, [calc])
-
   // Save current launch
   const handleSave = async () => {
     if (!form.batch.trim()) {

@@ -273,7 +273,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
 
         <KpiCard
           title="% Vendas Vindas Comercial"
-          value={sellerCalculations.percentVendasComercial}
+          value={sellerCalculations.percentVendasComercial * 100}
           formatType="percent"
           decimals={2}
           icon={Percent}
