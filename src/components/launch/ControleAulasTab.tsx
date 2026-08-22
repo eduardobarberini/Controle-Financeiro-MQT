@@ -18,7 +18,6 @@ import { formatNumber, parsePtBrNumber } from '@/lib/financial-utils'
 interface ControleAulasTabProps {
   studentsInChallenge: number | string
   sessions: ClassSession[]
-  onChangeStudents: (val: string) => void
   onChangeSession: (index: number, field: 'live_attendees' | 'unique_viewers', val: string) => void
   onSave: () => void
   saving: boolean
@@ -27,7 +26,6 @@ interface ControleAulasTabProps {
 export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
   studentsInChallenge,
   sessions,
-  onChangeStudents,
   onChangeSession,
   onSave,
   saving,
@@ -56,37 +54,14 @@ export const ControleAulasTab: React.FC<ControleAulasTabProps> = ({
       </CardHeader>
 
       <CardContent className="p-5 sm:p-6 space-y-6">
-        {/* Top: Alunas no Desafio */}
-        <div className="flex items-center gap-4 bg-slate-50/80 p-3 sm:p-4 rounded-xl border border-slate-200/80">
+        {/* Top: Alunas no Desafio (preenchido automaticamente pela aba Venda de Ingressos) */}
+        <div className="flex items-center gap-3 bg-slate-50/80 p-3 sm:p-4 rounded-xl border border-slate-200/80">
           <label className="text-xs font-semibold text-slate-800 whitespace-nowrap">
             Alunas no Desafio
           </label>
-          <Input
-            type="text"
-            inputMode="numeric"
-            placeholder="0"
-            value={
-              studentsInChallenge === '' ||
-              studentsInChallenge === undefined ||
-              studentsInChallenge === null
-                ? ''
-                : String(studentsInChallenge)
-            }
-            onChange={(e) => onChangeStudents(e.target.value.replace(/[^0-9.,]/g, ''))}
-            onBlur={() => {
-              if (
-                studentsInChallenge !== '' &&
-                studentsInChallenge !== undefined &&
-                studentsInChallenge !== null
-              ) {
-                const parsed = parsePtBrNumber(studentsInChallenge)
-                if (parsed > 0) {
-                  onChangeStudents(formatNumber(parsed, 0))
-                }
-              }
-            }}
-            className="w-36 h-8 text-xs font-semibold tabular-nums text-slate-900 bg-white border-slate-200 focus-visible:ring-[#6D49F2] rounded-lg shadow-2xs"
-          />
+          <span className="inline-flex items-center px-3 h-8 text-xs font-bold tabular-nums text-[#6D49F2] bg-[#6D49F2]/10 border border-[#6D49F2]/20 rounded-lg">
+            {formatNumber(studentsNum, 0)}
+          </span>
         </div>
 
         {/* Chart: Espectadores Únicos por Aula */}

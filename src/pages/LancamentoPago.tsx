@@ -1891,13 +1891,12 @@ export default function LancamentoPago() {
           {/* ============ TAB 3: CONTROLE AULAS ============ */}
           <TabsContent value="aulas" className="mt-6 focus:outline-none">
             <ControleAulasTab
-              studentsInChallenge={form.students_in_challenge}
+              studentsInChallenge={dailyCalculated.totalTicketSales}
               sessions={
                 Array.isArray(form.class_sessions) && form.class_sessions.length > 0
                   ? form.class_sessions
                   : DEFAULT_CLASS_SESSIONS
               }
-              onChangeStudents={(val) => handleChange('students_in_challenge', val)}
               onChangeSession={handleSessionChange}
               onSave={handleSave}
               saving={saving}
