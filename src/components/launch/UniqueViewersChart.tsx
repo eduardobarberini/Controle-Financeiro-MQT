@@ -78,11 +78,11 @@ export const UniqueViewersChart: React.FC<UniqueViewersChartProps> = ({
                 dataKey="aula"
                 tickLine={false}
                 axisLine={{ stroke: '#e2e8f0' }}
-                tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }}
-                // The class labels are long; allow them to angle and fit.
-                angle={-12}
-                textAnchor="end"
-                height={50}
+                tick={{ fill: '#64748b', fontSize: 9, fontWeight: 600 }}
+                // Horizontal labels so all class names fit without tilting.
+                angle={0}
+                textAnchor="middle"
+                height={40}
                 interval={0}
               />
               {/* Left axis: integer unique viewer counts */}

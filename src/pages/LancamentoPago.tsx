@@ -64,13 +64,47 @@ import { formatNumber, parsePtBrNumber } from '@/lib/financial-utils'
 
 const DEFAULT_CLASS_SESSIONS: ClassSession[] = [
   { label: 'Aula de Boas Vindas', live_attendees: '', unique_viewers: '' },
-  { label: 'Treino 1', live_attendees: '', unique_viewers: '' },
   { label: 'Encontro Com a Nutri', live_attendees: '', unique_viewers: '' },
+  { label: 'Treino 1', live_attendees: '', unique_viewers: '' },
   { label: 'Treino 2', live_attendees: '', unique_viewers: '' },
   { label: 'Treino 3', live_attendees: '', unique_viewers: '' },
   { label: 'Treino 4', live_attendees: '', unique_viewers: '' },
   { label: 'Treino 5', live_attendees: '', unique_viewers: '' },
 ]
+
+/**
+ * Canonical display order for class sessions in the "Controle Aulas" tab,
+ * matched case/accent/space-insensitively against each session's label.
+ * Labels not found here keep their relative order and sort to the end.
+ */
+const CANONICAL_SESSION_ORDER = [
+  'aula de boas vindas',
+  'encontro com a nutri',
+  'treino 1',
+  'treino 2',
+  'treino 3',
+  'treino 4',
+  'treino 5',
+]
+
+const normalizeSessionLabel = (label: string): string =>
+  (label || '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' ')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+
+const reorderClassSessions = (sessions: ClassSession[]): ClassSession[] => {
+  if (!Array.isArray(sessions) || sessions.length === 0) return sessions
+  return [...sessions].sort((a, b) => {
+    const ia = CANONICAL_SESSION_ORDER.indexOf(normalizeSessionLabel(a.label))
+    const ib = CANONICAL_SESSION_ORDER.indexOf(normalizeSessionLabel(b.label))
+    const orderA = ia === -1 ? Number.MAX_SAFE_INTEGER : ia
+    const orderB = ib === -1 ? Number.MAX_SAFE_INTEGER : ib
+    return orderA - orderB
+  })
+}
 
 const DEFAULT_DAYS: DailyEntry[] = [
   { dayLabel: 'Seg', dateLabel: '17/8', investment: 18201, ticket_sales: 394, bump_sales: 116 },
@@ -351,10 +385,11 @@ export default function LancamentoPago() {
           students_in_challenge: target.students_in_challenge ?? '',
           debriefing: target.debriefing ?? '',
           daily_data: dailyData,
-          class_sessions:
+          class_sessions: reorderClassSessions(
             Array.isArray(target.class_sessions) && target.class_sessions.length > 0
               ? target.class_sessions
               : DEFAULT_CLASS_SESSIONS,
+          ),
           commercial_sales:
             Array.isArray(target.commercial_sales) && target.commercial_sales.length > 0
               ? target.commercial_sales
@@ -461,10 +496,11 @@ export default function LancamentoPago() {
           students_in_challenge: found.students_in_challenge ?? '',
           debriefing: found.debriefing ?? '',
           daily_data: dailyData,
-          class_sessions:
+          class_sessions: reorderClassSessions(
             Array.isArray(found.class_sessions) && found.class_sessions.length > 0
               ? found.class_sessions
               : DEFAULT_CLASS_SESSIONS,
+          ),
           commercial_sales:
             Array.isArray(found.commercial_sales) && found.commercial_sales.length > 0
               ? found.commercial_sales
@@ -566,11 +602,12 @@ export default function LancamentoPago() {
             daily_data: dailyData,
             students_in_challenge: matchingRecord.students_in_challenge ?? '',
             debriefing: matchingRecord.debriefing ?? '',
-            class_sessions:
+            class_sessions: reorderClassSessions(
               Array.isArray(matchingRecord.class_sessions) &&
-              matchingRecord.class_sessions.length > 0
+                matchingRecord.class_sessions.length > 0
                 ? matchingRecord.class_sessions
                 : DEFAULT_CLASS_SESSIONS,
+            ),
             commercial_sales:
               Array.isArray(matchingRecord.commercial_sales) &&
               matchingRecord.commercial_sales.length > 0
