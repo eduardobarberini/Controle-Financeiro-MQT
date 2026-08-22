@@ -1948,7 +1948,7 @@ export default function LancamentoPago() {
                   ? form.commercial_sales
                   : DEFAULT_FORM.commercial_sales
               }
-              upsellPlatformRevenue={upsellCalc.platformRevenue}
+              totalVendasPlataforma={upsellCalc.calculatedTotalSales}
               onChangeSales={(sales) => handleChange('commercial_sales', sales as any)}
               onSave={handleSave}
               saving={saving}

@@ -36,7 +36,7 @@ import { formatNumber, parsePtBrNumber } from '@/lib/financial-utils'
 
 interface VendasComercialTabProps {
   commercialSales: CommercialSales
-  upsellPlatformRevenue: number
+  totalVendasPlataforma: number
   onChangeSales: (sales: CommercialSales) => void
   onSave?: () => Promise<void>
   saving?: boolean
@@ -69,7 +69,7 @@ export const DEFAULT_COMMERCIAL_SALES: CommercialSales = [
 
 export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
   commercialSales = [],
-  upsellPlatformRevenue = 0,
+  totalVendasPlataforma = 0,
   onChangeSales,
   onSave,
   saving = false,
@@ -163,9 +163,9 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
       }
     })
 
-    // % Vendas Vindas Comercial = faturamento comercial / faturamento plataforma
+    // % Vendas Vindas Comercial = vendas (quantidade) comercial / vendas totais plataforma
     const percentVendasComercial =
-      upsellPlatformRevenue > 0 ? totalFaturamentoCommercial / upsellPlatformRevenue : 0
+      totalVendasPlataforma > 0 ? totalVendasCommercial / totalVendasPlataforma : 0
 
     return {
       totalVendasCommercial,
@@ -174,7 +174,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
       percentVendasComercial,
       sellerMetrics,
     }
-  }, [sellers, upsellPlatformRevenue])
+  }, [sellers, totalVendasPlataforma])
 
   // Handlers for modifying state
   const handleCategoryFieldChange = (
@@ -275,7 +275,7 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
           formatType="percent"
           decimals={2}
           icon={Percent}
-          subtext="Faturamento Comercial / Faturamento Plataforma"
+          subtext="Vendas Comercial / Vendas Totais Plataforma"
           iconBgColor="bg-slate-100 text-[#FF2AFF] border-slate-200"
         />
       </div>
