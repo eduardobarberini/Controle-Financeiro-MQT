@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react'
 import {
   ResponsiveContainer,
-  LineChart,
+  ComposedChart,
+  Bar,
   Line,
   XAxis,
   YAxis,
@@ -11,7 +12,7 @@ import {
 } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { BarChart3 } from 'lucide-react'
-import { formatNumber } from '@/lib/financial-utils'
+import { formatNumber, parsePtBrNumber } from '@/lib/financial-utils'
 import type { ClassSession } from '@/types/paidLaunches'
 
 interface UniqueViewersChartProps {
@@ -32,7 +33,10 @@ export const UniqueViewersChart: React.FC<UniqueViewersChartProps> = ({
 
   const chartData = useMemo(() => {
     return (sessions ?? []).map((s) => {
-      const unique = Number(s.unique_viewers) || 0
+      // unique_viewers may be stored as a pt-BR formatted string (e.g. "449.496"
+      // where the dot is a thousands separator). Number() would misread that as
+      // 449.496, so parse with the pt-BR-aware parser.
+      const unique = parsePtBrNumber(s.unique_viewers)
       const pct = studentsNum > 0 ? (unique / studentsNum) * 100 : 0
       return {
         aula: s.label || '',
@@ -54,15 +58,21 @@ export const UniqueViewersChart: React.FC<UniqueViewersChartProps> = ({
           Espectadores Únicos por Aula
         </CardTitle>
         <CardDescription className="text-xs text-slate-500 mt-0.5">
-          Linha principal: espectadores únicos (valor absoluto) • Linha tracejada: % espectadores
-          únicos / alunas no desafio
+          Barras: espectadores únicos (valor absoluto) • Linha tracejada: % espectadores únicos /
+          alunas no desafio
           {!hasAnyData ? ' • Nenhum dado preenchido ainda' : ''}
         </CardDescription>
       </CardHeader>
       <CardContent className="p-5">
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 15, right: 8, left: 0, bottom: 0 }}>
+            <ComposedChart data={chartData} margin={{ top: 15, right: 8, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="uniqueViewersBarGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={PURPLE} stopOpacity={0.9} />
+                  <stop offset="100%" stopColor={PURPLE} stopOpacity={0.7} />
+                </linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis
                 dataKey="aula"
@@ -124,19 +134,18 @@ export const UniqueViewersChart: React.FC<UniqueViewersChartProps> = ({
                   value === 'unicos' ? 'Espectadores Únicos' : '% Espectadores Únicos'
                 }
               />
-              {/* Line 1: absolute unique viewers (left axis) */}
-              <Line
+              {/* Bar: absolute unique viewers (left axis) — purple with rounded top */}
+              <Bar
                 yAxisId="left"
-                type="monotone"
                 dataKey="unicos"
                 name="unicos"
-                stroke={PURPLE}
-                strokeWidth={3}
-                dot={{ r: 4, fill: PURPLE, stroke: '#FFFFFF', strokeWidth: 1.5 }}
-                activeDot={{ r: 6, fill: PURPLE, stroke: '#FFFFFF', strokeWidth: 2 }}
+                fill="url(#uniqueViewersBarGradient)"
+                fillOpacity={0.9}
+                radius={[8, 8, 0, 0]}
+                maxBarSize={48}
                 animationDuration={600}
               />
-              {/* Line 2: percentage of unique viewers vs. students (right axis) */}
+              {/* Line: percentage of unique viewers vs. students (right axis) — dashed pink */}
               <Line
                 yAxisId="right"
                 type="monotone"
@@ -149,7 +158,7 @@ export const UniqueViewersChart: React.FC<UniqueViewersChartProps> = ({
                 activeDot={{ r: 6, fill: PINK, stroke: '#FFFFFF', strokeWidth: 2 }}
                 animationDuration={600}
               />
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       </CardContent>
