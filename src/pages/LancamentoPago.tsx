@@ -15,7 +15,10 @@ import {
 } from 'lucide-react'
 import { ConsolidatedResultTab } from '@/components/launch/ConsolidatedResultTab'
 import { ControleAulasTab } from '@/components/launch/ControleAulasTab'
-import { VendasComercialTab } from '@/components/launch/VendasComercialTab'
+import {
+  VendasComercialTab,
+  calculateTotalComissaoCommercial,
+} from '@/components/launch/VendasComercialTab'
 import { UpsellPlatformTab } from '@/components/launch/UpsellPlatformTab'
 import { KpiCard } from '@/components/dashboard/KpiCard'
 import { DailySalesChart } from '@/components/dashboard/DailySalesChart'
@@ -909,6 +912,15 @@ export default function LancamentoPago() {
       conversaoBump: calc.bumpConversion * 100,
     }
   }, [calc])
+
+  // Total commercial commission derived from the "Vendas Comercial" tab
+  // (sum of all sellers' commissions). Replaces the old manual input on the
+  // "Resultado Consolidado" tab — the value is now automatic.
+  const totalComissaoComercial = useMemo(
+    () => calculateTotalComissaoCommercial(form.commercial_sales),
+    [form.commercial_sales],
+  )
+
   // Save current launch
   const handleSave = async () => {
     if (!form.batch.trim()) {
@@ -933,7 +945,7 @@ export default function LancamentoPago() {
         bump_sales: calc.bumpSales,
         bump_refunds: parsePtBrNumber(form.bump_refunds),
         api_official_cost: parsePtBrNumber(form.api_official_cost),
-        commercial_commission: parsePtBrNumber(form.commercial_commission),
+        commercial_commission: totalComissaoComercial,
         revenue_tax_rate: parsePtBrNumber(form.revenue_tax_rate),
         traffic_tax_rate: parsePtBrNumber(form.traffic_tax_rate),
         students_in_challenge:
@@ -1087,7 +1099,7 @@ export default function LancamentoPago() {
           <TabsContent value="consolidado" className="mt-6 focus:outline-none">
             <ConsolidatedResultTab
               apiOfficialCost={form.api_official_cost}
-              commercialCommission={form.commercial_commission}
+              commercialCommission={totalComissaoComercial}
               revenueTaxRate={form.revenue_tax_rate}
               trafficTaxRate={form.traffic_tax_rate}
               trafficInvestment={calc.trafficInvestment}

@@ -67,6 +67,36 @@ export const DEFAULT_COMMERCIAL_SALES: CommercialSales = [
   createDefaultSeller(1),
 ]
 
+/**
+ * Computes the total commercial commission (sum of all sellers' commissions)
+ * from a CommercialSales array. Exported so the parent page (LancamentoPago)
+ * can derive the consolidated "Comissão Comercial" value without relying on
+ * the Vendas Comercial tab being mounted (Radix Tabs unmounts inactive tabs).
+ *
+ * Each seller's commission = (Plataforma revenue + Renovação revenue) × commission_rate%.
+ */
+export const calculateTotalComissaoCommercial = (sales: CommercialSales): number => {
+  const list = Array.isArray(sales) ? sales : []
+  let total = 0
+  for (const seller of list) {
+    const commRate = Number(seller.commission_rate) || 0
+    const platCardRevenue =
+      (Number(seller.plataforma?.card_pix_sales) || 0) *
+      (Number(seller.plataforma?.card_pix_ticket) || 0)
+    const platBoletoRevenue =
+      (Number(seller.plataforma?.boleto_sales) || 0) *
+      (Number(seller.plataforma?.boleto_ticket) || 0)
+    const renoCardRevenue =
+      (Number(seller.renovacao?.card_pix_sales) || 0) *
+      (Number(seller.renovacao?.card_pix_ticket) || 0)
+    const renoBoletoRevenue =
+      (Number(seller.renovacao?.boleto_sales) || 0) * (Number(seller.renovacao?.boleto_ticket) || 0)
+    const sellerRevenue = platCardRevenue + platBoletoRevenue + renoCardRevenue + renoBoletoRevenue
+    total += sellerRevenue * (commRate / 100)
+  }
+  return total
+}
+
 export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
   commercialSales = [],
   totalVendasPlataforma = 0,

@@ -9,6 +9,7 @@ import {
   Calculator,
   Lock,
   FileText,
+  Info,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -23,7 +24,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Info } from 'lucide-react'
 import {
   formatCurrency,
   formatCalculatedCurrency,
@@ -329,47 +329,22 @@ export const ConsolidatedResultTab: React.FC<ConsolidatedResultTabProps> = ({
                     </TableCell>
                   </TableRow>
 
-                  {/* Comissão Comercial */}
+                  {/* Comissão Comercial (auto-derived from "Vendas Comercial" tab) */}
                   <TableRow className="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
                     <TableCell className="py-2 px-3 pl-6 font-medium text-xs text-slate-700 align-middle">
-                      Comissão Comercial
+                      <span className="flex items-center gap-1.5">
+                        Comissão Comercial
+                        <Lock
+                          className="w-3 h-3 text-slate-400"
+                          aria-label="Calculado automaticamente na aba Vendas Comercial"
+                        />
+                      </span>
                     </TableCell>
                     <TableCell className="py-2 px-3 text-right border-l border-slate-100">
-                      <div className="relative ml-auto max-w-[160px]">
-                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">
-                          R$
+                      <div className="ml-auto max-w-[160px]">
+                        <span className="inline-flex items-center justify-end w-full px-2.5 h-8 rounded-md bg-slate-50 border border-slate-200 font-semibold tabular-nums text-slate-900 text-xs">
+                          {formatCurrency(calc.commercialCommission)}
                         </span>
-                        <Input
-                          type="text"
-                          inputMode="decimal"
-                          placeholder="0,00"
-                          value={
-                            commercialCommission === '' ||
-                            commercialCommission === undefined ||
-                            commercialCommission === null
-                              ? ''
-                              : String(commercialCommission)
-                          }
-                          onChange={(e) =>
-                            onChangeField(
-                              'commercial_commission',
-                              e.target.value.replace(/[^0-9.,]/g, ''),
-                            )
-                          }
-                          onBlur={() => {
-                            if (
-                              commercialCommission !== '' &&
-                              commercialCommission !== undefined &&
-                              commercialCommission !== null
-                            ) {
-                              const parsed = parsePtBrNumber(commercialCommission)
-                              if (parsed > 0) {
-                                onChangeField('commercial_commission', formatNumber(parsed, 2))
-                              }
-                            }
-                          }}
-                          className="pl-8 h-8 text-right font-semibold text-slate-900 text-xs bg-white border-slate-200 focus-visible:ring-[#6D49F2] shadow-2xs"
-                        />
                       </div>
                     </TableCell>
                   </TableRow>
