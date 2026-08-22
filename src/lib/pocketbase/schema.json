@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-22T15:57:01.007Z",
+  "generatedAt": "2026-08-22T16:37:00.914Z",
   "collections": [
     {
       "name": "users",
@@ -667,6 +667,13 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "recurrence",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["pontual", "mensal", "trimestral", "semestral", "anual"]
         }
       ],
       "indexes": [

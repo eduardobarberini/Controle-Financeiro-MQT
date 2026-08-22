@@ -66,13 +66,18 @@ import {
   parsePtBrNumber,
   MONTH_NAMES_PT,
 } from '@/lib/financial-utils'
+import { getEffectiveExpensesForMonth, projectedId } from '@/lib/fixedExpensesRecurrence'
 import type {
   FixedExpenseCategoryRecord,
   FixedExpenseCategoryInput,
   FixedExpenseRecord,
   FixedExpenseInput,
   FixedExpenseStatus,
+  FixedExpenseRecurrence,
+  EffectiveExpense,
+  ProjectedExpense,
 } from '@/types/fixedExpenses'
+import { RECURRENCE_OPTIONS, isProjectedExpense } from '@/types/fixedExpenses'
 
 // ─────────────────────────────────────────────────────────── helpers ──────
 
@@ -87,9 +92,13 @@ const formatDueLabel = (day: number, month: number): string =>
 const formatCompetence = (month: number, year: number): string =>
   `${String(month).padStart(2, '0')}/${year}`
 
+/** Human pt-BR label for a recurrence value. */
+const recurrenceLabel = (rec: string | undefined): string =>
+  RECURRENCE_OPTIONS.find((o) => o.value === rec)?.label ?? 'Pontual'
+
 /** Resolve the category object from an expense (expanded or fallback). */
 const resolveCategory = (
-  exp: FixedExpenseRecord,
+  exp: { category: string; expand?: { category?: FixedExpenseCategoryRecord } },
   categories: FixedExpenseCategoryRecord[],
 ): FixedExpenseCategoryRecord | undefined => {
   const cat = exp.expand?.category
@@ -331,6 +340,7 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({
   const [dueDay, setDueDay] = useState('')
   const [month, setMonth] = useState(String(defaultMonth))
   const [year, setYear] = useState(String(defaultYear))
+  const [recurrence, setRecurrence] = useState<FixedExpenseRecurrence>('pontual')
   const [status, setStatus] = useState<FixedExpenseStatus>('pendente')
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
@@ -344,6 +354,7 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({
       setDueDay(editing?.due_day ? String(editing.due_day) : '')
       setMonth(editing ? String(editing.month) : String(defaultMonth))
       setYear(editing ? String(editing.year) : String(defaultYear))
+      setRecurrence(editing?.recurrence ?? 'pontual')
       setStatus(editing?.status ?? 'pendente')
       setNotes(editing?.notes ?? '')
       setErrors({})
@@ -378,6 +389,7 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({
         due_day: Number(dueDay),
         month: Number(month),
         year: Number(year),
+        recurrence,
         status,
         notes: notes.trim(),
       }
@@ -568,6 +580,33 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({
               {errors.year && <p className="text-[11px] text-rose-500">{errors.year}</p>}
             </div>
 
+            {/* Recorrência */}
+            <div className="space-y-2 sm:col-span-2">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                Recorrência *
+              </Label>
+              <Select
+                value={recurrence}
+                onValueChange={(v) => setRecurrence(v as FixedExpenseRecurrence)}
+              >
+                <SelectTrigger className="h-9 text-sm bg-white border-slate-200 focus:ring-[#6D49F2] rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-slate-200 rounded-xl">
+                  {RECURRENCE_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-slate-400">
+                {recurrence === 'pontual'
+                  ? 'O gasto aparece apenas no mês de competência informado.'
+                  : 'O gasto se repete automaticamente nos meses seguintes conforme a recorrência.'}
+              </p>
+            </div>
+
             {/* Status */}
             <div className="space-y-2">
               <Label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
@@ -716,11 +755,46 @@ export default function GastosFixos() {
     setEditingExp(e)
     setExpModalOpen(true)
   }
-  const handleToggleStatus = async (e: FixedExpenseRecord) => {
-    const next: FixedExpenseStatus = e.status === 'pago' ? 'pendente' : 'pago'
+  const handleToggleStatus = async (e: EffectiveExpense) => {
+    // Projected (recurring) occurrence → materialise a real "pago" record for
+    // this specific month/year. The original recurring record is left alone so
+    // it keeps generating future projections.
+    if (isProjectedExpense(e)) {
+      try {
+        await fixedExpensesService.createPaidInstance({
+          category: e.category,
+          description: e.description,
+          amount: e.amount,
+          due_day: e.due_day,
+          month: e.month,
+          year: e.year,
+          recurrence: e.recurrence,
+          notes: e.notes,
+        })
+        toast({
+          title: 'Marcado como pago',
+          description: `"${e.description}" registrado como pago em ${formatCompetence(
+            e.month,
+            e.year,
+          )}.`,
+        })
+        await loadData()
+      } catch (err) {
+        toast({
+          title: 'Erro ao atualizar status',
+          description: err instanceof Error ? err.message : 'Tente novamente.',
+          variant: 'destructive',
+        })
+      }
+      return
+    }
+
+    // At this point e is a real (non-projected) record, so it has an id.
+    const real = e as FixedExpenseRecord
+    const next: FixedExpenseStatus = real.status === 'pago' ? 'pendente' : 'pago'
     try {
-      await fixedExpensesService.toggleStatus(e.id, next)
-      setExpenses((prev) => prev.map((x) => (x.id === e.id ? { ...x, status: next } : x)))
+      await fixedExpensesService.toggleStatus(real.id, next)
+      setExpenses((prev) => prev.map((x) => (x.id === real.id ? { ...x, status: next } : x)))
       toast({
         title: next === 'pago' ? 'Marcado como pago' : 'Marcado como pendente',
         description: `"${e.description}" atualizado.`,
@@ -760,9 +834,10 @@ export default function GastosFixos() {
     })
   }, [expenses, filterCategory, filterStatus, filterMonth, search])
 
-  // Resumo do mês
+  // Resumo do mês — inclui gastos cadastrados no mês E projeções de
+  // recorrência (mensal/trimestral/semestral/anual) que caem neste mês.
   const summaryExpenses = useMemo(
-    () => expenses.filter((e) => e.month === summaryMonth && e.year === summaryYear),
+    () => getEffectiveExpensesForMonth(expenses, summaryMonth, summaryYear),
     [expenses, summaryMonth, summaryYear],
   )
 
@@ -809,8 +884,10 @@ export default function GastosFixos() {
   }, [summaryMonth, summaryYear])
 
   const previousTotalsByCat = useMemo(() => {
-    const prev = expenses.filter(
-      (e) => e.month === previousMonthDate.month && e.year === previousMonthDate.year,
+    const prev = getEffectiveExpensesForMonth(
+      expenses,
+      previousMonthDate.month,
+      previousMonthDate.year,
     )
     const map = new Map<string, number>()
     for (const e of prev) map.set(e.category, (map.get(e.category) || 0) + (Number(e.amount) || 0))
@@ -839,29 +916,42 @@ export default function GastosFixos() {
     return { topUp: asc.slice(0, 3), topDown: desc.slice(0, 3).filter((x) => x.diff < 0) }
   }, [categoryTotals, previousTotalsByCat])
 
-  // Vencimentos tab
+  // Vencimentos tab — inclui ocorrências projetadas por recorrência que caiem
+  // no mês corrente, além dos gastos cadastrados e dos pontuais atrasados.
   const dueItems = useMemo(() => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    const pending = expenses.filter((e) => e.status === 'pendente')
+    const curYear = today.getFullYear()
+    const curMonth = today.getMonth() + 1 // 1-12
 
-    const upcoming = pending.filter((e) => {
-      // due date in the current month/year at due_day
-      const due = new Date(today.getFullYear(), today.getMonth(), e.due_day, 23, 59, 59)
-      if (due < today) return false // already overdue -> goes to late
-      const diffDays = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-      return diffDays >= 0 && diffDays <= 7
-    })
+    // Effective (real + projected) pending expenses for the current month.
+    const effectivePending = getEffectiveExpensesForMonth(expenses, curMonth, curYear).filter(
+      (e) => e.status === 'pendente',
+    )
 
-    const overdue = pending.filter((e) => {
-      // Consider the most recent due date <= today for this expense.
-      // Build a date in the current month; if that's in the future, use last month.
-      let due = new Date(today.getFullYear(), today.getMonth(), e.due_day, 23, 59, 59)
-      if (due > today) {
-        due = new Date(today.getFullYear(), today.getMonth() - 1, e.due_day, 23, 59, 59)
+    const upcoming: EffectiveExpense[] = []
+    const overdue: EffectiveExpense[] = []
+
+    for (const e of effectivePending) {
+      const due = new Date(curYear, curMonth - 1, e.due_day, 23, 59, 59)
+      if (due < today) {
+        overdue.push(e)
+      } else {
+        const diffDays = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+        if (diffDays >= 0 && diffDays <= 7) upcoming.push(e)
       }
-      return due <= today
-    })
+    }
+
+    // Pontual expenses from previous months that are still pending → overdue
+    // (their due date has long passed). Recurring origins are skipped because
+    // their current-month projection is already in `effectivePending`.
+    for (const e of expenses) {
+      if (e.status !== 'pendente') continue
+      if (e.recurrence && e.recurrence !== 'pontual') continue
+      if (e.year > curYear) continue
+      if (e.year === curYear && e.month >= curMonth) continue
+      overdue.push(e)
+    }
 
     return { upcoming, overdue }
   }, [expenses])
@@ -1178,7 +1268,7 @@ export default function GastosFixos() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
-                  <Table className="min-w-[900px]">
+                  <Table className="min-w-[960px]">
                     <TableHeader className="bg-slate-50/80">
                       <TableRow className="hover:bg-transparent border-b border-slate-200">
                         <TableHead className="font-bold text-slate-800 text-xs py-2.5 px-3">
@@ -1197,6 +1287,9 @@ export default function GastosFixos() {
                           Competência
                         </TableHead>
                         <TableHead className="font-bold text-slate-800 text-xs py-2.5 px-3 text-center">
+                          Recorrência
+                        </TableHead>
+                        <TableHead className="font-bold text-slate-800 text-xs py-2.5 px-3 text-center">
                           Status
                         </TableHead>
                         <TableHead className="font-bold text-slate-800 text-xs py-2.5 px-3 text-center">
@@ -1208,7 +1301,7 @@ export default function GastosFixos() {
                       {filteredExpenses.length === 0 ? (
                         <TableRow>
                           <TableCell
-                            colSpan={7}
+                            colSpan={8}
                             className="text-center py-10 text-slate-400 text-sm"
                           >
                             Nenhum gasto encontrado com os filtros selecionados.
@@ -1217,13 +1310,21 @@ export default function GastosFixos() {
                       ) : (
                         filteredExpenses.map((e) => {
                           const cat = resolveCategory(e, categories)
+                          const isProjected = e.recurrence && e.recurrence !== 'pontual'
                           return (
                             <TableRow
                               key={e.id}
                               className="hover:bg-slate-50/50 transition-colors border-b border-slate-100"
                             >
                               <TableCell className="font-medium text-xs text-slate-900 py-2.5 px-3">
-                                {e.description}
+                                <div className="flex items-center gap-1.5">
+                                  {e.description}
+                                  {isProjected && (
+                                    <Badge className="bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20 text-[10px] font-semibold px-1.5 py-0">
+                                      Recorrente
+                                    </Badge>
+                                  )}
+                                </div>
                               </TableCell>
                               <TableCell className="py-2.5 px-3">
                                 {renderCategoryDot(cat)}
@@ -1236,6 +1337,11 @@ export default function GastosFixos() {
                               </TableCell>
                               <TableCell className="py-2.5 px-3 text-center tabular-nums text-xs text-slate-600">
                                 {formatCompetence(Number(e.month), Number(e.year))}
+                              </TableCell>
+                              <TableCell className="py-2.5 px-3 text-center">
+                                <span className="text-[11px] text-slate-600">
+                                  {recurrenceLabel(e.recurrence)}
+                                </span>
                               </TableCell>
                               <TableCell className="py-2.5 px-3 text-center">
                                 <StatusBadge status={e.status} />
@@ -1568,7 +1674,8 @@ export default function GastosFixos() {
                     Total por Categoria
                   </CardTitle>
                   <CardDescription className="text-xs text-slate-500 mt-0.5">
-                    Distribuição dos gastos do mês por categoria.
+                    Distribuição dos gastos do mês por categoria, incluindo projeções de
+                    recorrência.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -1706,14 +1813,23 @@ export default function GastosFixos() {
                   <div className="divide-y divide-slate-100">
                     {dueItems.upcoming.map((e) => {
                       const cat = resolveCategory(e, categories)
+                      const projected = isProjectedExpense(e)
+                      const key = projected
+                        ? projectedId(e.originalId, e.month, e.year)
+                        : (e as FixedExpenseRecord).id
                       return (
                         <div
-                          key={e.id}
+                          key={key}
                           className="flex items-center justify-between gap-3 p-4 hover:bg-slate-50/50 transition-colors"
                         >
                           <div className="min-w-0">
-                            <div className="text-sm font-semibold text-slate-900 truncate">
+                            <div className="text-sm font-semibold text-slate-900 truncate flex items-center gap-1.5">
                               {e.description}
+                              {projected && (
+                                <Badge className="bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20 text-[10px] font-semibold px-1.5 py-0">
+                                  Recorrente
+                                </Badge>
+                              )}
                             </div>
                             <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-2">
                               {renderCategoryDot(cat)}
@@ -1721,6 +1837,8 @@ export default function GastosFixos() {
                               <span className="tabular-nums">
                                 Venc. {formatDueLabel(Number(e.due_day), Number(e.month))}
                               </span>
+                              <span className="text-slate-300">•</span>
+                              <span>{recurrenceLabel(e.recurrence)}</span>
                             </div>
                           </div>
                           <div className="flex items-center gap-3 shrink-0">
@@ -1763,14 +1881,23 @@ export default function GastosFixos() {
                   <div className="divide-y divide-red-200/60">
                     {dueItems.overdue.map((e) => {
                       const cat = resolveCategory(e, categories)
+                      const projected = isProjectedExpense(e)
+                      const key = projected
+                        ? projectedId(e.originalId, e.month, e.year)
+                        : (e as FixedExpenseRecord).id
                       return (
                         <div
-                          key={e.id}
+                          key={key}
                           className="flex items-center justify-between gap-3 p-4 hover:bg-red-100/40 transition-colors"
                         >
                           <div className="min-w-0">
-                            <div className="text-sm font-semibold text-red-900 truncate">
+                            <div className="text-sm font-semibold text-red-900 truncate flex items-center gap-1.5">
                               {e.description}
+                              {projected && (
+                                <Badge className="bg-[#6D49F2]/10 text-[#6D49F2] border-[#6D49F2]/20 text-[10px] font-semibold px-1.5 py-0">
+                                  Recorrente
+                                </Badge>
+                              )}
                             </div>
                             <div className="text-[11px] text-red-600 mt-0.5 flex items-center gap-2">
                               {cat && (
@@ -1786,6 +1913,8 @@ export default function GastosFixos() {
                               <span className="tabular-nums">
                                 Venc. {formatDueLabel(Number(e.due_day), Number(e.month))}
                               </span>
+                              <span className="text-red-300">•</span>
+                              <span>{recurrenceLabel(e.recurrence)}</span>
                             </div>
                           </div>
                           <div className="flex items-center gap-3 shrink-0">

@@ -5,6 +5,7 @@ import type {
   FixedExpenseCategoryInput,
   FixedExpenseRecord,
   FixedExpenseInput,
+  FixedExpenseRecurrence,
 } from '@/types/fixedExpenses'
 
 /**
@@ -102,6 +103,7 @@ export const fixedExpensesService = {
     if (!userId) throw new Error('Usuário não autenticado')
     return await pb.collection<FixedExpenseRecord>('fixed_expenses').create({
       user: userId,
+      recurrence: 'pontual',
       ...data,
     })
   },
@@ -120,6 +122,38 @@ export const fixedExpensesService = {
   /** Toggle the status field of a fixed expense (pago ⇄ pendente). */
   async toggleStatus(id: string, status: 'pago' | 'pendente'): Promise<FixedExpenseRecord> {
     return await pb.collection<FixedExpenseRecord>('fixed_expenses').update(id, { status })
+  },
+
+  /**
+   * Materialise a projected (recurring) expense into a real "pago" record for
+   * the specific month/year. The original recurring record is left untouched
+   * so it keeps generating future projections; this new instance records that
+   * this particular occurrence was paid. Returns the created record.
+   */
+  async createPaidInstance(source: {
+    category: string
+    description: string
+    amount: number
+    due_day: number
+    month: number
+    year: number
+    recurrence: FixedExpenseInput['recurrence']
+    notes?: string
+  }): Promise<FixedExpenseRecord> {
+    const userId = pb.authStore.record?.id
+    if (!userId) throw new Error('Usuário não autenticado')
+    return await pb.collection<FixedExpenseRecord>('fixed_expenses').create({
+      user: userId,
+      category: source.category,
+      description: source.description,
+      amount: source.amount,
+      due_day: source.due_day,
+      month: source.month,
+      year: source.year,
+      status: 'pago',
+      recurrence: source.recurrence,
+      notes: source.notes ?? '',
+    })
   },
 
   /** Delete a fixed expense by id. */
