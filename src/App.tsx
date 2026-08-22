@@ -12,6 +12,7 @@ import Dashboard from './pages/Dashboard'
 import Mensal from './pages/Mensal'
 import Renovacoes from './pages/Renovacoes'
 import LancamentoPago from './pages/LancamentoPago'
+import GastosFixos from './pages/GastosFixos'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import NotFound from './pages/NotFound'
@@ -37,6 +38,7 @@ const App = () => (
                 <Route path="/mensal" element={<Mensal />} />
                 <Route path="/renovacoes" element={<Renovacoes />} />
                 <Route path="/lancamento-pago" element={<LancamentoPago />} />
+                <Route path="/gastos-fixos" element={<GastosFixos />} />
                 <Route path="/configuracoes" element={<Configuracoes />} />
               </Route>
 
