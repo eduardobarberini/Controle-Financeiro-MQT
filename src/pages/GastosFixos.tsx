@@ -75,7 +75,6 @@ import type {
   FixedExpenseStatus,
   FixedExpenseRecurrence,
   EffectiveExpense,
-  ProjectedExpense,
 } from '@/types/fixedExpenses'
 import { RECURRENCE_OPTIONS, isProjectedExpense } from '@/types/fixedExpenses'
 

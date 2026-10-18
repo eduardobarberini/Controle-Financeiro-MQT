@@ -31,7 +31,7 @@ import {
 
 export default function Configuracoes() {
   const { user, updateName, updateEmail, updatePassword } = useAuth()
-  const { settings, companyName, logoUrl, refresh } = useCompany()
+  const { settings, refresh } = useCompany()
 
   /* ----------------------------- Company state ---------------------------- */
   const [companyNameInput, setCompanyNameInput] = useState('')

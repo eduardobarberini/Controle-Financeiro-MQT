@@ -1,131 +1,113 @@
-# Projeto Criado com o Skip
+# Controle Financeiro MQT
 
-Este projeto foi criado de ponta a ponta com o [Skip](https://goskip.dev).
+Painel financeiro da MQT (Mães que Treinam): controle anual e mensal, renovações,
+lançamentos pagos, gastos fixos e integrações automáticas com **Guru** (vendas à
+vista), **Asaas** (parcelado em PIX e boleto) e **Meta Ads** (tráfego).
 
-## 🚀 Stack Tecnológica
+## Stack
 
-- **React 19** - Biblioteca JavaScript para construção de interfaces
-- **Vite** - Build tool extremamente rápida
-- **TypeScript** - Superset tipado do JavaScript
-- **Shadcn UI** - Componentes reutilizáveis e acessíveis
-- **Tailwind CSS** - Framework CSS utility-first
-- **React Router** - Roteamento para aplicações React
-- **React Hook Form** - Gerenciamento de formulários performático
-- **Zod** - Validação de schemas TypeScript-first
-- **Recharts** - Biblioteca de gráficos para React
+- Front: React 19, Vite, TypeScript, Tailwind, shadcn/ui, Recharts
+- Backend: Supabase (Postgres com RLS, Auth, Storage, Realtime, Edge Functions, pg_cron)
+- Hospedagem do site: Vercel
 
-## 📋 Pré-requisitos
+## Rodando localmente
 
-- Node.js 18+
-- npm
-
-## 🔧 Instalação
+Pré-requisitos: Node 20+, pnpm (`npm i -g pnpm`) e Docker Desktop rodando.
 
 ```bash
-npm install
+pnpm install
+pnpm supabase start          # sobe Postgres, Auth, Storage e Studio no Docker (portas 547xx)
+pnpm supabase db reset       # aplica as migrations em supabase/migrations
+pnpm dev                     # http://localhost:8080
 ```
 
-## 💻 Scripts Disponíveis
+O arquivo `.env.local` aponta para o Supabase local (as chaves locais são públicas
+e padrão do CLI). Studio local: http://127.0.0.1:54723.
 
-### Desenvolvimento
+Como o cadastro público está desligado, crie o seu usuário local pela API de admin:
 
 ```bash
-# Iniciar servidor de desenvolvimento
-npm start
-# ou
-npm run dev
+curl -X POST http://127.0.0.1:54721/auth/v1/admin/users \
+  -H "apikey: <SERVICE_ROLE_KEY local>" -H "Authorization: Bearer <SERVICE_ROLE_KEY local>" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"voce@exemplo.com","password":"sua-senha","email_confirm":true,"user_metadata":{"name":"Seu Nome"}}'
 ```
 
-Abre a aplicação em modo de desenvolvimento em [http://localhost:5173](http://localhost:5173).
-
-### Build
+Edge Functions locais (webhooks e sincronizações):
 
 ```bash
-# Build para produção
-npm run build
-
-# Build para desenvolvimento
-npm run build:dev
+pnpm supabase functions serve --env-file supabase/functions/.env
 ```
 
-Gera os arquivos otimizados para produção na pasta `dist/`.
+## Scripts
 
-### Preview
+| Comando           | O que faz                                   |
+| ----------------- | ------------------------------------------- |
+| `pnpm dev`        | servidor de desenvolvimento                 |
+| `pnpm build`      | build de produção em `dist/`                |
+| `pnpm test`       | testes unitários dos cálculos (vitest)      |
+| `pnpm lint`       | oxlint                                      |
+| `pnpm format`     | oxfmt                                       |
+| `pnpm db:types`   | regenera `src/lib/supabase/database.types.ts` a partir do banco local |
+
+## Estrutura
+
+```
+src/
+  pages/            telas (Dashboard, Mensal, Renovações, Lançamento Pago, Gastos Fixos, Integrações, Configurações)
+  services/         acesso a dados (Supabase) por módulo
+  contexts/         auth, empresa, financeiro (ano selecionado + resumo anual)
+  hooks/            realtime, dados mensais, valores automáticos
+  lib/              cálculos financeiros, recorrência de gastos, cliente Supabase
+supabase/
+  migrations/       esquema, integrações, agendamento (pg_cron)
+  functions/        guru-webhook, guru-sync, asaas-webhook, asaas-sync, meta-sync (+ _shared)
+```
+
+## Deploy em produção
+
+### 1. Supabase
 
 ```bash
-# Visualizar build de produção localmente
-npm run preview
+pnpm supabase login
+pnpm supabase link --project-ref <ref-do-projeto>
+pnpm supabase db push                       # aplica as migrations
+pnpm supabase functions deploy              # publica as 5 funções (webhooks sem verificação de JWT, ver config.toml)
+pnpm supabase secrets set \
+  GURU_API_TOKEN=... GURU_ACCOUNT_TOKEN=... \
+  ASAAS_API_KEY=... ASAAS_WEBHOOK_TOKEN=... \
+  META_ACCESS_TOKEN=... META_AD_ACCOUNT_ID=act_...
 ```
 
-Permite visualizar a build de produção localmente antes do deploy.
+No painel do Supabase: Authentication > Providers > Email: deixe **Allow new users to sign up** desligado
+e crie o seu usuário em Authentication > Users > Add user.
 
-### Linting e Formatação
+Para o agendamento funcionar, rode uma vez no SQL Editor:
 
-```bash
-# Executar linter
-npm run lint
-
-# Executar linter e corrigir problemas automaticamente
-npm run lint:fix
-
-# Formatar código com Oxfmt
-npm run format
+```sql
+select vault.create_secret('https://<ref>.supabase.co/functions/v1', 'edge_functions_url');
+select vault.create_secret('<service_role_key>', 'service_role_key');
 ```
 
-## 📁 Estrutura do Projeto
+### 2. Webhooks
 
-```
-.
-├── src/              # Código fonte da aplicação
-├── public/           # Arquivos estáticos
-├── dist/             # Build de produção (gerado)
-├── node_modules/     # Dependências (gerado)
-└── package.json      # Configurações e dependências do projeto
-```
+- **Guru**: Admin > Configurações > Webhooks > Vendas e Assinaturas, URL
+  `https://<ref>.supabase.co/functions/v1/guru-webhook`, marcando os status desejados
+  (Aprovada, Reembolsada, Reclamada, Cancelada, Ativa, Atrasada...). O token da conta
+  (Admin > Minha Conta > API) é o `GURU_ACCOUNT_TOKEN`.
+- **Asaas**: Integrações > Webhooks, URL `https://<ref>.supabase.co/functions/v1/asaas-webhook`,
+  gere um token de autenticação e use o mesmo valor em `ASAAS_WEBHOOK_TOKEN`. Eventos:
+  PAYMENT_CREATED, CONFIRMED, RECEIVED, OVERDUE, REFUNDED, DELETED, RESTORED, UPDATED.
 
-## 🎨 Componentes UI
+### 3. Vercel
 
-Este template inclui uma biblioteca completa de componentes Shadcn UI baseados em Radix UI:
+Importe o repositório, framework Vite, e defina as variáveis `VITE_SUPABASE_URL` e
+`VITE_SUPABASE_ANON_KEY` do projeto de produção. O `vercel.json` já cuida das rotas da SPA.
 
-- Accordion
-- Alert Dialog
-- Avatar
-- Button
-- Checkbox
-- Dialog
-- Dropdown Menu
-- Form
-- Input
-- Label
-- Select
-- Switch
-- Tabs
-- Toast
-- Tooltip
-- E muito mais...
+## Como os dados automáticos entram no financeiro
 
-## 📝 Ferramentas de Qualidade de Código
-
-- **TypeScript**: Tipagem estática
-- **Oxlint**: Linter extremamente rápido
-- **Oxfmt**: Formatação automática de código
-
-## 🔄 Workflow de Desenvolvimento
-
-1. Instale as dependências: `npm install`
-2. Inicie o servidor de desenvolvimento: `npm start`
-3. Faça suas alterações
-4. Verifique o código: `npm run lint`
-5. Formate o código: `npm run format`
-6. Crie a build: `npm run build`
-7. Visualize a build: `npm run preview`
-
-## 📦 Build e Deploy
-
-Para criar uma build otimizada para produção:
-
-```bash
-npm run build
-```
-
-Os arquivos otimizados serão gerados na pasta `dist/` e estarão prontos para deploy.
+- `v_monthly_integrations` consolida, por mês: vendas aprovadas e reembolsos do Guru,
+  parcelas recebidas do Asaas e gasto/leads/compras da Meta.
+- No **Controle Mensal**, cada célula de Faturamento, Investimento Meta e Custos Fixos mostra o
+  valor automático sugerido; o botão "Preencher com dados automáticos" grava todos os meses.
+- O **Controle Anual** mostra o resumo do ano vindo das integrações e as parcelas a receber.

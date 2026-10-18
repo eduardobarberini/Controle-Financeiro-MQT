@@ -26,7 +26,6 @@ import {
 } from '@/components/ui/table'
 import {
   formatCurrency,
-  formatCalculatedCurrency,
   formatCalculatedPercent,
   formatCalculatedNumber,
 } from '@/lib/launch-format'

@@ -29,8 +29,6 @@ import type {
 } from '@/types/paidLaunches'
 import {
   formatCurrency,
-  formatCalculatedCurrency,
-  formatCalculatedPercent,
 } from '@/lib/launch-format'
 import { formatNumber, parsePtBrNumber } from '@/lib/financial-utils'
 
