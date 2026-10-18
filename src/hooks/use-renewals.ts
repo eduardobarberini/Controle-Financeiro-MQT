@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useFinancial } from '@/contexts/FinancialContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRealtime } from '@/hooks/use-realtime'
+import { toast } from '@/hooks/use-toast'
 import { renewalsService, type RenewalInput } from '@/services/renewals'
 import type { RenewalRecord } from '@/types/renewals'
 
@@ -15,6 +16,7 @@ export function useRenewals() {
   const [records, setRecords] = useState<RenewalRecord[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isSaving, setIsSaving] = useState<boolean>(false)
+  const loadedYear = useRef<number | null>(null)
 
   const fetchData = useCallback(async () => {
     if (!isAuthenticated) {
@@ -23,12 +25,19 @@ export function useRenewals() {
       return
     }
     try {
-      setIsLoading(true)
+      // Loader só na primeira carga do ano; recargas (salvar/realtime) são silenciosas.
+      if (loadedYear.current !== selectedYear) setIsLoading(true)
       const recs = await renewalsService.getByYear(selectedYear)
       setRecords(recs)
+      loadedYear.current = selectedYear
     } catch (err) {
+      // Não zera os registros: a tela ficaria "vazia" e um salvar sobrescreveria dados existentes.
       console.error('useRenewals fetch error:', err)
-      setRecords([])
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao carregar dados',
+        description: err instanceof Error ? err.message : 'Tente recarregar a página.',
+      })
     } finally {
       setIsLoading(false)
     }

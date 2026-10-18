@@ -110,13 +110,13 @@ const reorderClassSessions = (sessions: ClassSession[]): ClassSession[] => {
 }
 
 const DEFAULT_DAYS: DailyEntry[] = [
-  { dayLabel: 'Seg', dateLabel: '17/8', investment: 18201, ticket_sales: 394, bump_sales: 116 },
-  { dayLabel: 'Ter', dateLabel: '18/8', investment: '', ticket_sales: '', bump_sales: '' },
-  { dayLabel: 'Qua', dateLabel: '19/8', investment: '', ticket_sales: '', bump_sales: '' },
-  { dayLabel: 'Qui', dateLabel: '20/8', investment: '', ticket_sales: '', bump_sales: '' },
-  { dayLabel: 'Sex', dateLabel: '21/8', investment: '', ticket_sales: '', bump_sales: '' },
-  { dayLabel: 'Sáb', dateLabel: '22/8', investment: '', ticket_sales: '', bump_sales: '' },
-  { dayLabel: 'Dom', dateLabel: '23/8', investment: '', ticket_sales: '', bump_sales: '' },
+  { dayLabel: 'Seg', dateLabel: '', investment: '', ticket_sales: '', bump_sales: '' },
+  { dayLabel: 'Ter', dateLabel: '', investment: '', ticket_sales: '', bump_sales: '' },
+  { dayLabel: 'Qua', dateLabel: '', investment: '', ticket_sales: '', bump_sales: '' },
+  { dayLabel: 'Qui', dateLabel: '', investment: '', ticket_sales: '', bump_sales: '' },
+  { dayLabel: 'Sex', dateLabel: '', investment: '', ticket_sales: '', bump_sales: '' },
+  { dayLabel: 'Sáb', dateLabel: '', investment: '', ticket_sales: '', bump_sales: '' },
+  { dayLabel: 'Dom', dateLabel: '', investment: '', ticket_sales: '', bump_sales: '' },
 ]
 
 const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
@@ -131,7 +131,7 @@ const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
   },
   {
     dayLabel: 'Qui',
-    dateLabel: '27/8',
+    dateLabel: '',
     card_pix_sales: '',
     card_pix_revenue: '',
     boleto_sales: '',
@@ -139,7 +139,7 @@ const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
   },
   {
     dayLabel: 'Sex',
-    dateLabel: '28/8',
+    dateLabel: '',
     card_pix_sales: '',
     card_pix_revenue: '',
     boleto_sales: '',
@@ -147,7 +147,7 @@ const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
   },
   {
     dayLabel: 'Sáb',
-    dateLabel: '29/8',
+    dateLabel: '',
     card_pix_sales: '',
     card_pix_revenue: '',
     boleto_sales: '',
@@ -155,7 +155,7 @@ const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
   },
   {
     dayLabel: 'Dom',
-    dateLabel: '30/8',
+    dateLabel: '',
     card_pix_sales: '',
     card_pix_revenue: '',
     boleto_sales: '',
@@ -163,7 +163,7 @@ const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
   },
   {
     dayLabel: 'Seg',
-    dateLabel: '31/8',
+    dateLabel: '',
     card_pix_sales: '',
     card_pix_revenue: '',
     boleto_sales: '',
@@ -171,7 +171,7 @@ const DEFAULT_UPSELL_DAILY_SALES: UpsellDailyEntry[] = [
   },
   {
     dayLabel: 'Ter',
-    dateLabel: '1/9',
+    dateLabel: '',
     card_pix_sales: '',
     card_pix_revenue: '',
     boleto_sales: '',
@@ -282,12 +282,12 @@ const DEFAULT_UPSELL_PLATFORM: UpsellPlatform = {
 }
 
 const DEFAULT_FORM: FormState = {
-  batch: 'S1 - 23/08/2026',
+  batch: '',
   capture_days: 1,
   ticket_ticket: 29.9,
-  ticket_refunds: 17,
+  ticket_refunds: 0,
   bump_ticket: 19.9,
-  bump_refunds: 3,
+  bump_refunds: 0,
   api_official_cost: 490,
   commercial_commission: 3752,
   revenue_tax_rate: 9.0,
@@ -302,15 +302,15 @@ const DEFAULT_FORM: FormState = {
       name: 'Maju',
       commission_rate: 5,
       plataforma: {
-        card_pix_sales: 90,
+        card_pix_sales: '',
         card_pix_ticket: 297,
-        boleto_sales: 20,
+        boleto_sales: '',
         boleto_ticket: 297,
       },
       renovacao: {
-        card_pix_sales: 10,
+        card_pix_sales: '',
         card_pix_ticket: 197,
-        boleto_sales: 2,
+        boleto_sales: '',
         boleto_ticket: 197,
       },
     },
@@ -319,15 +319,15 @@ const DEFAULT_FORM: FormState = {
       name: 'Marlene',
       commission_rate: 5,
       plataforma: {
-        card_pix_sales: 90,
+        card_pix_sales: '',
         card_pix_ticket: 297,
-        boleto_sales: 20,
+        boleto_sales: '',
         boleto_ticket: 297,
       },
       renovacao: {
-        card_pix_sales: 10,
+        card_pix_sales: '',
         card_pix_ticket: 197,
-        boleto_sales: 2,
+        boleto_sales: '',
         boleto_ticket: 197,
       },
     },
@@ -343,6 +343,7 @@ export default function LancamentoPago() {
   const [records, setRecords] = useState<PaidLaunchRecord[]>([])
   const [selectedLaunchId, setSelectedLaunchId] = useState<string>('new')
   const [form, setForm] = useState<FormState>(DEFAULT_FORM)
+  const [activeTab, setActiveTab] = useState('consolidado')
 
   // Load all records from backend
   const loadData = async (preferredId?: string) => {
@@ -570,68 +571,6 @@ export default function LancamentoPago() {
   const handleChange = (field: keyof FormState, value: string | number) => {
     setForm((prev) => {
       if (field === 'batch' && typeof value === 'string') {
-        const matchingRecord = records.find(
-          (r) => r.batch.trim().toLowerCase() === value.trim().toLowerCase(),
-        )
-        if (matchingRecord && matchingRecord.id !== prev.id) {
-          const rawDailyData =
-            matchingRecord.daily_data &&
-            Array.isArray(matchingRecord.daily_data) &&
-            matchingRecord.daily_data.length === 7
-              ? matchingRecord.daily_data
-              : DEFAULT_DAYS
-          const rawUpsellDaily =
-            matchingRecord.upsell_platform &&
-            typeof matchingRecord.upsell_platform === 'object' &&
-            Array.isArray(matchingRecord.upsell_platform.daily_sales) &&
-            matchingRecord.upsell_platform.daily_sales.length > 0
-              ? matchingRecord.upsell_platform.daily_sales
-              : DEFAULT_UPSELL_DAILY_SALES
-
-          const { dailyData, upsellDailySales } = applyBatchDateLabels(
-            value,
-            rawDailyData,
-            rawUpsellDaily,
-          )
-
-          return {
-            ...matchingRecord,
-            batch: value,
-            id: matchingRecord.id,
-            api_official_cost: matchingRecord.api_official_cost ?? 490,
-            commercial_commission: matchingRecord.commercial_commission ?? 3752,
-            revenue_tax_rate: matchingRecord.revenue_tax_rate ?? 9.0,
-            traffic_tax_rate: matchingRecord.traffic_tax_rate ?? 12.15,
-            daily_data: dailyData,
-            students_in_challenge: matchingRecord.students_in_challenge ?? '',
-            debriefing: matchingRecord.debriefing ?? '',
-            class_sessions: reorderClassSessions(
-              Array.isArray(matchingRecord.class_sessions) &&
-                matchingRecord.class_sessions.length > 0
-                ? matchingRecord.class_sessions
-                : DEFAULT_CLASS_SESSIONS,
-            ),
-            commercial_sales:
-              Array.isArray(matchingRecord.commercial_sales) &&
-              matchingRecord.commercial_sales.length > 0
-                ? matchingRecord.commercial_sales
-                : DEFAULT_FORM.commercial_sales,
-            upsell_platform:
-              matchingRecord.upsell_platform &&
-              typeof matchingRecord.upsell_platform === 'object' &&
-              !Array.isArray(matchingRecord.upsell_platform)
-                ? {
-                    ...DEFAULT_UPSELL_PLATFORM,
-                    ...matchingRecord.upsell_platform,
-                    daily_sales: upsellDailySales,
-                  }
-                : {
-                    ...DEFAULT_UPSELL_PLATFORM,
-                    daily_sales: upsellDailySales,
-                  },
-          }
-        }
-
         // Apply automatic date recalculation to current form when typing or pasting batch
         const currentDaily = prev.daily_data || DEFAULT_DAYS
         const currentUpsellDaily = prev.upsell_platform?.daily_sales || DEFAULT_UPSELL_DAILY_SALES
@@ -711,7 +650,7 @@ export default function LancamentoPago() {
       const ticketSales = parsePtBrNumber(day.ticket_sales)
       const bumpSales = parsePtBrNumber(day.bump_sales)
 
-      const hasData = day.investment !== '' || day.ticket_sales !== '' || day.bump_sales !== ''
+      const hasData = inv > 0 || ticketSales > 0 || bumpSales > 0
       if (hasData) {
         activeDaysCount++
       }
@@ -946,8 +885,8 @@ export default function LancamentoPago() {
         bump_refunds: parsePtBrNumber(form.bump_refunds),
         api_official_cost: parsePtBrNumber(form.api_official_cost),
         commercial_commission: totalComissaoComercial,
-        revenue_tax_rate: parsePtBrNumber(form.revenue_tax_rate),
-        traffic_tax_rate: parsePtBrNumber(form.traffic_tax_rate),
+        revenue_tax_rate: form.revenue_tax_rate === '' ? undefined : parsePtBrNumber(form.revenue_tax_rate),
+        traffic_tax_rate: form.traffic_tax_rate === '' ? undefined : parsePtBrNumber(form.traffic_tax_rate),
         students_in_challenge:
           form.students_in_challenge !== ''
             ? parsePtBrNumber(form.students_in_challenge) || form.students_in_challenge
@@ -1060,7 +999,7 @@ export default function LancamentoPago() {
           <p className="text-sm text-slate-500 font-medium">Carregando dados do lançamento...</p>
         </Card>
       ) : (
-        <Tabs defaultValue="consolidado" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {/* Pills-style tab bar in MQT palette */}
           <TabsList className="bg-white border border-slate-200/90 shadow-sm rounded-2xl p-1.5 h-auto flex flex-col sm:flex-row w-full sm:w-fit gap-1">
             <TabsTrigger

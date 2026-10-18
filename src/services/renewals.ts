@@ -17,10 +17,7 @@ export const renewalsService = {
       .select('*')
       .eq('year', year)
       .order('month')
-    if (error) {
-      console.error('renewalsService.getByYear:', error)
-      return []
-    }
+    if (error) throw new Error(`Falha ao carregar renovações: ${error.message}`)
     return (data ?? []) as RenewalRecord[]
   },
 

@@ -25,6 +25,12 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+function sameUser(a: AppUser | null, b: AppUser | null): boolean {
+  if (a === b) return true
+  if (!a || !b) return false
+  return a.id === b.id && a.email === b.email && a.name === b.name
+}
+
 function toAppUser(session: Session | null): AppUser | null {
   const u = session?.user
   if (!u) return null
@@ -44,7 +50,8 @@ function translateAuthError(message: string): string {
   if (m.includes('rate limit')) return 'Muitas tentativas. Aguarde um instante e tente de novo.'
   if (m.includes('password should be at least'))
     return 'A senha precisa ter pelo menos 8 caracteres.'
-  if (m.includes('same password')) return 'A nova senha deve ser diferente da atual.'
+  if (m.includes('different from the old password') || m.includes('same password'))
+    return 'A nova senha deve ser diferente da atual.'
   return message
 }
 
@@ -57,14 +64,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     supabase.auth.getSession().then(({ data }) => {
       if (!active) return
-      setUser(toAppUser(data.session))
+      const next = toAppUser(data.session)
+      setUser((prev) => (sameUser(prev, next) ? prev : next))
       setIsLoading(false)
     })
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(toAppUser(session))
+      const next = toAppUser(session)
+      setUser((prev) => (sameUser(prev, next) ? prev : next))
       setIsLoading(false)
     })
 

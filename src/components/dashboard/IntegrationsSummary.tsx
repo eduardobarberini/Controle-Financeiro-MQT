@@ -60,10 +60,17 @@ export function IntegrationsSummary({ year }: { year: number }) {
 
   const load = useCallback(async () => {
     if (!isAuthenticated) return
-    const [rows, recv] = await Promise.all([
-      integrationsService.getMonthlyIntegrations(year),
-      integrationsService.getReceivables(),
-    ])
+    let rows: MonthlyIntegrationRow[] = []
+    let recv: AsaasReceivables | null = null
+    try {
+      ;[rows, recv] = await Promise.all([
+        integrationsService.getMonthlyIntegrations(year),
+        integrationsService.getReceivables(),
+      ])
+    } catch (err) {
+      console.error('IntegrationsSummary:', err)
+      return
+    }
     setTotals({
       guruSales: sum(rows, 'guru_sales'),
       guruGross: sum(rows, 'guru_gross'),

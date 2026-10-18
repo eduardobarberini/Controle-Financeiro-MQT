@@ -12,10 +12,7 @@ const LOGO_BUCKET = 'logos'
 /** Configurações da empresa do usuário logado, ou null se ainda não existem. */
 export async function getCompanySettings(): Promise<CompanySettingsRecord | null> {
   const { data, error } = await supabase.from('company_settings').select('*').maybeSingle()
-  if (error) {
-    console.warn('getCompanySettings:', error)
-    return null
-  }
+  if (error) throw new Error(`Falha ao carregar configurações da empresa: ${error.message}`)
   return data as CompanySettingsRecord | null
 }
 

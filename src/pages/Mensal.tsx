@@ -221,7 +221,22 @@ export default function Mensal() {
         isSavingRow: false,
       })
     }
-    setRows(newRows)
+    // Mantém o que o usuário ainda não salvou: linhas alteradas preservam os
+    // textos digitados; as demais recebem os valores do banco.
+    setRows((prev) =>
+      newRows.map((row) => {
+        const old = prev.find((p) => p.key === row.key)
+        if (!old || old.isSavingRow || !isRowModified(old)) return row
+        return {
+          ...row,
+          revenueStr: old.revenueStr,
+          adsMetaStr: old.adsMetaStr,
+          salesCommissionStr: old.salesCommissionStr,
+          otherVariableStr: old.otherVariableStr,
+          fixedCostsStr: old.fixedCostsStr,
+        }
+      }),
+    )
   }, [records])
 
   const handleField = (key: string, field: NumField, val: string) => {
@@ -296,7 +311,7 @@ export default function Mensal() {
   }
 
   // Valores automáticos vindos das integrações (Guru/Asaas/Meta) e dos Gastos Fixos.
-  const { months: autoMonths } = useMonthlyAutomatic(selectedYear)
+  const { months: autoMonths, error: autoError } = useMonthlyAutomatic(selectedYear)
   const [isApplyingAll, setIsApplyingAll] = useState(false)
   const autoCount = useMemo(
     () => Array.from(autoMonths.values()).filter((m) => m.hasData).length,
@@ -309,6 +324,10 @@ export default function Mensal() {
   // Preenche Faturamento, Investimento Meta e Custos Fixos de todos os meses com
   // dados automáticos e salva. Comissão e Outros permanecem como estão.
   const applyAutoAndSaveAll = async () => {
+    if (autoError) {
+      toast({ variant: 'destructive', title: 'Dados automáticos indisponíveis', description: autoError })
+      return
+    }
     const targets = rows.filter((r) => autoMonths.get(r.monthIndex + 1)?.hasData)
     if (targets.length === 0) {
       toast({ title: 'Sem dados automáticos', description: 'Nenhum mês tem dados importados ainda.' })
@@ -322,11 +341,11 @@ export default function Mensal() {
         await save(row.id, {
           year: selectedYear,
           month: row.monthIndex + 1,
-          revenue: auto.revenue,
-          ads_meta: auto.adsMeta,
+          revenue: auto.revenue > 0 ? auto.revenue : num(row.revenueStr),
+          ads_meta: auto.adsMeta > 0 ? auto.adsMeta : num(row.adsMetaStr),
           sales_commission: num(row.salesCommissionStr),
           other_variable_costs: num(row.otherVariableStr),
-          fixed_costs: auto.fixedCosts,
+          fixed_costs: auto.fixedCount > 0 ? auto.fixedCosts : num(row.fixedCostsStr),
         })
         okCount++
       }
@@ -423,7 +442,7 @@ export default function Mensal() {
           lucro: c.netProfit,
         }
       }),
-    [rows, selectedYear],
+    [rows, selectedYear, taxMetaRate, salesTaxRate],
   )
 
   // Monthly KPI metrics (averages of registered/filled months)
@@ -512,25 +531,47 @@ export default function Mensal() {
             Totais, Lucro, ROAS e Margem calculam automaticamente em tempo real.
           </p>
         </div>
-        <Button
-          type="button"
-          size="sm"
-          onClick={applyAutoAndSaveAll}
-          disabled={isApplyingAll || isLoading || autoCount === 0}
-          title={
-            autoCount === 0
-              ? 'Conecte as integrações ou cadastre gastos fixos para ter dados automáticos'
-              : `Preenche ${autoCount} ${autoCount === 1 ? 'mês' : 'meses'} com faturamento (Guru + Asaas), investimento (Meta) e custos fixos`
-          }
-          className="bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] hover:opacity-90 text-white text-xs rounded-xl shadow-xs shrink-0"
-        >
-          {isApplyingAll ? (
-            <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-          ) : (
-            <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-          )}
-          Preencher com dados automáticos
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              type="button"
+              size="sm"
+              disabled={isApplyingAll || isLoading || autoCount === 0}
+              title={
+                autoCount === 0
+                  ? 'Conecte as integrações ou cadastre gastos fixos para ter dados automáticos'
+                  : `Preenche ${autoCount} ${autoCount === 1 ? 'mês' : 'meses'} com faturamento (Guru + Asaas), investimento (Meta) e custos fixos`
+              }
+              className="bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] hover:opacity-90 text-white text-xs rounded-xl shadow-xs shrink-0"
+            >
+              {isApplyingAll ? (
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+              ) : (
+                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+              )}
+              Preencher com dados automáticos
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="rounded-2xl">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Preencher {autoCount} {autoCount === 1 ? 'mês' : 'meses'} com dados automáticos?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Faturamento (Guru + Asaas), Investimento Meta e Custos Fixos serão substituídos pelos
+                valores importados nos meses que têm dados. Campos sem valor automático, Comissão
+                Comercial e Outros não mudam. Os meses são salvos imediatamente.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={applyAutoAndSaveAll}
+                className="bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] text-white rounded-xl"
+              >
+                Preencher e salvar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       {/* KPI Cards */}

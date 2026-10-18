@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCompany } from '@/contexts/CompanyContext'
 import { toast } from '@/hooks/use-toast'
@@ -22,9 +22,11 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const { login } = useAuth()
+  const { login, isAuthenticated, isLoading } = useAuth()
   const { companyName, logoUrl } = useCompany()
   const navigate = useNavigate()
+
+  if (!isLoading && isAuthenticated) return <Navigate to="/dashboard" replace />
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -47,7 +49,7 @@ export default function Login() {
       console.error('Login error:', err)
       const errMsg =
         err instanceof Error ? err.message : 'Credenciais inválidas. Verifique seu e-mail e senha.'
-      setError('E-mail ou senha inválidos. Tente novamente.')
+      setError(errMsg)
       toast({
         variant: 'destructive',
         title: 'Erro ao entrar',

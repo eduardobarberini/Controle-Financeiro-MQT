@@ -19,10 +19,7 @@ export const monthlyDetailsService = {
       .select('*')
       .eq('year', year)
       .order('month')
-    if (error) {
-      console.error('monthlyDetailsService.getByYear:', error)
-      return []
-    }
+    if (error) throw new Error(`Falha ao carregar dados mensais: ${error.message}`)
     return (data ?? []) as MonthlyDetailsRecord[]
   },
 

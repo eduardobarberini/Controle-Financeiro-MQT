@@ -10,6 +10,7 @@ import {
   resolveOwner,
   startRun,
   upsertBatches,
+  chunk,
   type Trigger,
 } from '../_shared/sync.ts'
 
@@ -34,6 +35,7 @@ Deno.serve(async (req) => {
   const owner = await resolveOwner(sb, 'asaas')
   if (!owner) return json({ error: 'Integração Asaas não configurada' }, 422)
   if (caller.userId && caller.userId !== owner.userId) return json({ error: 'Não autorizado' }, 403)
+  if (caller.isService && !owner.enabled) return json({ ok: true, skipped: 'disabled' })
 
   const runId = await startRun(sb, { userId: owner.userId, provider: 'asaas', trigger, details: { days } })
 
@@ -52,6 +54,10 @@ Deno.serve(async (req) => {
     await collect({ 'paymentDate[ge]': since })
     await collect({ status: 'PENDING' })
     await collect({ status: 'OVERDUE' })
+    // Estornos e contestações de cobranças antigas (fora da janela) também precisam entrar.
+    for (const status of ['REFUNDED', 'REFUND_REQUESTED', 'REFUND_IN_PROGRESS', 'CHARGEBACK_REQUESTED', 'CHARGEBACK_DISPUTE', 'AWAITING_CHARGEBACK_REVERSAL']) {
+      await collect({ status, 'dateCreated[ge]': daysAgoIso(Math.max(days, 365)) })
+    }
 
     const paymentsCount = await upsertBatches(sb, 'asaas_payments', [...byId.values()], 'asaas_id')
 
@@ -59,18 +65,18 @@ Deno.serve(async (req) => {
     const customerIds = [...new Set([...byId.values()].map((r) => r.customer_id as string | null).filter(Boolean))] as string[]
     let customersCount = 0
     if (customerIds.length) {
-      const { data: known } = await sb
-        .from('asaas_customers')
-        .select('asaas_id')
-        .in('asaas_id', customerIds)
-      const knownSet = new Set((known ?? []).map((k) => k.asaas_id as string))
+      const knownSet = new Set<string>()
+      for (const ids of chunk(customerIds, 200)) {
+        const { data: known } = await sb.from('asaas_customers').select('asaas_id').in('asaas_id', ids)
+        for (const k of known ?? []) knownSet.add(k.asaas_id as string)
+      }
       const missing = customerIds.filter((id) => !knownSet.has(id))
       const rows: Obj[] = []
       // Poucas chamadas em paralelo para respeitar o limite de concorrência.
       for (let i = 0; i < missing.length; i += 5) {
-        const chunk = missing.slice(i, i + 5)
+        const slice = missing.slice(i, i + 5)
         const results = await Promise.all(
-          chunk.map((id) => asaasGet(apiKey, `/customers/${id}`).catch(() => null)),
+          slice.map((id) => asaasGet(apiKey, `/customers/${id}`).catch(() => null)),
         )
         for (const c of results) {
           const row = c ? mapCustomer(c, owner.userId) : null

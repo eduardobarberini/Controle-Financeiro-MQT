@@ -23,9 +23,14 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [loading, setLoading] = useState<boolean>(true)
 
   const refresh = useCallback(async () => {
-    const rec = await getCompanySettings()
-    setSettings(rec)
-    setLoading(false)
+    try {
+      const rec = await getCompanySettings()
+      setSettings(rec)
+    } catch (err) {
+      console.error('CompanyContext.refresh:', err)
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   // Carrega quando há usuário; limpa ao sair.

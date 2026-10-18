@@ -66,7 +66,7 @@ import {
   parsePtBrNumber,
   MONTH_NAMES_PT,
 } from '@/lib/financial-utils'
-import { getEffectiveExpensesForMonth, projectedId } from '@/lib/fixedExpensesRecurrence'
+import { getEffectiveExpensesForMonth, monthDelta, projectedId } from '@/lib/fixedExpensesRecurrence'
 import type {
   FixedExpenseCategoryRecord,
   FixedExpenseCategoryInput,
@@ -376,6 +376,13 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({
     if (!month || isNaN(mm) || mm < 1 || mm > 12) errs.month = 'Mês inválido.'
     const yy = Number(year)
     if (!year || isNaN(yy) || yy < 2000 || yy > 2100) errs.year = 'Ano inválido.'
+    if (recurrence !== 'pontual') {
+      if ((endsMonth && !endsYear) || (!endsMonth && endsYear)) {
+        errs.ends = 'Informe mês e ano do término (ou deixe os dois em branco).'
+      } else if (endsMonth && endsYear && monthDelta(mm, yy, Number(endsMonth), Number(endsYear)) < 0) {
+        errs.ends = 'O término deve ser igual ou posterior à competência inicial.'
+      }
+    }
     setErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -421,8 +428,9 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({
     const cur = new Date().getFullYear()
     const list: number[] = []
     for (let y = cur - 2; y <= cur + 2; y++) list.push(y)
+    if (editing?.year && !list.includes(editing.year)) list.unshift(editing.year)
     return list
-  }, [])
+  }, [editing])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -593,6 +601,7 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({
               <Select
                 value={recurrence}
                 onValueChange={(v) => setRecurrence(v as FixedExpenseRecurrence)}
+                disabled={!!editing?.origin_id}
               >
                 <SelectTrigger className="h-9 text-sm bg-white border-slate-200 focus:ring-[#6D49F2] rounded-xl">
                   <SelectValue />
@@ -647,6 +656,7 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({
                       ))}
                     </SelectContent>
                   </Select>
+                  {errors.ends && <p className="col-span-2 text-[11px] text-rose-500">{errors.ends}</p>}
                   <p className="col-span-2 text-[11px] text-slate-400">
                     Última competência em que o gasto se repete. Deixe em branco para repetir sem fim.
                   </p>
@@ -742,9 +752,10 @@ export default function GastosFixos() {
   const now = new Date()
   const [summaryMonth, setSummaryMonth] = useState<number>(now.getMonth() + 1)
   const [summaryYear, setSummaryYear] = useState<number>(now.getFullYear())
+  const [activeTab, setActiveTab] = useState('categorias')
+  const [payingKey, setPayingKey] = useState<string | null>(null)
 
   const loadData = useCallback(async () => {
-    setLoading(true)
     try {
       const [cats, exps] = await Promise.all([
         fixedExpensesService.getCategories(),
@@ -807,6 +818,9 @@ export default function GastosFixos() {
     // this specific month/year. The original recurring record is left alone so
     // it keeps generating future projections.
     if (isProjectedExpense(e)) {
+      const key = projectedId(e.originalId, e.month, e.year)
+      if (payingKey) return
+      setPayingKey(key)
       try {
         await fixedExpensesService.createPaidInstance({
           originId: e.originalId,
@@ -832,6 +846,8 @@ export default function GastosFixos() {
           description: err instanceof Error ? err.message : 'Tente novamente.',
           variant: 'destructive',
         })
+      } finally {
+        setPayingKey(null)
       }
       return
     }
@@ -954,50 +970,74 @@ export default function GastosFixos() {
 
   // Variações por categoria (top subiu / top caiu)
   const categoryVariations = useMemo(() => {
-    const arr = categoryTotals.map((x) => {
-      const prev = previousTotalsByCat.get(x.category.id) || 0
-      return { ...x, prev, diff: x.total - prev }
-    })
+    const currentById = new Map(categoryTotals.map((x) => [x.category.id, x] as const))
+    const ids = new Set<string>([...currentById.keys(), ...previousTotalsByCat.keys()])
+    const arr: Array<{
+      category: FixedExpenseCategoryRecord
+      total: number
+      percent: number
+      prev: number
+      diff: number
+    }> = []
+    for (const id of ids) {
+      const cur = currentById.get(id)
+      const category = cur?.category ?? categories.find((c) => c.id === id)
+      if (!category) continue
+      const total = cur?.total ?? 0
+      const prev = previousTotalsByCat.get(id) || 0
+      arr.push({ category, total, percent: cur?.percent ?? 0, prev, diff: total - prev })
+    }
     const asc = [...arr].filter((x) => x.diff !== 0).sort((a, b) => b.diff - a.diff)
     const desc = [...arr].filter((x) => x.diff !== 0).sort((a, b) => a.diff - b.diff)
-    return { topUp: asc.slice(0, 3), topDown: desc.slice(0, 3).filter((x) => x.diff < 0) }
-  }, [categoryTotals, previousTotalsByCat])
+    return { topUp: asc.slice(0, 3).filter((x) => x.diff > 0), topDown: desc.slice(0, 3).filter((x) => x.diff < 0) }
+  }, [categoryTotals, previousTotalsByCat, categories])
 
-  // Vencimentos tab — inclui ocorrências projetadas por recorrência que caiem
-  // no mês corrente, além dos gastos cadastrados e dos pontuais atrasados.
+  // Vencimentos: percorre as competências pendentes (reais + projeções) desde a
+  // mais antiga cadastrada (até 24 meses atrás) até o mês que vem. O dia de
+  // vencimento é limitado ao último dia do mês (ex.: dia 31 em novembro).
   const dueItems = useMemo(() => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const curYear = today.getFullYear()
     const curMonth = today.getMonth() + 1 // 1-12
+    const daysInMonth = (y: number, m: number) => new Date(y, m, 0).getDate()
+    const dueDateOf = (e: EffectiveExpense) =>
+      new Date(e.year, e.month - 1, Math.min(e.due_day, daysInMonth(e.year, e.month)), 23, 59, 59)
 
-    // Effective (real + projected) pending expenses for the current month.
-    const effectivePending = getEffectiveExpensesForMonth(expenses, curMonth, curYear).filter(
-      (e) => e.status === 'pendente',
-    )
+    let minYear = curYear
+    let minMonth = curMonth
+    for (const e of expenses) {
+      if (monthDelta(e.month, e.year, minMonth, minYear) > 0) {
+        minYear = e.year
+        minMonth = e.month
+      }
+    }
+    if (monthDelta(minMonth, minYear, curMonth, curYear) > 24) {
+      const d = new Date(curYear, curMonth - 1 - 24, 1)
+      minYear = d.getFullYear()
+      minMonth = d.getMonth() + 1
+    }
 
     const upcoming: EffectiveExpense[] = []
     const overdue: EffectiveExpense[] = []
-
-    for (const e of effectivePending) {
-      const due = new Date(curYear, curMonth - 1, e.due_day, 23, 59, 59)
-      if (due < today) {
-        overdue.push(e)
-      } else {
-        const diffDays = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-        if (diffDays >= 0 && diffDays <= 7) upcoming.push(e)
+    let y = minYear
+    let m = minMonth
+    while (monthDelta(m, y, curMonth, curYear) >= -1) {
+      for (const e of getEffectiveExpensesForMonth(expenses, m, y)) {
+        if (e.status !== 'pendente') continue
+        const due = dueDateOf(e)
+        if (due < today) {
+          overdue.push(e)
+        } else {
+          const diffDays = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+          if (diffDays <= 7) upcoming.push(e)
+        }
       }
-    }
-
-    // Pontual expenses from previous months that are still pending → overdue
-    // (their due date has long passed). Recurring origins are skipped because
-    // their current-month projection is already in `effectivePending`.
-    for (const e of expenses) {
-      if (e.status !== 'pendente') continue
-      if (e.recurrence && e.recurrence !== 'pontual') continue
-      if (e.year > curYear) continue
-      if (e.year === curYear && e.month >= curMonth) continue
-      overdue.push(e)
+      m++
+      if (m > 12) {
+        m = 1
+        y++
+      }
     }
 
     return { upcoming, overdue }
@@ -1071,7 +1111,7 @@ export default function GastosFixos() {
           <p className="text-sm text-slate-500 font-medium">Carregando gastos fixos...</p>
         </Card>
       ) : (
-        <Tabs defaultValue="categorias" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="bg-white border border-slate-200/90 shadow-sm rounded-2xl p-1.5 h-auto flex flex-col sm:flex-row w-full sm:w-fit gap-1">
             <TabsTrigger
               value="categorias"
@@ -1399,6 +1439,7 @@ export default function GastosFixos() {
                                     size="icon"
                                     variant="ghost"
                                     onClick={() => handleToggleStatus(e)}
+                                disabled={payingKey !== null}
                                     title={
                                       e.status === 'pago'
                                         ? 'Marcar como pendente'
@@ -1438,6 +1479,9 @@ export default function GastosFixos() {
                                         <AlertDialogDescription>
                                           Tem certeza que deseja excluir o gasto &ldquo;
                                           {e.description}&rdquo;? Esta ação não pode ser desfeita.
+                                          {e.recurrence && e.recurrence !== 'pontual'
+                                            ? ' As ocorrências já pagas ficam guardadas como gastos pontuais; as projeções futuras deixam de aparecer. Para parar a recorrência mantendo o histórico, prefira definir um término.'
+                                            : ''}
                                         </AlertDialogDescription>
                                       </AlertDialogHeader>
                                       <AlertDialogFooter>
@@ -1895,6 +1939,7 @@ export default function GastosFixos() {
                             <Button
                               size="sm"
                               onClick={() => handleToggleStatus(e)}
+                                disabled={payingKey !== null}
                               className="h-7 text-[11px] font-bold rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
                             >
                               <CheckCircle2 className="w-3 h-3" /> Pagar
@@ -1971,6 +2016,7 @@ export default function GastosFixos() {
                             <Button
                               size="sm"
                               onClick={() => handleToggleStatus(e)}
+                                disabled={payingKey !== null}
                               className="h-7 text-[11px] font-bold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
                             >
                               <CheckCircle2 className="w-3 h-3" /> Pagar
@@ -2000,8 +2046,8 @@ export default function GastosFixos() {
         onOpenChange={setExpModalOpen}
         editing={editingExp}
         categories={categories}
-        defaultYear={summaryYear}
-        defaultMonth={summaryMonth}
+        defaultYear={now.getFullYear()}
+        defaultMonth={now.getMonth() + 1}
         onSaved={loadData}
       />
     </div>

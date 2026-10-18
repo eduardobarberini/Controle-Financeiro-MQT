@@ -241,9 +241,7 @@ export default function Configuracoes() {
         variant: 'destructive',
         title: 'Erro ao alterar senha',
         description:
-          errMsg.includes('oldPassword') || errMsg.includes('old')
-            ? 'Senha atual incorreta.'
-            : errMsg,
+errMsg,
       })
     } finally {
       setIsSavingPass(false)

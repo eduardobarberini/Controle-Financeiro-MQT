@@ -1,4 +1,5 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2.118.0'
+import { safeEqual } from './http.ts'
 
 export type Provider = 'guru' | 'asaas' | 'meta'
 export type Trigger = 'cron' | 'manual' | 'webhook' | 'backfill'
@@ -6,30 +7,35 @@ export type Trigger = 'cron' | 'manual' | 'webhook' | 'backfill'
 export interface Owner {
   userId: string
   config: Record<string, unknown>
+  /** false quando o usuário desligou a integração na tela. */
+  enabled: boolean
 }
 
 /**
  * Descobre a quem pertencem os dados de um provedor. O sistema é de usuário
- * único: pega a integração habilitada; se não houver, usa OWNER_USER_ID do
- * ambiente; por fim, o único usuário cadastrado.
+ * único: pega a linha da integração; se não houver, usa OWNER_USER_ID do
+ * ambiente; por fim, o único usuário cadastrado (integração considerada ligada).
  */
 export async function resolveOwner(sb: SupabaseClient, provider: Provider): Promise<Owner | null> {
   const { data } = await sb
     .from('integration_settings')
     .select('user_id, config, enabled')
     .eq('provider', provider)
-    .order('enabled', { ascending: false })
     .limit(1)
     .maybeSingle()
   if (data?.user_id) {
-    return { userId: data.user_id as string, config: (data.config ?? {}) as Record<string, unknown> }
+    return {
+      userId: data.user_id as string,
+      config: (data.config ?? {}) as Record<string, unknown>,
+      enabled: data.enabled !== false,
+    }
   }
 
   const envOwner = Deno.env.get('OWNER_USER_ID')
-  if (envOwner) return { userId: envOwner, config: {} }
+  if (envOwner) return { userId: envOwner, config: {}, enabled: true }
 
   const { data: users } = await sb.auth.admin.listUsers({ perPage: 2 })
-  if (users?.users?.length === 1) return { userId: users.users[0].id, config: {} }
+  if (users?.users?.length === 1) return { userId: users.users[0].id, config: {}, enabled: true }
   return null
 }
 
@@ -42,7 +48,7 @@ export async function authenticateCaller(
   const token = auth.replace(/^Bearer\s+/i, '').trim()
   if (!token) return { userId: null, isService: false }
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-  if (serviceKey && token === serviceKey) return { userId: null, isService: true }
+  if (serviceKey && safeEqual(token, serviceKey)) return { userId: null, isService: true }
   const { data, error } = await sb.auth.getUser(token)
   if (error || !data.user) return { userId: null, isService: false }
   return { userId: data.user.id, isService: false }
@@ -63,6 +69,10 @@ export async function startRun(
     .select('id')
     .single()
   if (error) throw error
+  await sb.from('integration_settings').upsert(
+    { user_id: args.userId, provider: args.provider, last_sync_status: 'running' },
+    { onConflict: 'user_id,provider' },
+  )
   return data.id as string
 }
 
@@ -78,7 +88,7 @@ export async function finishRun(
     error?: string
   },
 ): Promise<void> {
-  await sb
+  const { error: runErr } = await sb
     .from('sync_runs')
     .update({
       status: args.status,
@@ -88,8 +98,9 @@ export async function finishRun(
       error: args.error ?? null,
     })
     .eq('id', runId)
+  if (runErr) console.error('finishRun(sync_runs):', runErr.message)
 
-  await sb.from('integration_settings').upsert(
+  const { error: setErr } = await sb.from('integration_settings').upsert(
     {
       user_id: args.userId,
       provider: args.provider,
@@ -99,6 +110,7 @@ export async function finishRun(
     },
     { onConflict: 'user_id,provider' },
   )
+  if (setErr) console.error('finishRun(integration_settings):', setErr.message)
 }
 
 /** Upsert em lotes para não estourar o tamanho da requisição. */
@@ -119,7 +131,14 @@ export async function upsertBatches<T extends Record<string, unknown>>(
   return total
 }
 
-/** Registra um evento de webhook. Retorna false se já existia (duplicado). */
+/** Divide uma lista em pedaços (ex.: para filtros `.in()` com muitos ids). */
+export function chunk<T>(list: T[], size: number): T[][] {
+  const out: T[][] = []
+  for (let i = 0; i < list.length; i += size) out.push(list.slice(i, i + size))
+  return out
+}
+
+/** Registra um evento de webhook. Retorna duplicate=true se já existia. */
 export async function recordWebhookEvent(
   sb: SupabaseClient,
   args: {

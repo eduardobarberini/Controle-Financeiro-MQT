@@ -48,9 +48,13 @@ Deno.serve(async (req) => {
   const owner = await resolveOwner(sb, 'meta')
   if (!owner) return json({ error: 'Integração Meta não configurada' }, 422)
   if (caller.userId && caller.userId !== owner.userId) return json({ error: 'Não autorizado' }, 403)
+  if (caller.isService && !owner.enabled) return json({ ok: true, skipped: 'disabled' })
 
   const configured = str(owner.config.ad_account_id) ?? Deno.env.get('META_AD_ACCOUNT_ID') ?? ''
   if (!configured) return json({ error: 'Conta de anúncios (ad_account_id) não configurada' }, 422)
+  if (!/^(act_)?\d+$/.test(configured.trim())) {
+    return json({ error: 'Conta de anúncios inválida: use o formato act_1234567890' }, 422)
+  }
   const adAccountId = normalizeAdAccountId(configured)
 
   const runId = await startRun(sb, {

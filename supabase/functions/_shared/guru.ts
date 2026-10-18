@@ -3,13 +3,17 @@ import { int, num, sleep, str } from './http.ts'
 export const GURU_BASE = 'https://digitalmanager.guru/api/v2'
 
 type Obj = Record<string, unknown>
+const flag = (v: unknown): boolean => v === true || v === 1 || v === '1' || v === 'true'
 const obj = (v: unknown): Obj => (v && typeof v === 'object' && !Array.isArray(v) ? (v as Obj) : {})
 
 /** REST devolve Unix (segundos); webhook devolve ISO. Normaliza para ISO ou null. */
 export function toIso(v: unknown): string | null {
   if (v === null || v === undefined || v === '' || v === 0) return null
   if (typeof v === 'number') return new Date(v * 1000).toISOString()
-  const s = String(v)
+  let s = String(v).trim()
+  if (/^\d{9,11}$/.test(s)) return new Date(Number(s) * 1000).toISOString()
+  // "YYYY-MM-DD HH:MM:SS" sem fuso: horário da conta (Brasília, sem horário de verão).
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(s)) s = s.replace(' ', 'T') + '-03:00'
   const d = new Date(s)
   return Number.isNaN(d.getTime()) ? null : d.toISOString()
 }
@@ -37,8 +41,8 @@ export function mapTransaction(t: Obj, userId: string): Obj | null {
     guru_id: id,
     status: str(t.status) ?? 'unknown',
     type: str(t.type),
-    is_order_bump: Boolean(t.is_order_bump),
-    has_order_bump: Boolean(t.has_order_bump),
+    is_order_bump: flag(t.is_order_bump),
+    has_order_bump: flag(t.has_order_bump),
     product_id: str(product.id),
     product_name: str(product.name),
     product_type: str(product.type),
@@ -90,7 +94,7 @@ export function mapSubscription(s: Obj, userId: string): Obj | null {
   const dates = obj(s.dates)
   const product = obj(s.product)
   const contact = Object.keys(obj(s.subscriber)).length ? obj(s.subscriber) : obj(s.contact)
-  const nextCycle = str(dates.next_cycle_at) ?? str(s.next_cycle_at)
+  const nextCycle = toIso(dates.next_cycle_at ?? s.next_cycle_at)
   return {
     user_id: userId,
     guru_id: id,

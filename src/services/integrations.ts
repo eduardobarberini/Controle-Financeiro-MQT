@@ -69,10 +69,7 @@ export const PROVIDER_LABELS: Record<IntegrationProvider, string> = {
 export const integrationsService = {
   async getSettings(): Promise<IntegrationSetting[]> {
     const { data, error } = await supabase.from('integration_settings').select('*').order('provider')
-    if (error) {
-      console.error('integrationsService.getSettings:', error)
-      return []
-    }
+    if (error) throw new Error(`Falha ao carregar integrações: ${error.message}`)
     return (data ?? []) as unknown as IntegrationSetting[]
   },
 
@@ -102,10 +99,7 @@ export const integrationsService = {
       .select('*')
       .order('started_at', { ascending: false })
       .limit(limit)
-    if (error) {
-      console.error('integrationsService.getRecentRuns:', error)
-      return []
-    }
+    if (error) throw new Error(`Falha ao carregar histórico de sincronizações: ${error.message}`)
     return (data ?? []) as unknown as SyncRun[]
   },
 
@@ -136,19 +130,13 @@ export const integrationsService = {
       .select('*')
       .eq('year', year)
       .order('month')
-    if (error) {
-      console.error('integrationsService.getMonthlyIntegrations:', error)
-      return []
-    }
+    if (error) throw new Error(`Falha ao carregar dados mensais das integrações: ${error.message}`)
     return (data ?? []) as unknown as MonthlyIntegrationRow[]
   },
 
   async getReceivables(): Promise<AsaasReceivables | null> {
     const { data, error } = await supabase.from('v_asaas_receivables').select('*').maybeSingle()
-    if (error) {
-      console.error('integrationsService.getReceivables:', error)
-      return null
-    }
+    if (error) throw new Error(`Falha ao carregar parcelas a receber: ${error.message}`)
     return (data as unknown as AsaasReceivables) ?? null
   },
 

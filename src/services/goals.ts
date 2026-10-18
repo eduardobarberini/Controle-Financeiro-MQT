@@ -9,10 +9,7 @@ export const goalsService = {
       .select('*')
       .eq('year', year)
       .maybeSingle()
-    if (error) {
-      console.error('goalsService.getByYear:', error)
-      return null
-    }
+    if (error) throw new Error(`Falha ao carregar metas: ${error.message}`)
     return data as GoalsRecord | null
   },
 

@@ -34,6 +34,7 @@ Deno.serve(async (req) => {
   const owner = await resolveOwner(sb, 'guru')
   if (!owner) return json({ error: 'Integração Guru não configurada' }, 422)
   if (caller.userId && caller.userId !== owner.userId) return json({ error: 'Não autorizado' }, 403)
+  if (caller.isService && !owner.enabled) return json({ ok: true, skipped: 'disabled' })
 
   const runId = await startRun(sb, { userId: owner.userId, provider: 'guru', trigger, details: { days } })
 
@@ -46,6 +47,7 @@ Deno.serve(async (req) => {
     const byId = new Map<string, Obj>()
     for (const window of [
       { ordered_at_ini: since, ordered_at_end: until },
+      { confirmed_at_ini: since, confirmed_at_end: until },
       { cancelled_at_ini: since, cancelled_at_end: until },
     ]) {
       for await (const t of guruPaginate(token, '/transactions', window)) {

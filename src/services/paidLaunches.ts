@@ -44,10 +44,7 @@ export const paidLaunchesService = {
       .from('paid_launches')
       .select('*')
       .order('created_at', { ascending: false })
-    if (error) {
-      console.error('paidLaunchesService.getAll:', error)
-      return []
-    }
+    if (error) throw new Error(`Falha ao carregar lançamentos: ${error.message}`)
     return (data ?? []) as unknown as PaidLaunchRecord[]
   },
 

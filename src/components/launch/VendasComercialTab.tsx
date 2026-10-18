@@ -77,18 +77,18 @@ export const calculateTotalComissaoCommercial = (sales: CommercialSales): number
   const list = Array.isArray(sales) ? sales : []
   let total = 0
   for (const seller of list) {
-    const commRate = Number(seller.commission_rate) || 0
+    const commRate = parsePtBrNumber(seller.commission_rate) || 0
     const platCardRevenue =
-      (Number(seller.plataforma?.card_pix_sales) || 0) *
-      (Number(seller.plataforma?.card_pix_ticket) || 0)
+      (parsePtBrNumber(seller.plataforma?.card_pix_sales) || 0) *
+      (parsePtBrNumber(seller.plataforma?.card_pix_ticket) || 0)
     const platBoletoRevenue =
-      (Number(seller.plataforma?.boleto_sales) || 0) *
-      (Number(seller.plataforma?.boleto_ticket) || 0)
+      (parsePtBrNumber(seller.plataforma?.boleto_sales) || 0) *
+      (parsePtBrNumber(seller.plataforma?.boleto_ticket) || 0)
     const renoCardRevenue =
-      (Number(seller.renovacao?.card_pix_sales) || 0) *
-      (Number(seller.renovacao?.card_pix_ticket) || 0)
+      (parsePtBrNumber(seller.renovacao?.card_pix_sales) || 0) *
+      (parsePtBrNumber(seller.renovacao?.card_pix_ticket) || 0)
     const renoBoletoRevenue =
-      (Number(seller.renovacao?.boleto_sales) || 0) * (Number(seller.renovacao?.boleto_ticket) || 0)
+      (parsePtBrNumber(seller.renovacao?.boleto_sales) || 0) * (parsePtBrNumber(seller.renovacao?.boleto_ticket) || 0)
     const sellerRevenue = platCardRevenue + platBoletoRevenue + renoCardRevenue + renoBoletoRevenue
     total += sellerRevenue * (commRate / 100)
   }
@@ -113,16 +113,16 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
     let totalComissaoCommercial = 0
 
     const sellerMetrics = sellers.map((seller) => {
-      const commRate = Number(seller.commission_rate) || 0
+      const commRate = parsePtBrNumber(seller.commission_rate) || 0
 
       // Plataforma
-      const platCardSales = Number(seller.plataforma?.card_pix_sales) || 0
-      const platCardTicket = Number(seller.plataforma?.card_pix_ticket) || 0
+      const platCardSales = parsePtBrNumber(seller.plataforma?.card_pix_sales) || 0
+      const platCardTicket = parsePtBrNumber(seller.plataforma?.card_pix_ticket) || 0
       const platCardRevenue = platCardSales * platCardTicket
       const platCardComm = platCardRevenue * (commRate / 100)
 
-      const platBoletoSales = Number(seller.plataforma?.boleto_sales) || 0
-      const platBoletoTicket = Number(seller.plataforma?.boleto_ticket) || 0
+      const platBoletoSales = parsePtBrNumber(seller.plataforma?.boleto_sales) || 0
+      const platBoletoTicket = parsePtBrNumber(seller.plataforma?.boleto_ticket) || 0
       const platBoletoRevenue = platBoletoSales * platBoletoTicket
       const platBoletoComm = platBoletoRevenue * (commRate / 100)
 
@@ -132,13 +132,13 @@ export const VendasComercialTab: React.FC<VendasComercialTabProps> = ({
       const platAvgTicket = platTotalSales > 0 ? platTotalRevenue / platTotalSales : 0
 
       // Renovação
-      const renoCardSales = Number(seller.renovacao?.card_pix_sales) || 0
-      const renoCardTicket = Number(seller.renovacao?.card_pix_ticket) || 0
+      const renoCardSales = parsePtBrNumber(seller.renovacao?.card_pix_sales) || 0
+      const renoCardTicket = parsePtBrNumber(seller.renovacao?.card_pix_ticket) || 0
       const renoCardRevenue = renoCardSales * renoCardTicket
       const renoCardComm = renoCardRevenue * (commRate / 100)
 
-      const renoBoletoSales = Number(seller.renovacao?.boleto_sales) || 0
-      const renoBoletoTicket = Number(seller.renovacao?.boleto_ticket) || 0
+      const renoBoletoSales = parsePtBrNumber(seller.renovacao?.boleto_sales) || 0
+      const renoBoletoTicket = parsePtBrNumber(seller.renovacao?.boleto_ticket) || 0
       const renoBoletoRevenue = renoBoletoSales * renoBoletoTicket
       const renoBoletoComm = renoBoletoRevenue * (commRate / 100)
 

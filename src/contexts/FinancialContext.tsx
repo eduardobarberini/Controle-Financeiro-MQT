@@ -6,6 +6,7 @@ import { MonthlyDetailsRecord, GoalsRecord, YearFinancialSummary } from '@/types
 import { buildYearFinancialSummary } from '@/lib/financial-utils'
 import { useAuth } from './AuthContext'
 import { useRealtime } from '@/hooks/use-realtime'
+import { toast } from '@/hooks/use-toast'
 
 interface FinancialContextType {
   selectedYear: number
@@ -53,7 +54,13 @@ export const FinancialProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setMonthlyRecords(records)
       setGoals(goalsRec)
     } catch (err) {
+      // Mantém o que já estava carregado; zerar aqui faria a tela parecer vazia e um "salvar" sobrescreveria dados.
       console.error('Error fetching financial data:', err)
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao carregar dados financeiros',
+        description: err instanceof Error ? err.message : 'Tente recarregar a página.',
+      })
     } finally {
       setIsLoading(false)
     }

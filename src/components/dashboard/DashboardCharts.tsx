@@ -84,10 +84,10 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ summary }) => 
     totalProfit,
   } = summary
 
-  // Identify the last month index with data (hasRecord or non-zero activity)
+  // Último mês com atividade (mesmo critério do resumo anual: valores diferentes de zero)
   let lastDataMonthIndex = -1
   monthlyItems.forEach((item, index) => {
-    if (item.hasRecord || item.investment > 0 || item.grossRevenue > 0 || item.netProfit !== 0) {
+    if (item.investment > 0 || item.grossRevenue > 0 || item.netProfit !== 0) {
       lastDataMonthIndex = index
     }
   })

@@ -51,6 +51,7 @@ export function useMonthlyAutomatic(year: number) {
   const { isAuthenticated } = useAuth()
   const [months, setMonths] = useState<Map<number, AutoMonth>>(new Map())
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
     if (!isAuthenticated) {
@@ -59,6 +60,7 @@ export function useMonthlyAutomatic(year: number) {
       return
     }
     setIsLoading(true)
+    setError(null)
     try {
       const [rows, expenses] = await Promise.all([
         integrationsService.getMonthlyIntegrations(year),
@@ -90,6 +92,7 @@ export function useMonthlyAutomatic(year: number) {
       setMonths(result)
     } catch (err) {
       console.error('useMonthlyAutomatic:', err)
+      setError(err instanceof Error ? err.message : 'Falha ao carregar dados automáticos')
     } finally {
       setIsLoading(false)
     }
@@ -103,5 +106,5 @@ export function useMonthlyAutomatic(year: number) {
   useRealtime('sync_runs', useCallback(() => refresh(), [refresh]), isAuthenticated)
   useRealtime('fixed_expenses', useCallback(() => refresh(), [refresh]), isAuthenticated)
 
-  return { months, isLoading, refresh }
+  return { months, isLoading, error, refresh }
 }

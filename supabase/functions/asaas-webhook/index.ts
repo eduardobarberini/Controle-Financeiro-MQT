@@ -56,6 +56,11 @@ Deno.serve(async (req) => {
     return json({ ok: true, stored: true, warning: 'integração não configurada' })
   }
 
+  if (!owner.enabled) {
+    await markWebhookProcessed(sb, event.id, 'Integração Asaas desligada; evento guardado sem processar')
+    return json({ ok: true, stored: true, skipped: 'disabled' })
+  }
+
   try {
     if (externalId) {
       const overrides = eventType === 'PAYMENT_DELETED' ? { deleted: true } : {}

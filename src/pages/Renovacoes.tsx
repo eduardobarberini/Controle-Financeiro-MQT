@@ -209,7 +209,19 @@ export default function Renovacoes() {
         isSavingRow: false,
       })
     }
-    setRows(newRows)
+    // Mantém edições ainda não salvas de outras linhas.
+    setRows((prev) =>
+      newRows.map((row) => {
+        const old = prev.find((p) => p.key === row.key)
+        if (!old || old.isSavingRow || !isRowModified(old)) return row
+        return {
+          ...row,
+          studentsStr: old.studentsStr,
+          renewalsStr: old.renewalsStr,
+          revenueStr: old.revenueStr,
+        }
+      }),
+    )
   }, [records])
 
   const handleField = (key: string, field: NumField, val: string) => {
@@ -445,25 +457,25 @@ export default function Renovacoes() {
           const hasGoal = renewalGoal !== undefined && renewalGoal !== null && renewalGoal > 0
           const isBelowGoal = hasGoal && currentRate !== null && currentRate < renewalGoal
 
-          const cardBgClass = hasGoal
+          const cardBgClass = hasGoal && currentRate !== null
             ? isBelowGoal
               ? 'bg-rose-50 border-rose-200/80'
               : 'bg-emerald-50 border-emerald-200/80'
             : 'bg-white border-slate-200/90'
 
-          const textClass = hasGoal
+          const textClass = hasGoal && currentRate !== null
             ? isBelowGoal
               ? 'text-rose-900'
               : 'text-emerald-900'
             : 'text-slate-900'
 
-          const subtitleClass = hasGoal
+          const subtitleClass = hasGoal && currentRate !== null
             ? isBelowGoal
               ? 'text-rose-600/90 border-rose-200/60'
               : 'text-emerald-600/90 border-emerald-200/60'
             : 'text-slate-500 border-slate-100'
 
-          const labelClass = hasGoal
+          const labelClass = hasGoal && currentRate !== null
             ? isBelowGoal
               ? 'text-rose-700'
               : 'text-emerald-700'

@@ -164,10 +164,11 @@ function ProviderCard({ provider, setting, onChanged }: ProviderCardProps) {
   const [syncing, setSyncing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [adAccount, setAdAccount] = useState('')
+  const [adAccountDirty, setAdAccountDirty] = useState(false)
 
   useEffect(() => {
-    setAdAccount(String(setting?.config?.ad_account_id ?? ''))
-  }, [setting])
+    if (!adAccountDirty) setAdAccount(String(setting?.config?.ad_account_id ?? ''))
+  }, [setting, adAccountDirty])
 
   const enabled = setting?.enabled ?? false
 
@@ -193,6 +194,7 @@ function ProviderCard({ provider, setting, onChanged }: ProviderCardProps) {
       await integrationsService.upsertSetting(provider, {
         config: { ...(setting?.config ?? {}), ad_account_id: adAccount.trim() },
       })
+      setAdAccountDirty(false)
       toast({ title: 'Conta de anúncios salva' })
       onChanged()
     } catch (err) {
@@ -271,7 +273,10 @@ function ProviderCard({ provider, setting, onChanged }: ProviderCardProps) {
               <Input
                 id="ad-account"
                 value={adAccount}
-                onChange={(e) => setAdAccount(e.target.value)}
+                onChange={(e) => {
+                  setAdAccount(e.target.value)
+                  setAdAccountDirty(true)
+                }}
                 placeholder="act_1234567890"
                 className="h-8 text-xs"
               />
@@ -338,19 +343,29 @@ function ProviderCard({ provider, setting, onChanged }: ProviderCardProps) {
 
 export default function Integracoes() {
   const { isAuthenticated } = useAuth()
+  const { toast } = useToast()
   const [settings, setSettings] = useState<IntegrationSetting[]>([])
   const [runs, setRuns] = useState<SyncRun[]>([])
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
-    const [s, r] = await Promise.all([
-      integrationsService.getSettings(),
-      integrationsService.getRecentRuns(25),
-    ])
-    setSettings(s)
-    setRuns(r)
-    setLoading(false)
-  }, [])
+    try {
+      const [s, r] = await Promise.all([
+        integrationsService.getSettings(),
+        integrationsService.getRecentRuns(25),
+      ])
+      setSettings(s)
+      setRuns(r)
+    } catch (err) {
+      toast({
+        title: 'Erro ao carregar integrações',
+        description: err instanceof Error ? err.message : 'Tente novamente.',
+        variant: 'destructive',
+      })
+    } finally {
+      setLoading(false)
+    }
+  }, [toast])
 
   useEffect(() => {
     load()

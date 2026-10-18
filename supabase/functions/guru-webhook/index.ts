@@ -10,19 +10,22 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return json({ ok: true })
   if (req.method !== 'POST') return json({ error: 'Método não permitido' }, 405)
 
-  let body: Record<string, unknown>
+  let rawBody: Record<string, unknown>
   try {
-    body = await readJson(req)
+    rawBody = await readJson(req)
   } catch (e) {
     return json({ error: (e as Error).message }, 400)
   }
 
   const expected = Deno.env.get('GURU_ACCOUNT_TOKEN') ?? ''
-  const received = String(body.api_token ?? '')
+  const received = String(rawBody.api_token ?? '')
   if (!expected || !received || !safeEqual(received, expected)) {
     // 401 faz o Guru não reenviar (código sem retentativa).
     return json({ error: 'api_token inválido' }, 401)
   }
+
+  // O token nunca é persistido: sai do corpo antes de gravar/mapear.
+  const { api_token: _apiToken, ...body } = rawBody
 
   const sb = adminClient()
   const type = str(body.webhook_type) ?? 'unknown'
@@ -57,6 +60,11 @@ Deno.serve(async (req) => {
   if (!owner) {
     await markWebhookProcessed(sb, event.id, 'Integração Guru sem usuário configurado')
     return json({ ok: true, stored: true, warning: 'integração não configurada' })
+  }
+
+  if (!owner.enabled) {
+    await markWebhookProcessed(sb, event.id, 'Integração Guru desligada; evento guardado sem processar')
+    return json({ ok: true, stored: true, skipped: 'disabled' })
   }
 
   try {

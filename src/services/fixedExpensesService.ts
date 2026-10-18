@@ -20,10 +20,7 @@ export const fixedExpensesService = {
       .from('fixed_expense_categories')
       .select('*')
       .order('name')
-    if (error) {
-      console.error('fixedExpensesService.getCategories:', error)
-      return []
-    }
+    if (error) throw new Error(`Falha ao carregar categorias: ${error.message}`)
     return (data ?? []) as FixedExpenseCategoryRecord[]
   },
 
@@ -84,10 +81,7 @@ export const fixedExpensesService = {
       .from('fixed_expenses')
       .select(EXPENSE_SELECT)
       .order('created_at', { ascending: false })
-    if (error) {
-      console.error('fixedExpensesService.getAll:', error)
-      return []
-    }
+    if (error) throw new Error(`Falha ao carregar gastos: ${error.message}`)
     return (data ?? []) as unknown as FixedExpenseRecord[]
   },
 
@@ -188,7 +182,10 @@ export const fixedExpensesService = {
       })
       .select(EXPENSE_SELECT)
       .single()
-    if (error) throw error
+    if (error) {
+      if (error.code === '23505') throw new Error('Esta ocorrência já está marcada como paga.')
+      throw error
+    }
     return data as unknown as FixedExpenseRecord
   },
 
