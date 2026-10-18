@@ -34,6 +34,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { useMonthlyDetails } from '@/hooks/use-monthly-details'
+import { useMonthlyAutomatic } from '@/hooks/use-monthly-automatic'
+import { Sparkles } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import {
   MONTH_NAMES_PT,
@@ -137,6 +139,27 @@ const CurrencyCell: React.FC<{
 }
 
 /** Read-only computed cell — muted background, no input. */
+/** Valor automático (integrações / gastos fixos) sugerido para a célula. */
+const AutoHint: React.FC<{
+  value: number | undefined
+  current: string
+  onApply: () => void
+}> = ({ value, current, onApply }) => {
+  if (value === undefined || value <= 0) return null
+  if (Math.abs(parsePtBrNumber(current) - value) < 0.005) return null
+  return (
+    <button
+      type="button"
+      onClick={onApply}
+      title="Usar valor automático"
+      className="mt-0.5 text-[10px] text-[#6D49F2] hover:underline flex items-center gap-0.5 tabular-nums"
+    >
+      <Sparkles className="w-2.5 h-2.5" />
+      {formatCurrency(value)}
+    </button>
+  )
+}
+
 const ReadOnlyCell: React.FC<{
   value: string
   className?: string
@@ -270,6 +293,57 @@ export default function Mensal() {
       num(row.otherVariableStr) !== s.other_variable_costs ||
       num(row.fixedCostsStr) !== s.fixed_costs
     )
+  }
+
+  // Valores automáticos vindos das integrações (Guru/Asaas/Meta) e dos Gastos Fixos.
+  const { months: autoMonths } = useMonthlyAutomatic(selectedYear)
+  const [isApplyingAll, setIsApplyingAll] = useState(false)
+  const autoCount = useMemo(
+    () => Array.from(autoMonths.values()).filter((m) => m.hasData).length,
+    [autoMonths],
+  )
+
+  const applyAutoField = (key: string, field: NumField, value: number) =>
+    handleField(key, field, value > 0 ? formatNumber(value, 2) : '')
+
+  // Preenche Faturamento, Investimento Meta e Custos Fixos de todos os meses com
+  // dados automáticos e salva. Comissão e Outros permanecem como estão.
+  const applyAutoAndSaveAll = async () => {
+    const targets = rows.filter((r) => autoMonths.get(r.monthIndex + 1)?.hasData)
+    if (targets.length === 0) {
+      toast({ title: 'Sem dados automáticos', description: 'Nenhum mês tem dados importados ainda.' })
+      return
+    }
+    setIsApplyingAll(true)
+    let okCount = 0
+    try {
+      for (const row of targets) {
+        const auto = autoMonths.get(row.monthIndex + 1)!
+        await save(row.id, {
+          year: selectedYear,
+          month: row.monthIndex + 1,
+          revenue: auto.revenue,
+          ads_meta: auto.adsMeta,
+          sales_commission: num(row.salesCommissionStr),
+          other_variable_costs: num(row.otherVariableStr),
+          fixed_costs: auto.fixedCosts,
+        })
+        okCount++
+      }
+      toast({
+        title: 'Meses atualizados',
+        description: `${okCount} ${okCount === 1 ? 'mês preenchido' : 'meses preenchidos'} com faturamento, investimento e custos fixos automáticos.`,
+      })
+    } catch (err: unknown) {
+      console.error(err)
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao preencher',
+        description: err instanceof Error ? err.message : 'Tente novamente.',
+      })
+    } finally {
+      setIsApplyingAll(false)
+    }
   }
 
   const computeRow = (row: RowState) =>
@@ -438,6 +512,25 @@ export default function Mensal() {
             Totais, Lucro, ROAS e Margem calculam automaticamente em tempo real.
           </p>
         </div>
+        <Button
+          type="button"
+          size="sm"
+          onClick={applyAutoAndSaveAll}
+          disabled={isApplyingAll || isLoading || autoCount === 0}
+          title={
+            autoCount === 0
+              ? 'Conecte as integrações ou cadastre gastos fixos para ter dados automáticos'
+              : `Preenche ${autoCount} ${autoCount === 1 ? 'mês' : 'meses'} com faturamento (Guru + Asaas), investimento (Meta) e custos fixos`
+          }
+          className="bg-gradient-to-r from-[#6D49F2] to-[#FF2AFF] hover:opacity-90 text-white text-xs rounded-xl shadow-xs shrink-0"
+        >
+          {isApplyingAll ? (
+            <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+          ) : (
+            <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+          )}
+          Preencher com dados automáticos
+        </Button>
       </div>
 
       {/* KPI Cards */}
@@ -739,6 +832,13 @@ export default function Mensal() {
                             onChange={(v) => handleField(row.key, 'revenueStr', v)}
                             modified={modified}
                           />
+                          <AutoHint
+                            value={autoMonths.get(row.monthIndex + 1)?.revenue}
+                            current={row.revenueStr}
+                            onApply={() =>
+                              applyAutoField(row.key, 'revenueStr', autoMonths.get(row.monthIndex + 1)?.revenue ?? 0)
+                            }
+                          />
                         </TableCell>
 
                         {/* ROAS */}
@@ -753,6 +853,13 @@ export default function Mensal() {
                             value={row.adsMetaStr}
                             onChange={(v) => handleField(row.key, 'adsMetaStr', v)}
                             modified={modified}
+                          />
+                          <AutoHint
+                            value={autoMonths.get(row.monthIndex + 1)?.adsMeta}
+                            current={row.adsMetaStr}
+                            onApply={() =>
+                              applyAutoField(row.key, 'adsMetaStr', autoMonths.get(row.monthIndex + 1)?.adsMeta ?? 0)
+                            }
                           />
                         </TableCell>
                         {/* Imposto Meta (auto) */}
@@ -799,6 +906,13 @@ export default function Mensal() {
                             value={row.fixedCostsStr}
                             onChange={(v) => handleField(row.key, 'fixedCostsStr', v)}
                             modified={modified}
+                          />
+                          <AutoHint
+                            value={autoMonths.get(row.monthIndex + 1)?.fixedCosts}
+                            current={row.fixedCostsStr}
+                            onApply={() =>
+                              applyAutoField(row.key, 'fixedCostsStr', autoMonths.get(row.monthIndex + 1)?.fixedCosts ?? 0)
+                            }
                           />
                         </TableCell>
 

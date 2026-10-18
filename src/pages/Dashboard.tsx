@@ -4,6 +4,7 @@ import { KpiCard } from '@/components/dashboard/KpiCard'
 import { formatPercent } from '@/lib/financial-utils'
 import { DashboardCharts } from '@/components/dashboard/DashboardCharts'
 import { MetasModal } from '@/components/MetasModal'
+import { IntegrationsSummary } from '@/components/dashboard/IntegrationsSummary'
 import { TrendingUp, Wallet, Percent, PlusCircle, Target } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Link } from 'react-router-dom'
@@ -104,6 +105,9 @@ export default function Dashboard() {
           iconBgColor="bg-amber-50 text-amber-600 border-amber-200"
         />
       </div>
+
+      {/* Dados importados das integrações */}
+      <IntegrationsSummary year={selectedYear} />
 
       {/* Empty State vs Charts */}
       {!isLoading && !summary.hasAnyData ? (

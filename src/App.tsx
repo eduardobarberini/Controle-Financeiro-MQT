@@ -16,6 +16,7 @@ import GastosFixos from './pages/GastosFixos'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
 import Configuracoes from './pages/Configuracoes'
+import Integracoes from './pages/Integracoes'
 
 const App = () => (
   <BrowserRouter>
@@ -37,6 +38,7 @@ const App = () => (
                 <Route path="/renovacoes" element={<Renovacoes />} />
                 <Route path="/lancamento-pago" element={<LancamentoPago />} />
                 <Route path="/gastos-fixos" element={<GastosFixos />} />
+                <Route path="/integracoes" element={<Integracoes />} />
                 <Route path="/configuracoes" element={<Configuracoes />} />
               </Route>
 

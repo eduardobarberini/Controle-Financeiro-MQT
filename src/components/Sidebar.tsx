@@ -9,6 +9,7 @@ import {
   RefreshCw,
   Rocket,
   Receipt,
+  Plug,
 } from 'lucide-react'
 import { useCompany } from '@/contexts/CompanyContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -28,6 +29,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
     { to: '/renovacoes', label: 'Renovações', icon: RefreshCw },
     { to: '/lancamento-pago', label: 'Lançamento Pago', icon: Rocket },
     { to: '/gastos-fixos', label: 'Gastos Fixos', icon: Receipt },
+    { to: '/integracoes', label: 'Integrações', icon: Plug },
   ]
 
   const getUserInitials = () => {
