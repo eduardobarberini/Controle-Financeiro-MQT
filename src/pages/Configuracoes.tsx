@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCompany } from '@/contexts/CompanyContext'
 import { toast } from '@/hooks/use-toast'
-import pb from '@/lib/pocketbase/client'
 import { upsertCompanySettings, getLogoUrl } from '@/services/companySettings'
 import { COMPANY_NAME as DEFAULT_COMPANY_NAME } from '@/types/financial'
 import {
@@ -31,7 +30,7 @@ import {
 } from 'lucide-react'
 
 export default function Configuracoes() {
-  const { user } = useAuth()
+  const { user, updateName, updateEmail, updatePassword } = useAuth()
   const { settings, companyName, logoUrl, refresh } = useCompany()
 
   /* ----------------------------- Company state ---------------------------- */
@@ -156,9 +155,7 @@ export default function Configuracoes() {
     }
     try {
       setIsSavingProfile(true)
-      await pb.collection('users').update(user.id, { name: userNameInput.trim() })
-      // Refresh auth record so sidebar/topbar reflect the change.
-      await pb.collection('users').authRefresh()
+      await updateName(userNameInput.trim())
       toast({ title: 'Perfil atualizado', description: 'Seu nome foi salvo com sucesso.' })
     } catch (err: unknown) {
       console.error('Save profile error:', err)
@@ -188,7 +185,7 @@ export default function Configuracoes() {
     }
     try {
       setIsSavingEmail(true)
-      await pb.collection('users').requestEmailChange(trimmed)
+      await updateEmail(trimmed)
       toast({
         title: 'Confirmação enviada',
         description: `Enviamos um link de confirmação para ${trimmed}. Acesse para concluir a troca.`,
@@ -232,11 +229,7 @@ export default function Configuracoes() {
     }
     try {
       setIsSavingPass(true)
-      await pb.collection('users').update(user.id, {
-        oldPassword: currentPass,
-        password: newPass,
-        passwordConfirm: confirmPass,
-      })
+      await updatePassword(currentPass, newPass)
       setCurrentPass('')
       setNewPass('')
       setConfirmPass('')

@@ -14,7 +14,6 @@ import Renovacoes from './pages/Renovacoes'
 import LancamentoPago from './pages/LancamentoPago'
 import GastosFixos from './pages/GastosFixos'
 import Login from './pages/Login'
-import Signup from './pages/Signup'
 import NotFound from './pages/NotFound'
 import Configuracoes from './pages/Configuracoes'
 
@@ -29,7 +28,6 @@ const App = () => (
             <Routes>
               {/* Public Auth Routes */}
               <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
 
               {/* Protected App Routes wrapped in Layout */}
               <Route element={<Layout />}>

@@ -98,12 +98,12 @@ const recurrenceLabel = (rec: string | undefined): string =>
 
 /** Resolve the category object from an expense (expanded or fallback). */
 const resolveCategory = (
-  exp: { category: string; expand?: { category?: FixedExpenseCategoryRecord } },
+  exp: { category_id: string; category?: FixedExpenseCategoryRecord | null },
   categories: FixedExpenseCategoryRecord[],
 ): FixedExpenseCategoryRecord | undefined => {
-  const cat = exp.expand?.category
+  const cat = exp.category
   if (cat) return cat
-  return categories.find((c) => c.id === exp.category)
+  return categories.find((c) => c.id === exp.category_id)
 }
 
 /** Color picker palette for the category color field. */
@@ -348,7 +348,7 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({
 
   useEffect(() => {
     if (open) {
-      setCategory(editing?.category ?? '')
+      setCategory(editing?.category_id ?? '')
       setDescription(editing?.description ?? '')
       setAmount(editing?.amount ? formatNumber(editing.amount, 2) : '')
       setDueDay(editing?.due_day ? String(editing.due_day) : '')
@@ -383,7 +383,7 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({
     setSaving(true)
     try {
       const payload: FixedExpenseInput = {
-        category,
+        category_id: category,
         description: description.trim(),
         amount: parsePtBrNumber(amount),
         due_day: Number(dueDay),
@@ -762,13 +762,13 @@ export default function GastosFixos() {
     if (isProjectedExpense(e)) {
       try {
         await fixedExpensesService.createPaidInstance({
-          category: e.category,
+          originId: e.originalId,
+          category_id: e.category_id,
           description: e.description,
           amount: e.amount,
           due_day: e.due_day,
           month: e.month,
           year: e.year,
-          recurrence: e.recurrence,
           notes: e.notes,
         })
         toast({
@@ -825,7 +825,7 @@ export default function GastosFixos() {
 
   const filteredExpenses = useMemo(() => {
     return expenses.filter((e) => {
-      if (filterCategory !== 'all' && e.category !== filterCategory) return false
+      if (filterCategory !== 'all' && e.category_id !== filterCategory) return false
       if (filterStatus !== 'all' && e.status !== filterStatus) return false
       if (filterMonth !== 'all' && String(e.month) !== filterMonth) return false
       if (search.trim() && !e.description.toLowerCase().includes(search.trim().toLowerCase()))
@@ -890,7 +890,7 @@ export default function GastosFixos() {
       previousMonthDate.year,
     )
     const map = new Map<string, number>()
-    for (const e of prev) map.set(e.category, (map.get(e.category) || 0) + (Number(e.amount) || 0))
+    for (const e of prev) map.set(e.category_id, (map.get(e.category_id) || 0) + (Number(e.amount) || 0))
     return map
   }, [expenses, previousMonthDate])
 

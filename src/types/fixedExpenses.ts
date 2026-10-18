@@ -1,12 +1,10 @@
-/** Fixed expense category record (collection: fixed_expense_categories). */
-export interface FixedExpenseCategoryRecord {
-  id: string
-  user: string
+import type { BaseRow } from './financial'
+
+/** Categoria de gasto fixo (tabela: fixed_expense_categories). */
+export interface FixedExpenseCategoryRecord extends BaseRow {
   name: string
   color: string
   description: string
-  created: string
-  updated: string
 }
 
 export interface FixedExpenseCategoryInput {
@@ -15,13 +13,12 @@ export interface FixedExpenseCategoryInput {
   description?: string
 }
 
-/** Fixed expense record (collection: fixed_expenses). */
 export type FixedExpenseStatus = 'pago' | 'pendente'
 
-/** Recurrence pattern for a fixed expense. */
+/** Padrão de recorrência de um gasto. */
 export type FixedExpenseRecurrence = 'pontual' | 'mensal' | 'trimestral' | 'semestral' | 'anual'
 
-/** Labelled options for recurrence selectors (pt-BR). */
+/** Opções de recorrência para selects (pt-BR). */
 export const RECURRENCE_OPTIONS: { value: FixedExpenseRecurrence; label: string }[] = [
   { value: 'pontual', label: 'Pontual' },
   { value: 'mensal', label: 'Mensal' },
@@ -30,10 +27,9 @@ export const RECURRENCE_OPTIONS: { value: FixedExpenseRecurrence; label: string 
   { value: 'anual', label: 'Anual' },
 ]
 
-export interface FixedExpenseRecord {
-  id: string
-  user: string
-  category: string
+/** Gasto fixo (tabela: fixed_expenses). */
+export interface FixedExpenseRecord extends BaseRow {
+  category_id: string
   description: string
   amount: number
   due_day: number
@@ -41,18 +37,18 @@ export interface FixedExpenseRecord {
   year: number
   status: FixedExpenseStatus
   recurrence: FixedExpenseRecurrence
+  /** Competência em que a recorrência termina. null = sem fim. */
+  ends_year: number | null
+  ends_month: number | null
+  /** Quando este registro é a ocorrência paga de um gasto recorrente, id do gasto de origem. */
+  origin_id: string | null
   notes: string
-  created: string
-  updated: string
-
-  /** Populated by `expand=category` when fetching via service. */
-  expand?: {
-    category?: FixedExpenseCategoryRecord
-  }
+  /** Categoria carregada junto (join). */
+  category?: FixedExpenseCategoryRecord | null
 }
 
 export interface FixedExpenseInput {
-  category: string
+  category_id: string
   description: string
   amount: number
   due_day: number
@@ -60,19 +56,21 @@ export interface FixedExpenseInput {
   year: number
   status: FixedExpenseStatus
   recurrence: FixedExpenseRecurrence
+  ends_year?: number | null
+  ends_month?: number | null
   notes?: string
 }
 
 /**
- * A virtual (non-persisted) occurrence of a recurring expense projected into a
- * specific month/year. Mirrors the relevant fields of `FixedExpenseRecord` so
- * the UI can treat both shapes uniformly, but carries the original record id
- * and the projected competence so "mark as paid" can create a real instance.
+ * Ocorrência virtual (não persistida) de um gasto recorrente projetada em um
+ * mês/ano específico. Espelha os campos relevantes de `FixedExpenseRecord` para a
+ * UI tratar as duas formas de modo uniforme, mas carrega o id de origem e a
+ * competência projetada para "marcar como pago" criar um registro real.
  */
 export interface ProjectedExpense {
   isProjected: true
   originalId: string
-  category: string
+  category_id: string
   description: string
   amount: number
   due_day: number
@@ -81,17 +79,15 @@ export interface ProjectedExpense {
   status: 'pendente'
   recurrence: FixedExpenseRecurrence
   notes: string
-  expand?: {
-    category?: FixedExpenseCategoryRecord
-  }
+  category?: FixedExpenseCategoryRecord | null
 }
 
-/** Type guard for projected (virtual) expenses. */
+/** Type guard para ocorrências projetadas. */
 export function isProjectedExpense(
   e: FixedExpenseRecord | ProjectedExpense,
 ): e is ProjectedExpense {
   return (e as ProjectedExpense).isProjected === true
 }
 
-/** Union of real and projected expenses as returned by the projection helper. */
+/** União de gastos reais e projetados, como devolvido pelo helper de projeção. */
 export type EffectiveExpense = FixedExpenseRecord | ProjectedExpense
