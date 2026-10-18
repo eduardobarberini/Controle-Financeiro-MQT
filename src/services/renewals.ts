@@ -1,4 +1,4 @@
-import pb from '@/lib/pocketbase/client'
+import { supabase, requireUserId } from '@/lib/supabase/client'
 import type { RenewalRecord } from '@/types/renewals'
 
 export interface RenewalInput {
@@ -10,54 +10,39 @@ export interface RenewalInput {
 }
 
 export const renewalsService = {
-  /** List all renewals records for a given year (current user). */
+  /** Renovações de um ano (usuário logado), ordenadas por mês. */
   async getByYear(year: number): Promise<RenewalRecord[]> {
-    const userId = pb.authStore.record?.id
-    if (!userId) return []
-
-    try {
-      const records = await pb.collection<RenewalRecord>('renewals').getFullList({
-        filter: `user = "${userId}" && year = ${year}`,
-        sort: 'month',
-      })
-      return records
-    } catch (err) {
-      console.error('renewalsService.getByYear error:', err)
+    const { data, error } = await supabase
+      .from('renewals')
+      .select('*')
+      .eq('year', year)
+      .order('month')
+    if (error) {
+      console.error('renewalsService.getByYear:', error)
       return []
     }
+    return (data ?? []) as RenewalRecord[]
   },
 
-  /** Create a new renewals record (current user). */
-  async create(data: RenewalInput): Promise<RenewalRecord> {
-    const userId = pb.authStore.record?.id
-    if (!userId) throw new Error('Usuário não autenticado')
-
-    return await pb.collection<RenewalRecord>('renewals').create({
-      user: userId,
-      year: data.year,
-      month: data.month,
-      students_to_renew: data.students_to_renew,
-      renewals: data.renewals,
-      renewal_revenue: data.renewal_revenue,
-    })
-  },
-
-  /** Update an existing renewals record by id. */
-  async update(id: string, data: RenewalInput): Promise<RenewalRecord> {
-    return await pb.collection<RenewalRecord>('renewals').update(id, {
-      year: data.year,
-      month: data.month,
-      students_to_renew: data.students_to_renew,
-      renewals: data.renewals,
-      renewal_revenue: data.renewal_revenue,
-    })
-  },
-
-  /** Upsert: update if id present, else create. Idempotent on (user, year, month). */
-  async save(id: string | undefined, data: RenewalInput): Promise<RenewalRecord> {
-    if (id) {
-      return await this.update(id, data)
-    }
-    return await this.create(data)
+  /** Cria ou atualiza o mês (único por usuário/ano/mês). */
+  async save(_id: string | undefined, input: RenewalInput): Promise<RenewalRecord> {
+    const userId = await requireUserId()
+    const { data, error } = await supabase
+      .from('renewals')
+      .upsert(
+        {
+          user_id: userId,
+          year: input.year,
+          month: input.month,
+          students_to_renew: input.students_to_renew,
+          renewals: input.renewals,
+          renewal_revenue: input.renewal_revenue,
+        },
+        { onConflict: 'user_id,year,month' },
+      )
+      .select()
+      .single()
+    if (error) throw error
+    return data as RenewalRecord
   },
 }

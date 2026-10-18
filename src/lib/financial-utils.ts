@@ -49,11 +49,6 @@ const compactCurrencyFormatter = new Intl.NumberFormat('pt-BR', {
   maximumFractionDigits: 1,
 })
 
-const numberFormatter = new Intl.NumberFormat('pt-BR', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-})
-
 export function formatCurrency(value: number | null | undefined): string {
   if (value === null || value === undefined || isNaN(value)) return 'R$ 0,00'
   const isNegative = value < 0

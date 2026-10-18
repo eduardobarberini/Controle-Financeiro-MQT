@@ -60,7 +60,7 @@ export interface UpsellPlatform {
 
 export interface PaidLaunchRecord {
   id: string
-  user: string
+  user_id: string
   capture_days: number
   batch: string
   ticket_ticket: number
@@ -80,8 +80,8 @@ export interface PaidLaunchRecord {
   class_sessions?: ClassSessions
   commercial_sales?: CommercialSales
   upsell_platform?: UpsellPlatform
-  created: string
-  updated: string
+  created_at: string
+  updated_at: string
 }
 
 export interface PaidLaunchInput {

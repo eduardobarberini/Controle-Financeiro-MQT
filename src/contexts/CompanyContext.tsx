@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import pb from '@/lib/pocketbase/client'
 import {
   getCompanySettings,
   getLogoUrl,
   type CompanySettingsRecord,
 } from '@/services/companySettings'
 import { COMPANY_NAME as DEFAULT_COMPANY_NAME } from '@/types/financial'
+import { useAuth } from './AuthContext'
 
 interface CompanyContextValue {
   companyName: string
@@ -18,6 +18,7 @@ interface CompanyContextValue {
 const CompanyContext = createContext<CompanyContextValue | undefined>(undefined)
 
 export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, isLoading: authLoading } = useAuth()
   const [settings, setSettings] = useState<CompanySettingsRecord | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
 
@@ -27,29 +28,16 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setLoading(false)
   }, [])
 
+  // Carrega quando há usuário; limpa ao sair.
   useEffect(() => {
-    // Only fetch when authenticated; PocketBase SDK exposes the record on the store.
-    if (!pb.authStore.record) {
+    if (authLoading) return
+    if (!user) {
+      setSettings(null)
       setLoading(false)
       return
     }
     refresh()
-  }, [refresh])
-
-  // Keep in sync when auth changes (login/logout).
-  useEffect(() => {
-    const unsubscribe = pb.authStore.onChange(() => {
-      if (!pb.authStore.record) {
-        setSettings(null)
-        setLoading(false)
-      } else {
-        refresh()
-      }
-    })
-    return () => {
-      unsubscribe()
-    }
-  }, [refresh])
+  }, [user, authLoading, refresh])
 
   const companyName = settings?.company_name || DEFAULT_COMPANY_NAME
   const logoUrl = getLogoUrl(settings)

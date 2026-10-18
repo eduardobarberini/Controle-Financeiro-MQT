@@ -1,4 +1,5 @@
-import pb from '@/lib/pocketbase/client'
+import { supabase, requireUserId, type TablesUpdate } from '@/lib/supabase/client'
+import type { Json } from '@/lib/supabase/database.types'
 import type {
   PaidLaunchRecord,
   PaidLaunchInput,
@@ -7,60 +8,83 @@ import type {
   UpsellPlatform,
 } from '@/types/paidLaunches'
 
-export const paidLaunchesService = {
-  /** List all paid launch records for current user. */
-  async getAll(): Promise<PaidLaunchRecord[]> {
-    const userId = pb.authStore.record?.id
-    if (!userId) return []
+/** Converte o input da UI para as colunas da tabela (campos JSON tipados como Json). */
+function toRow(data: PaidLaunchInput) {
+  const students =
+    data.students_in_challenge === '' || data.students_in_challenge === undefined
+      ? null
+      : Number(data.students_in_challenge) || 0
+  return {
+    capture_days: data.capture_days,
+    batch: data.batch,
+    ticket_ticket: data.ticket_ticket,
+    traffic_investment: data.traffic_investment,
+    total_ticket_sales: data.total_ticket_sales,
+    ticket_refunds: data.ticket_refunds,
+    bump_ticket: data.bump_ticket,
+    bump_sales: data.bump_sales,
+    bump_refunds: data.bump_refunds,
+    api_official_cost: data.api_official_cost ?? null,
+    commercial_commission: data.commercial_commission ?? null,
+    revenue_tax_rate: data.revenue_tax_rate ?? null,
+    traffic_tax_rate: data.traffic_tax_rate ?? null,
+    students_in_challenge: students,
+    debriefing: data.debriefing ?? null,
+    daily_data: (data.daily_data ?? null) as unknown as Json,
+    class_sessions: (data.class_sessions ?? null) as unknown as Json,
+    commercial_sales: (data.commercial_sales ?? null) as unknown as Json,
+    upsell_platform: (data.upsell_platform ?? null) as unknown as Json,
+  }
+}
 
-    try {
-      const records = await pb.collection<PaidLaunchRecord>('paid_launches').getFullList({
-        filter: `user = "${userId}"`,
-        sort: '-created',
-      })
-      return records
-    } catch (err) {
-      console.error('paidLaunchesService.getAll error:', err)
+export const paidLaunchesService = {
+  /** Todas as turmas do usuário logado, mais recentes primeiro. */
+  async getAll(): Promise<PaidLaunchRecord[]> {
+    const { data, error } = await supabase
+      .from('paid_launches')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (error) {
+      console.error('paidLaunchesService.getAll:', error)
       return []
     }
+    return (data ?? []) as unknown as PaidLaunchRecord[]
   },
 
-  /** Create a new paid launch record. */
-  async create(data: PaidLaunchInput): Promise<PaidLaunchRecord> {
-    const userId = pb.authStore.record?.id
-    if (!userId) throw new Error('Usuário não autenticado')
-
-    return await pb.collection<PaidLaunchRecord>('paid_launches').create({
-      user: userId,
-      ...data,
-    })
+  async create(input: PaidLaunchInput): Promise<PaidLaunchRecord> {
+    const userId = await requireUserId()
+    const { data, error } = await supabase
+      .from('paid_launches')
+      .insert({ user_id: userId, ...toRow(input) })
+      .select()
+      .single()
+    if (error) throw error
+    return data as unknown as PaidLaunchRecord
   },
 
-  /** Update an existing paid launch record by id. */
-  async update(id: string, data: PaidLaunchInput): Promise<PaidLaunchRecord> {
-    return await pb.collection<PaidLaunchRecord>('paid_launches').update(id, data)
+  async update(id: string, input: PaidLaunchInput): Promise<PaidLaunchRecord> {
+    const { data, error } = await supabase
+      .from('paid_launches')
+      .update(toRow(input))
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) throw error
+    return data as unknown as PaidLaunchRecord
   },
 
-  /** Save: update if id present, else create. */
-  async save(id: string | undefined, data: PaidLaunchInput): Promise<PaidLaunchRecord> {
-    if (id) {
-      return await this.update(id, data)
-    }
-    return await this.create(data)
+  /** Atualiza se houver id, senão cria. */
+  async save(id: string | undefined, input: PaidLaunchInput): Promise<PaidLaunchRecord> {
+    return id ? this.update(id, input) : this.create(input)
   },
 
-  /** Delete a paid launch record by id. */
   async delete(id: string): Promise<boolean> {
-    try {
-      await pb.collection('paid_launches').delete(id)
-      return true
-    } catch (err) {
-      console.error('paidLaunchesService.delete error:', err)
-      throw err
-    }
+    const { error } = await supabase.from('paid_launches').delete().eq('id', id)
+    if (error) throw error
+    return true
   },
 
-  /** Partially update JSON / nested fields (class_sessions / commercial_sales / upsell_platform). */
+  /** Atualiza só os campos JSON (aulas / vendas comerciais / upsell). */
   async saveArrays(
     id: string,
     data: {
@@ -69,6 +93,17 @@ export const paidLaunchesService = {
       upsell_platform?: UpsellPlatform
     },
   ): Promise<PaidLaunchRecord> {
-    return await pb.collection<PaidLaunchRecord>('paid_launches').update(id, data)
+    const patch: TablesUpdate<'paid_launches'> = {}
+    if (data.class_sessions) patch.class_sessions = data.class_sessions as unknown as Json
+    if (data.commercial_sales) patch.commercial_sales = data.commercial_sales as unknown as Json
+    if (data.upsell_platform) patch.upsell_platform = data.upsell_platform as unknown as Json
+    const { data: row, error } = await supabase
+      .from('paid_launches')
+      .update(patch)
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) throw error
+    return row as unknown as PaidLaunchRecord
   },
 }

@@ -14,9 +14,9 @@ import Renovacoes from './pages/Renovacoes'
 import LancamentoPago from './pages/LancamentoPago'
 import GastosFixos from './pages/GastosFixos'
 import Login from './pages/Login'
-import Signup from './pages/Signup'
 import NotFound from './pages/NotFound'
 import Configuracoes from './pages/Configuracoes'
+import Integracoes from './pages/Integracoes'
 
 const App = () => (
   <BrowserRouter>
@@ -29,7 +29,6 @@ const App = () => (
             <Routes>
               {/* Public Auth Routes */}
               <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
 
               {/* Protected App Routes wrapped in Layout */}
               <Route element={<Layout />}>
@@ -39,6 +38,7 @@ const App = () => (
                 <Route path="/renovacoes" element={<Renovacoes />} />
                 <Route path="/lancamento-pago" element={<LancamentoPago />} />
                 <Route path="/gastos-fixos" element={<GastosFixos />} />
+                <Route path="/integracoes" element={<Integracoes />} />
                 <Route path="/configuracoes" element={<Configuracoes />} />
               </Route>
 

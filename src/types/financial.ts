@@ -1,31 +1,26 @@
 export const COMPANY_NAME = 'MQT Negócios Digitais'
 export const APP_TITLE = `Controle Financeiro — ${COMPANY_NAME}`
-export const DEFAULT_YEAR = 2026
+export const DEFAULT_YEAR = new Date().getFullYear()
 
-import type { RecordModel } from 'pocketbase'
-
-export interface MonthlyDataRecord extends RecordModel {
-  user: string
-  month: string // ISO date string (e.g. "2026-01-01 00:00:00.000Z")
-  investment: number
-  gross_revenue: number
-  net_profit: number
+/** Campos comuns a todas as tabelas por usuário. */
+export interface BaseRow {
+  id: string
+  user_id: string
+  created_at: string
+  updated_at: string
 }
 
-export interface GoalsRecord extends RecordModel {
-  user: string
+export interface GoalsRecord extends BaseRow {
   year: number
   annual_revenue_goal: number
   annual_profit_goal: number
-  profit_margin_goal?: number | null
-  min_margin_goal?: number | null
-  renewal_rate_goal?: number | null
-  tax_meta_rate?: number | null
-  sales_tax_rate?: number | null
+  profit_margin_goal: number | null
+  renewal_rate_goal: number | null
+  tax_meta_rate: number | null
+  sales_tax_rate: number | null
 }
 
-export interface MonthlyDetailsRecord extends RecordModel {
-  user: string
+export interface MonthlyDetailsRecord extends BaseRow {
   year: number
   month: number // 1-12
   revenue: number
@@ -34,6 +29,7 @@ export interface MonthlyDetailsRecord extends RecordModel {
   other_variable_costs: number
   fixed_costs: number
 }
+
 export interface ComputedMonthlyItem {
   id?: string
   monthDate: string // YYYY-MM-01 format or full ISO

@@ -1,169 +1,200 @@
-import pb from '@/lib/pocketbase/client'
-import { getErrorMessage } from '@/lib/pocketbase/errors'
+import { supabase, requireUserId } from '@/lib/supabase/client'
 import type {
   FixedExpenseCategoryRecord,
   FixedExpenseCategoryInput,
   FixedExpenseRecord,
   FixedExpenseInput,
-  FixedExpenseRecurrence,
 } from '@/types/fixedExpenses'
 
+const EXPENSE_SELECT = '*, category:fixed_expense_categories(*)'
+
 /**
- * CRUD service for the "Gastos Fixos" module. All collections are user-scoped:
- * every list/filter is narrowed by the authenticated user id.
- *
- * Categories: collection `fixed_expense_categories`.
- * Expenses:   collection `fixed_expenses` (with `expand=category` to hydrate
- * the related category on read).
+ * CRUD do módulo "Gastos Fixos". Todas as tabelas são por usuário; o RLS do
+ * Supabase garante que só os registros do usuário logado são lidos/alterados.
  */
 export const fixedExpensesService = {
-  // ─────────────────────────────────────────────────────────────
-  //  Categorias
-  // ─────────────────────────────────────────────────────────────
+  // ───────────────────────────── Categorias ─────────────────────────────
 
-  /** List all fixed-expense categories for the current user (sorted by name). */
   async getCategories(): Promise<FixedExpenseCategoryRecord[]> {
-    const userId = pb.authStore.record?.id
-    if (!userId) return []
-    try {
-      return await pb
-        .collection<FixedExpenseCategoryRecord>('fixed_expense_categories')
-        .getFullList({
-          filter: `user = "${userId}"`,
-          sort: 'name',
-        })
-    } catch (err) {
-      console.error('fixedExpensesService.getCategories error:', err)
+    const { data, error } = await supabase
+      .from('fixed_expense_categories')
+      .select('*')
+      .order('name')
+    if (error) {
+      console.error('fixedExpensesService.getCategories:', error)
       return []
     }
+    return (data ?? []) as FixedExpenseCategoryRecord[]
   },
 
-  /** Create a new category. */
-  async createCategory(data: FixedExpenseCategoryInput): Promise<FixedExpenseCategoryRecord> {
-    const userId = pb.authStore.record?.id
-    if (!userId) throw new Error('Usuário não autenticado')
-    return await pb
-      .collection<FixedExpenseCategoryRecord>('fixed_expense_categories')
-      .create({ user: userId, ...data })
+  async createCategory(input: FixedExpenseCategoryInput): Promise<FixedExpenseCategoryRecord> {
+    const userId = await requireUserId()
+    const { data, error } = await supabase
+      .from('fixed_expense_categories')
+      .insert({
+        user_id: userId,
+        name: input.name,
+        color: input.color,
+        description: input.description ?? '',
+      })
+      .select()
+      .single()
+    if (error) throw error
+    return data as FixedExpenseCategoryRecord
   },
 
-  /** Update an existing category by id. */
   async updateCategory(
     id: string,
-    data: FixedExpenseCategoryInput,
+    input: FixedExpenseCategoryInput,
   ): Promise<FixedExpenseCategoryRecord> {
-    return await pb
-      .collection<FixedExpenseCategoryRecord>('fixed_expense_categories')
-      .update(id, data)
+    const { data, error } = await supabase
+      .from('fixed_expense_categories')
+      .update({ name: input.name, color: input.color, description: input.description ?? '' })
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) throw error
+    return data as FixedExpenseCategoryRecord
   },
 
-  /** Upsert helper: update if id present, otherwise create. */
   async saveCategory(
     id: string | undefined,
-    data: FixedExpenseCategoryInput,
+    input: FixedExpenseCategoryInput,
   ): Promise<FixedExpenseCategoryRecord> {
-    if (id) return await this.updateCategory(id, data)
-    return await this.createCategory(data)
+    return id ? this.updateCategory(id, input) : this.createCategory(input)
   },
 
-  /** Delete a category. Server hook blocks deletion when expenses are linked. */
+  /** Apaga a categoria. O banco bloqueia (FK restrict) se houver gastos vinculados. */
   async deleteCategory(id: string): Promise<boolean> {
-    try {
-      await pb.collection('fixed_expense_categories').delete(id)
-      return true
-    } catch (err) {
-      // Surface the backend message verbatim so the UI can toast it.
-      throw new Error(getErrorMessage(err))
+    const { error } = await supabase.from('fixed_expense_categories').delete().eq('id', id)
+    if (error) {
+      if (error.code === '23503') {
+        throw new Error('Esta categoria possui gastos vinculados e não pode ser excluída.')
+      }
+      throw new Error(error.message)
     }
+    return true
   },
 
-  // ─────────────────────────────────────────────────────────────
-  //  Gastos
-  // ─────────────────────────────────────────────────────────────
+  // ─────────────────────────────── Gastos ───────────────────────────────
 
-  /** List all fixed expenses for the current user (newest first). */
+  /** Todos os gastos do usuário (mais recentes primeiro), com a categoria carregada. */
   async getAll(): Promise<FixedExpenseRecord[]> {
-    const userId = pb.authStore.record?.id
-    if (!userId) return []
-    try {
-      return await pb.collection<FixedExpenseRecord>('fixed_expenses').getFullList({
-        filter: `user = "${userId}"`,
-        sort: '-created',
-        expand: 'category',
-      })
-    } catch (err) {
-      console.error('fixedExpensesService.getAll error:', err)
+    const { data, error } = await supabase
+      .from('fixed_expenses')
+      .select(EXPENSE_SELECT)
+      .order('created_at', { ascending: false })
+    if (error) {
+      console.error('fixedExpensesService.getAll:', error)
       return []
     }
+    return (data ?? []) as unknown as FixedExpenseRecord[]
   },
 
-  /** Create a new fixed expense. */
-  async create(data: FixedExpenseInput): Promise<FixedExpenseRecord> {
-    const userId = pb.authStore.record?.id
-    if (!userId) throw new Error('Usuário não autenticado')
-    return await pb.collection<FixedExpenseRecord>('fixed_expenses').create({
-      user: userId,
-      recurrence: 'pontual',
-      ...data,
-    })
+  async create(input: FixedExpenseInput): Promise<FixedExpenseRecord> {
+    const userId = await requireUserId()
+    const { data, error } = await supabase
+      .from('fixed_expenses')
+      .insert({
+        user_id: userId,
+        category_id: input.category_id,
+        description: input.description,
+        amount: input.amount,
+        due_day: input.due_day,
+        month: input.month,
+        year: input.year,
+        status: input.status,
+        recurrence: input.recurrence ?? 'pontual',
+        ends_year: input.ends_year ?? null,
+        ends_month: input.ends_month ?? null,
+        notes: input.notes ?? '',
+      })
+      .select(EXPENSE_SELECT)
+      .single()
+    if (error) throw error
+    return data as unknown as FixedExpenseRecord
   },
 
-  /** Update an existing fixed expense by id. */
-  async update(id: string, data: FixedExpenseInput): Promise<FixedExpenseRecord> {
-    return await pb.collection<FixedExpenseRecord>('fixed_expenses').update(id, data)
+  async update(id: string, input: FixedExpenseInput): Promise<FixedExpenseRecord> {
+    const { data, error } = await supabase
+      .from('fixed_expenses')
+      .update({
+        category_id: input.category_id,
+        description: input.description,
+        amount: input.amount,
+        due_day: input.due_day,
+        month: input.month,
+        year: input.year,
+        status: input.status,
+        recurrence: input.recurrence ?? 'pontual',
+        ends_year: input.ends_year ?? null,
+        ends_month: input.ends_month ?? null,
+        notes: input.notes ?? '',
+      })
+      .eq('id', id)
+      .select(EXPENSE_SELECT)
+      .single()
+    if (error) throw error
+    return data as unknown as FixedExpenseRecord
   },
 
-  /** Upsert helper: update if id present, otherwise create. */
-  async save(id: string | undefined, data: FixedExpenseInput): Promise<FixedExpenseRecord> {
-    if (id) return await this.update(id, data)
-    return await this.create(data)
+  async save(id: string | undefined, input: FixedExpenseInput): Promise<FixedExpenseRecord> {
+    return id ? this.update(id, input) : this.create(input)
   },
 
-  /** Toggle the status field of a fixed expense (pago ⇄ pendente). */
+  /** Alterna o status (pago ⇄ pendente). */
   async toggleStatus(id: string, status: 'pago' | 'pendente'): Promise<FixedExpenseRecord> {
-    return await pb.collection<FixedExpenseRecord>('fixed_expenses').update(id, { status })
+    const { data, error } = await supabase
+      .from('fixed_expenses')
+      .update({ status })
+      .eq('id', id)
+      .select(EXPENSE_SELECT)
+      .single()
+    if (error) throw error
+    return data as unknown as FixedExpenseRecord
   },
 
   /**
-   * Materialise a projected (recurring) expense into a real "pago" record for
-   * the specific month/year. The original recurring record is left untouched
-   * so it keeps generating future projections; this new instance records that
-   * this particular occurrence was paid. Returns the created record.
+   * Materializa uma ocorrência projetada (gasto recorrente) como registro real
+   * "pago" na competência informada. O registro criado é pontual e aponta para o
+   * gasto de origem via origin_id, então não gera novas projeções nem duplica a
+   * projeção daquele mês.
    */
   async createPaidInstance(source: {
-    category: string
+    originId: string
+    category_id: string
     description: string
     amount: number
     due_day: number
     month: number
     year: number
-    recurrence: FixedExpenseInput['recurrence']
     notes?: string
   }): Promise<FixedExpenseRecord> {
-    const userId = pb.authStore.record?.id
-    if (!userId) throw new Error('Usuário não autenticado')
-    return await pb.collection<FixedExpenseRecord>('fixed_expenses').create({
-      user: userId,
-      category: source.category,
-      description: source.description,
-      amount: source.amount,
-      due_day: source.due_day,
-      month: source.month,
-      year: source.year,
-      status: 'pago',
-      recurrence: source.recurrence,
-      notes: source.notes ?? '',
-    })
+    const userId = await requireUserId()
+    const { data, error } = await supabase
+      .from('fixed_expenses')
+      .insert({
+        user_id: userId,
+        category_id: source.category_id,
+        description: source.description,
+        amount: source.amount,
+        due_day: source.due_day,
+        month: source.month,
+        year: source.year,
+        status: 'pago',
+        recurrence: 'pontual',
+        origin_id: source.originId,
+        notes: source.notes ?? '',
+      })
+      .select(EXPENSE_SELECT)
+      .single()
+    if (error) throw error
+    return data as unknown as FixedExpenseRecord
   },
 
-  /** Delete a fixed expense by id. */
   async delete(id: string): Promise<boolean> {
-    try {
-      await pb.collection('fixed_expenses').delete(id)
-      return true
-    } catch (err) {
-      console.error('fixedExpensesService.delete error:', err)
-      throw err
-    }
+    const { error } = await supabase.from('fixed_expenses').delete().eq('id', id)
+    if (error) throw error
+    return true
   },
 }

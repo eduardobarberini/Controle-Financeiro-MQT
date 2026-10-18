@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCompany } from '@/contexts/CompanyContext'
 import { toast } from '@/hooks/use-toast'
@@ -155,20 +155,11 @@ export default function Login() {
                 )}
               </Button>
 
-              <div className="text-center text-sm text-slate-400">
-                Ainda não tem conta?{' '}
-                <Link
-                  to="/signup"
-                  className="text-[#FF2AFF] hover:text-[#FF2AFF]/80 font-medium underline-offset-4 hover:underline"
-                >
-                  Criar conta
-                </Link>
-              </div>
             </CardFooter>
           </form>
         </Card>
 
-        <p className="text-center text-xs text-slate-500 mt-6">Financeiro • {companyName} • 2026</p>
+        <p className="text-center text-xs text-slate-500 mt-6">Financeiro • {companyName} • {new Date().getFullYear()}</p>
       </div>
     </div>
   )
