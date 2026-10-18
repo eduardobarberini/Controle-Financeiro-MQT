@@ -340,6 +340,8 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({
   const [month, setMonth] = useState(String(defaultMonth))
   const [year, setYear] = useState(String(defaultYear))
   const [recurrence, setRecurrence] = useState<FixedExpenseRecurrence>('pontual')
+  const [endsMonth, setEndsMonth] = useState('')
+  const [endsYear, setEndsYear] = useState('')
   const [status, setStatus] = useState<FixedExpenseStatus>('pendente')
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
@@ -354,6 +356,8 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({
       setMonth(editing ? String(editing.month) : String(defaultMonth))
       setYear(editing ? String(editing.year) : String(defaultYear))
       setRecurrence(editing?.recurrence ?? 'pontual')
+      setEndsMonth(editing?.ends_month ? String(editing.ends_month) : '')
+      setEndsYear(editing?.ends_year ? String(editing.ends_year) : '')
       setStatus(editing?.status ?? 'pendente')
       setNotes(editing?.notes ?? '')
       setErrors({})
@@ -391,6 +395,8 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({
         recurrence,
         status,
         notes: notes.trim(),
+        ends_month: recurrence !== 'pontual' && endsMonth && endsYear ? Number(endsMonth) : null,
+        ends_year: recurrence !== 'pontual' && endsMonth && endsYear ? Number(endsYear) : null,
       }
       await fixedExpensesService.save(editing?.id, payload)
       toast({
@@ -604,6 +610,48 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({
                   ? 'O gasto aparece apenas no mês de competência informado.'
                   : 'O gasto se repete automaticamente nos meses seguintes conforme a recorrência.'}
               </p>
+              {recurrence !== 'pontual' && (
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <div className="space-y-1 col-span-2">
+                    <Label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      Termina em (opcional)
+                    </Label>
+                  </div>
+                  <Select value={endsMonth || 'none'} onValueChange={(v) => setEndsMonth(v === 'none' ? '' : v)}>
+                    <SelectTrigger className="h-9 text-sm bg-white border-slate-200 focus:ring-[#6D49F2] rounded-xl">
+                      <SelectValue placeholder="Mês" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-slate-200 rounded-xl">
+                      <SelectItem value="none" className="text-xs">
+                        Sem fim
+                      </SelectItem>
+                      {MONTH_NAMES_PT.map((m, i) => (
+                        <SelectItem key={m} value={String(i + 1)} className="text-xs capitalize">
+                          {m}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={endsYear || 'none'} onValueChange={(v) => setEndsYear(v === 'none' ? '' : v)}>
+                    <SelectTrigger className="h-9 text-sm bg-white border-slate-200 focus:ring-[#6D49F2] rounded-xl">
+                      <SelectValue placeholder="Ano" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-slate-200 rounded-xl">
+                      <SelectItem value="none" className="text-xs">
+                        Sem fim
+                      </SelectItem>
+                      {years.map((y) => (
+                        <SelectItem key={y} value={String(y)} className="text-xs">
+                          {y}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="col-span-2 text-[11px] text-slate-400">
+                    Última competência em que o gasto se repete. Deixe em branco para repetir sem fim.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Status */}
