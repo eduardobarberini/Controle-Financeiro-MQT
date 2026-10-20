@@ -11,6 +11,36 @@ export interface IntegrationSetting extends BaseRow {
   last_sync_at: string | null
   last_sync_status: string | null
   last_error: string | null
+  sync_state: SyncState | null
+}
+
+/** Progresso do plano em andamento (calculado pela Edge Function). */
+export interface SyncProgress {
+  reason: 'regular' | 'backfill' | null
+  steps_done: number
+  steps_total: number
+  days_done: number
+  days_total: number
+  pages: number
+  records: number
+  current: string | null
+}
+
+/** Estado de retomada guardado em integration_settings.sync_state (spec 03). */
+export interface SyncState {
+  plan?: {
+    reason: 'regular' | 'backfill'
+    created_at: string
+    steps: { kind: string; field?: string; since?: string; until?: string; status?: string }[]
+    index: number
+    pages: number
+    records: number
+    invocations: number
+  } | null
+  done?: Record<string, string>
+  last_completed_at?: string | null
+  blocked_until?: string | null
+  rate_limited_until?: string | null
 }
 
 export interface SyncRun {
@@ -57,7 +87,50 @@ export interface AsaasReceivables {
 export interface SyncResult {
   ok: boolean
   error?: string
+  idle?: boolean
+  partial?: boolean
+  completed?: boolean
+  pages?: number
+  records?: number
+  progress?: SyncProgress
   [key: string]: unknown
+}
+
+/** Plano pendente: quantos dias e passos faltam (para a tela). */
+export function pendingPlan(state: SyncState | null | undefined) {
+  const plan = state?.plan
+  if (!plan || plan.index >= plan.steps.length) return null
+  const days = new Set<string>()
+  const pending = new Set<string>()
+  plan.steps.forEach((s, i) => {
+    if (!s.since) return
+    const end = s.until ?? s.since
+    for (let d = s.since; d <= end; d = nextDay(d)) {
+      days.add(d)
+      if (i >= plan.index) pending.add(d)
+    }
+  })
+  return {
+    reason: plan.reason,
+    stepsDone: plan.index,
+    stepsTotal: plan.steps.length,
+    daysDone: days.size - pending.size,
+    daysTotal: days.size,
+    records: plan.records,
+    invocations: plan.invocations,
+  }
+}
+
+/** Dia mais antigo entre os campos já sincronizados sem lacuna ("em dia até"). */
+export function syncedThrough(state: SyncState | null | undefined): string | null {
+  const days = Object.values(state?.done ?? {})
+  return days.length ? days.sort()[0] : null
+}
+
+function nextDay(iso: string): string {
+  const d = new Date(iso + 'T00:00:00Z')
+  d.setUTCDate(d.getUTCDate() + 1)
+  return d.toISOString().slice(0, 10)
 }
 
 export const PROVIDER_LABELS: Record<IntegrationProvider, string> = {
@@ -103,10 +176,15 @@ export const integrationsService = {
     return (data ?? []) as unknown as SyncRun[]
   },
 
-  /** Dispara a sincronização do provedor (Edge Function <provider>-sync). */
-  async triggerSync(provider: IntegrationProvider, days: number): Promise<SyncResult> {
+  /**
+   * Dispara a sincronização do provedor (Edge Function <provider>-sync). Sem
+   * `days`: continua o plano em andamento ou começa uma rodada agora. Com
+   * `days`: reprocessa os últimos N dias. Cada chamada grava o que couber no
+   * tempo limite; o resto continua sozinho a cada 15 minutos.
+   */
+  async triggerSync(provider: IntegrationProvider, days?: number): Promise<SyncResult> {
     const { data, error } = await supabase.functions.invoke<SyncResult>(`${provider}-sync`, {
-      body: { days },
+      body: days ? { days } : { continue: true },
     })
     if (error) {
       let message = error.message

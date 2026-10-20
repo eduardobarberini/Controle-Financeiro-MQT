@@ -1,4 +1,4 @@
-import { int, num, sleep, str } from './http.ts'
+import { int, num, ProviderAuthError, RateLimitError, sleep, str } from './http.ts'
 
 export const META_VERSION = Deno.env.get('META_API_VERSION') ?? 'v26.0'
 export const META_BASE = `https://graph.facebook.com/${META_VERSION}`
@@ -96,27 +96,33 @@ export function mapCampaign(c: Obj, userId: string, adAccountId: string): Obj | 
   }
 }
 
-/** GET na Graph API com tratamento de throttling (códigos 4, 17, 32, 613, 80000). */
+/**
+ * GET na Graph API. Throttling (códigos 4, 17, 32, 613, 80000) é repetido uma
+ * vez depois de 5 s; persistindo, vira RateLimitError (5 min). Token inválido
+ * ou sem permissão (190, 102, 10, 200) vira ProviderAuthError.
+ */
 export async function metaGet(token: string, pathOrUrl: string, params: Record<string, string> = {}): Promise<Obj> {
   const url = new URL(pathOrUrl.startsWith('http') ? pathOrUrl : META_BASE + pathOrUrl)
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v)
   url.searchParams.set('access_token', token)
-  for (let attempt = 0; attempt < 4; attempt++) {
+  for (let attempt = 0; attempt < 2; attempt++) {
     const res = await fetch(url)
     const body = (await res.json().catch(() => ({}))) as Obj
     if (res.ok && !body.error) return body
     const err = (body.error ?? {}) as Obj
     const code = Number(err.code ?? 0)
-    if ([4, 17, 32, 613, 80000].includes(code) && attempt < 3) {
-      await sleep((attempt + 1) * 30_000)
-      continue
+    const message = `Meta ${res.status} em ${url.pathname}: ${String(err.message ?? JSON.stringify(body)).slice(0, 300)} (code ${code})`
+    if ([4, 17, 32, 613, 80000].includes(code)) {
+      if (attempt === 0) {
+        await sleep(5_000)
+        continue
+      }
+      throw new RateLimitError(message, 300)
     }
-    const safePath = url.pathname
-    throw new Error(
-      `Meta ${res.status} em ${safePath}: ${String(err.message ?? JSON.stringify(body)).slice(0, 300)} (code ${code})`,
-    )
+    if ([190, 102, 10, 200].includes(code) || res.status === 401) throw new ProviderAuthError(message)
+    throw new Error(message)
   }
-  throw new Error('Meta: limite de requisições excedido')
+  throw new RateLimitError('Meta: limite de requisições excedido', 300)
 }
 
 /** Percorre todas as páginas (paging.next) de uma listagem da Graph API. */

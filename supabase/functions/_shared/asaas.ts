@@ -1,4 +1,4 @@
-import { int, num, sleep, str } from './http.ts'
+import { int, num, ProviderAuthError, RateLimitError, sleep, str } from './http.ts'
 
 type Obj = Record<string, unknown>
 const obj = (v: unknown): Obj => (v && typeof v === 'object' && !Array.isArray(v) ? (v as Obj) : {})
@@ -84,11 +84,14 @@ export function mapCustomer(c: Obj, userId: string): Obj | null {
   }
 }
 
-/** GET autenticado no Asaas com tratamento de 429 (sem Retry-After: espera fixa). */
+/**
+ * GET autenticado no Asaas. O Asaas não manda Retry-After: um 429 é repetido
+ * uma vez depois de 5 s; persistindo, vira RateLimitError (espera de 60 s).
+ */
 export async function asaasGet(apiKey: string, path: string, params: Record<string, string> = {}): Promise<Obj> {
   const url = new URL(asaasBase() + path)
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v)
-  for (let attempt = 0; attempt < 4; attempt++) {
+  for (let attempt = 0; attempt < 2; attempt++) {
     const res = await fetch(url, {
       headers: {
         access_token: apiKey,
@@ -97,8 +100,16 @@ export async function asaasGet(apiKey: string, path: string, params: Record<stri
       },
     })
     if (res.status === 429) {
-      await sleep((attempt + 1) * 15_000)
-      continue
+      await res.body?.cancel()
+      if (attempt === 0) {
+        await sleep(5_000)
+        continue
+      }
+      break
+    }
+    if (res.status === 401 || res.status === 403) {
+      const body = await res.text().catch(() => '')
+      throw new ProviderAuthError(`Asaas ${res.status} em ${path}: chave recusada. ${body.slice(0, 200)}`)
     }
     if (!res.ok) {
       const body = await res.text().catch(() => '')
@@ -106,24 +117,20 @@ export async function asaasGet(apiKey: string, path: string, params: Record<stri
     }
     return (await res.json()) as Obj
   }
-  throw new Error(`Asaas: limite de requisições excedido em ${path}`)
+  throw new RateLimitError(`Asaas: limite de requisições excedido em ${path}`, 60)
 }
 
-/** Percorre todas as páginas (offset/limit) de uma listagem. */
-export async function* asaasPaginate(
+/** Uma página (offset/limit) e o offset da próxima, ou null. */
+export async function asaasPage(
   apiKey: string,
   path: string,
-  params: Record<string, string> = {},
+  params: Record<string, string>,
+  offset: number,
   limit = 100,
-): AsyncGenerator<Obj> {
-  let offset = 0
-  for (let page = 0; page < 1000; page++) {
-    const res = await asaasGet(apiKey, path, { ...params, limit: String(limit), offset: String(offset) })
-    const data = Array.isArray(res.data) ? (res.data as Obj[]) : []
-    for (const item of data) yield item
-    if (!res.hasMore || data.length === 0) break
-    offset += limit
-  }
+): Promise<{ data: Obj[]; next: number | null }> {
+  const res = await asaasGet(apiKey, path, { ...params, limit: String(limit), offset: String(offset) })
+  const data = Array.isArray(res.data) ? (res.data as Obj[]) : []
+  return { data, next: res.hasMore && data.length > 0 ? offset + data.length : null }
 }
 
 export { obj as asObject }

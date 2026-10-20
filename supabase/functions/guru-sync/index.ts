@@ -1,91 +1,56 @@
-// Sincronização do Guru: transações (por data de pedido e de cancelamento) e
-// assinaturas. Chamada pelo cron (service role) ou pelo botão "Sincronizar
-// agora" (JWT do usuário). Parâmetro `days` (1..180, padrão 7).
-import { adminClient, requireEnv } from '../_shared/admin.ts'
-import { clampInt, daysAgoIso, json, readJson, todayIso } from '../_shared/http.ts'
-import { guruPaginate, mapSubscription, mapTransaction } from '../_shared/guru.ts'
-import {
-  authenticateCaller,
-  finishRun,
-  resolveOwner,
-  startRun,
-  upsertBatches,
-  type Trigger,
-} from '../_shared/sync.ts'
+// Sincronização incremental do Guru (spec 03): transações por dia de
+// confirmação, de pedido e de cancelamento, e assinaturas uma vez por dia.
+// Grava página a página e retoma do cursor salvo; ver _shared/sync-runner.ts.
+import { requireEnv } from '../_shared/admin.ts'
+import { guruPage, mapSubscription, mapTransaction } from '../_shared/guru.ts'
+import { lastLocalDay, serveSync, uniqueBy } from '../_shared/sync-runner.ts'
+import { buildGuruPlan, GURU_FIELDS } from '../_shared/sync-state.ts'
+import { upsertBatches } from '../_shared/sync.ts'
 
 type Obj = Record<string, unknown>
 
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return json({ ok: true })
+serveSync<{ token: string }>({
+  provider: 'guru',
+  intervalMinutes: Number(Deno.env.get('GURU_SYNC_INTERVAL_MINUTES') ?? '') || 60,
+  // ~45 páginas por dia: períodos maiores ficam para o importador (spec 02).
+  maxBackfillDays: 60,
+  prepare: () => ({ token: requireEnv('GURU_API_TOKEN') }),
 
-  const sb = adminClient()
-  const caller = await authenticateCaller(req, sb)
-  if (!caller.isService && !caller.userId) return json({ error: 'Não autorizado' }, 401)
+  // Depois do importador (spec 02) a primeira rodada começa no último dia que já está no banco.
+  async initialDone(sb, userId) {
+    const day =
+      (await lastLocalDay(sb, 'guru_transactions', 'confirmed_at', userId, 'timestamp')) ??
+      (await lastLocalDay(sb, 'guru_transactions', 'ordered_at', userId, 'timestamp'))
+    return day ? Object.fromEntries(GURU_FIELDS.map((f) => [f, day])) : {}
+  },
 
-  const body = req.method === 'POST' ? await readJson(req).catch(() => ({})) : {}
-  const url = new URL(req.url)
-  const days = clampInt(body.days ?? url.searchParams.get('days'), 7, 1, 180)
-  const trigger: Trigger = caller.isService
-    ? (body.trigger === 'backfill' ? 'backfill' : 'cron')
-    : days > 30
-      ? 'backfill'
-      : 'manual'
+  buildPlan: buildGuruPlan,
 
-  const owner = await resolveOwner(sb, 'guru')
-  if (!owner) return json({ error: 'Integração Guru não configurada' }, 422)
-  if (caller.userId && caller.userId !== owner.userId) return json({ error: 'Não autorizado' }, 403)
-  if (caller.isService && !owner.enabled) return json({ ok: true, skipped: 'disabled' })
+  async runPage(sb, { token }, userId, step, cursor) {
+    const c = typeof cursor === 'string' ? cursor : null
 
-  const runId = await startRun(sb, { userId: owner.userId, provider: 'guru', trigger, details: { days } })
-
-  try {
-    const token = requireEnv('GURU_API_TOKEN')
-    const since = daysAgoIso(days)
-    const until = todayIso()
-
-    // Transações: novas (ordered_at) e canceladas/reembolsadas (cancelled_at).
-    const byId = new Map<string, Obj>()
-    for (const window of [
-      { ordered_at_ini: since, ordered_at_end: until },
-      { confirmed_at_ini: since, confirmed_at_end: until },
-      { cancelled_at_ini: since, cancelled_at_end: until },
-    ]) {
-      for await (const t of guruPaginate(token, '/transactions', window)) {
-        const row = mapTransaction(t, owner.userId)
-        if (row) byId.set(row.guru_id as string, row)
-      }
+    if (step.kind === 'tx') {
+      const { data, next } = await guruPage(
+        token,
+        '/transactions',
+        { [`${step.field}_ini`]: step.since!, [`${step.field}_end`]: step.until! },
+        c,
+      )
+      // Versão mais antiga que a gravada é descartada no banco (gatilho keep_newest).
+      const rows = uniqueBy(data.map((t) => mapTransaction(t, userId)).filter(Boolean) as Obj[], 'guru_id')
+      return { next, records: await upsertBatches(sb, 'guru_transactions', rows, 'guru_id') }
     }
-    const txCount = await upsertBatches(sb, 'guru_transactions', [...byId.values()], 'guru_id')
 
-    // Assinaturas: ativas/atrasadas/trial/iniciadas (estado atual) + canceladas na janela.
-    const subs = new Map<string, Obj>()
-    for await (const s of guruPaginate(token, '/subscriptions', {
-      subscription_status: ['active', 'pastdue', 'trial', 'started'],
-    })) {
-      const row = mapSubscription(s, owner.userId)
-      if (row) subs.set(row.guru_id as string, row)
+    if (step.kind === 'subs_active' || step.kind === 'subs_cancelled') {
+      const params =
+        step.kind === 'subs_active'
+          ? { subscription_status: ['active', 'pastdue', 'trial', 'started'] }
+          : { cancelled_at_ini: step.since!, cancelled_at_end: step.until! }
+      const { data, next } = await guruPage(token, '/subscriptions', params, c)
+      const rows = uniqueBy(data.map((s) => mapSubscription(s, userId)).filter(Boolean) as Obj[], 'guru_id')
+      return { next, records: await upsertBatches(sb, 'guru_subscriptions', rows, 'guru_id') }
     }
-    for await (const s of guruPaginate(token, '/subscriptions', {
-      cancelled_at_ini: since,
-      cancelled_at_end: until,
-    })) {
-      const row = mapSubscription(s, owner.userId)
-      if (row) subs.set(row.guru_id as string, row)
-    }
-    const subCount = await upsertBatches(sb, 'guru_subscriptions', [...subs.values()], 'guru_id')
 
-    const details = { days, since, until, transactions: txCount, subscriptions: subCount }
-    await finishRun(sb, runId, {
-      userId: owner.userId,
-      provider: 'guru',
-      status: 'success',
-      records: txCount + subCount,
-      details,
-    })
-    return json({ ok: true, ...details })
-  } catch (e) {
-    const msg = (e as Error).message
-    await finishRun(sb, runId, { userId: owner.userId, provider: 'guru', status: 'error', error: msg })
-    return json({ ok: false, error: msg }, 500)
-  }
+    throw new Error(`Passo desconhecido: ${step.kind}`)
+  },
 })

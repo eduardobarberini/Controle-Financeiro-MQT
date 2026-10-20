@@ -209,14 +209,14 @@ isOneToOne: false
                   ]
                 },"integration_settings": {
                   Row: {
-                    "config": NonNullable<Json>,"created_at": string,"enabled": boolean,"id": string,"last_error": string | null,"last_sync_at": string | null,"last_sync_status": string | null,"provider": Database["public"]['Enums']["integration_provider"],"updated_at": string,"user_id": string
+                    "config": NonNullable<Json>,"created_at": string,"enabled": boolean,"id": string,"last_error": string | null,"last_sync_at": string | null,"last_sync_status": string | null,"provider": Database["public"]['Enums']["integration_provider"],"sync_locked_until": string | null,"sync_state": NonNullable<Json>,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "config"?: NonNullable<Json>,"created_at"?: string,"enabled"?: boolean,"id"?: string,"last_error"?: string | null,"last_sync_at"?: string | null,"last_sync_status"?: string | null,"provider": Database["public"]['Enums']["integration_provider"],"updated_at"?: string,"user_id": string
+                    "config"?: NonNullable<Json>,"created_at"?: string,"enabled"?: boolean,"id"?: string,"last_error"?: string | null,"last_sync_at"?: string | null,"last_sync_status"?: string | null,"provider": Database["public"]['Enums']["integration_provider"],"sync_locked_until"?: string | null,"sync_state"?: NonNullable<Json>,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "config"?: NonNullable<Json>,"created_at"?: string,"enabled"?: boolean,"id"?: string,"last_error"?: string | null,"last_sync_at"?: string | null,"last_sync_status"?: string | null,"provider"?: Database["public"]['Enums']["integration_provider"],"updated_at"?: string,"user_id"?: string
+                    "config"?: NonNullable<Json>,"created_at"?: string,"enabled"?: boolean,"id"?: string,"last_error"?: string | null,"last_sync_at"?: string | null,"last_sync_status"?: string | null,"provider"?: Database["public"]['Enums']["integration_provider"],"sync_locked_until"?: string | null,"sync_state"?: NonNullable<Json>,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -403,6 +403,9 @@ isOneToOne: false
                            },
 "suggest_guru_product_kind":
 { Args: { "p_name": string }; Returns: Database["public"]['Enums']["product_kind"]
+                           },
+"sync_try_lock":
+{ Args: { "p_provider": Database["public"]['Enums']["integration_provider"],"p_seconds": number,"p_user_id": string }; Returns: boolean
                            }
           }
           Enums: {

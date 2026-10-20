@@ -4,7 +4,9 @@ import { useRealtime } from '@/hooks/use-realtime'
 import { useToast } from '@/hooks/use-toast'
 import {
   integrationsService,
+  pendingPlan,
   PROVIDER_LABELS,
+  syncedThrough,
   type IntegrationProvider,
   type IntegrationSetting,
   type SyncRun,
@@ -57,43 +59,64 @@ const PROVIDER_META: Record<
   guru: {
     icon: ShoppingCart,
     description:
-      'Vendas à vista (cartão e PIX), reembolsos e assinaturas. Recebe cada venda em tempo real pelo webhook e concilia a cada 6 horas.',
+      'Vendas à vista (cartão e PIX), reembolsos e assinaturas. Recebe cada venda em tempo real pelo webhook e concilia ontem e hoje a cada hora.',
     webhook: true,
     secrets: ['GURU_API_TOKEN', 'GURU_ACCOUNT_TOKEN'],
   },
   asaas: {
     icon: Receipt,
     description:
-      'Cobranças parceladas (PIX e boleto em até 3x): parcelas pagas, em aberto, vencidas e estornos.',
+      'Cobranças parceladas (PIX e boleto em até 3x): parcelas pagas, em aberto, vencidas e estornos. Concilia a cada hora; em aberto e vencidas uma vez por dia.',
     webhook: true,
     secrets: ['ASAAS_API_KEY', 'ASAAS_WEBHOOK_TOKEN'],
   },
   meta: {
     icon: Megaphone,
     description:
-      'Investimento diário por campanha com impressões, cliques, CPM, CPC, leads e compras atribuídas. Atualiza a cada 4 horas.',
+      'Investimento diário por campanha com impressões, cliques, CPM, CPC, leads e compras atribuídas. Atualiza os últimos 7 dias a cada 4 horas e os últimos 35 uma vez por semana.',
     webhook: false,
     secrets: ['META_ACCESS_TOKEN'],
   },
 }
 
 const DAY_OPTIONS = [
-  { value: '7', label: 'Últimos 7 dias' },
-  { value: '30', label: 'Últimos 30 dias' },
-  { value: '90', label: 'Últimos 90 dias' },
-  { value: '180', label: 'Últimos 180 dias' },
-  { value: '365', label: 'Último ano (Asaas e Meta)' },
+  { value: 'auto', label: 'Continuar / rodada normal' },
+  { value: '7', label: 'Reprocessar últimos 7 dias' },
+  { value: '30', label: 'Reprocessar últimos 30 dias' },
+  { value: '90', label: 'Reprocessar últimos 90 dias' },
+  { value: '365', label: 'Reprocessar último ano' },
 ]
+
+/** Guru tem ~45 páginas por dia: mais que 30 dias é trabalho para o importador (spec 02). */
+const MAX_REPROCESS_DAYS: Record<IntegrationProvider, number> = { guru: 30, asaas: 365, meta: 365 }
+
+const fmtDay = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`
+const fmtInt = (n: number) => n.toLocaleString('pt-BR')
 
 const fmtDateTime = (iso: string | null | undefined) =>
   iso ? new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '—'
 
 /** Detalhes da execução em uma linha (listas e objetos aninhados ficam de fora). */
-const fmtDetails = (details: Record<string, unknown> | null) =>
-  Object.entries(details ?? {})
+const fmtDetails = (details: Record<string, unknown> | null) => {
+  const d = details ?? {}
+  // Sincronização incremental (spec 03): páginas, parcial/concluído e progresso do plano.
+  if (typeof d.pages === 'number') {
+    const p = (d.progress ?? {}) as { days_done?: number; days_total?: number }
+    const parts = [
+      d.reason === 'backfill' ? 'reprocessamento' : 'rodada',
+      `${d.pages} páginas`,
+      d.completed ? 'concluída' : 'parcial',
+    ]
+    if (p.days_total) parts.push(`${p.days_done}/${p.days_total} dias`)
+    if (d.resumed_from) parts.push('retomada')
+    if (d.rate_limited) parts.push('limite do provedor')
+    return parts.join(' · ')
+  }
+  return Object.entries(d)
     .filter(([, v]) => v === null || typeof v !== 'object')
     .map(([k, v]) => `${k}: ${String(v)}`)
     .join(' · ')
+}
 
 const fmtDuration = (run: SyncRun) => {
   if (!run.finished_at) return '…'
@@ -170,7 +193,7 @@ function ProviderCard({ provider, setting, onChanged }: ProviderCardProps) {
   const { toast } = useToast()
   const meta = PROVIDER_META[provider]
   const Icon = meta.icon
-  const [days, setDays] = useState('7')
+  const [days, setDays] = useState('auto')
   const [syncing, setSyncing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [adAccount, setAdAccount] = useState('')
@@ -181,6 +204,10 @@ function ProviderCard({ provider, setting, onChanged }: ProviderCardProps) {
   }, [setting, adAccountDirty])
 
   const enabled = setting?.enabled ?? false
+  const pending = pendingPlan(setting?.sync_state)
+  const through = syncedThrough(setting?.sync_state)
+  const blockedUntil = setting?.sync_state?.blocked_until
+  const blocked = !!blockedUntil && new Date(blockedUntil).getTime() > Date.now()
 
   const toggle = async (value: boolean) => {
     setSaving(true)
@@ -221,14 +248,21 @@ function ProviderCard({ provider, setting, onChanged }: ProviderCardProps) {
   const sync = async () => {
     setSyncing(true)
     try {
-      const result = await integrationsService.triggerSync(provider, Number(days))
-      const summary = Object.entries(result)
-        .filter(([k]) => !['ok', 'error', 'days', 'since', 'until', 'ad_account_id'].includes(k))
-        .map(([k, v]) => `${k}: ${String(v)}`)
-        .join(' · ')
+      const result = await integrationsService.triggerSync(
+        provider,
+        days === 'auto' ? undefined : Number(days),
+      )
+      const p = result.progress
+      const counted = p?.days_total ? ` · ${p.days_done}/${p.days_total} dias` : ''
       toast({
-        title: `${PROVIDER_LABELS[provider]} sincronizado`,
-        description: summary || 'Concluído.',
+        title: result.partial
+          ? `${PROVIDER_LABELS[provider]}: parte gravada`
+          : `${PROVIDER_LABELS[provider]} sincronizado`,
+        description: result.idle
+          ? 'Já está em dia.'
+          : result.partial
+            ? `${fmtInt(result.records ?? 0)} registros${counted}. O restante continua sozinho a cada 15 minutos.`
+            : `${fmtInt(result.records ?? 0)} registros${counted}.`,
       })
       onChanged()
     } catch (err) {
@@ -270,6 +304,30 @@ function ProviderCard({ provider, setting, onChanged }: ProviderCardProps) {
             <p className="text-slate-500">Última sincronização</p>
             <p className="font-semibold text-slate-800">{fmtDateTime(setting?.last_sync_at)}</p>
           </div>
+          <div>
+            <p className="text-slate-500">Em dia até</p>
+            <p className="font-semibold text-slate-800">{through ? fmtDay(through) : '—'}</p>
+          </div>
+          {pending && (
+            <div className="sm:col-span-2 rounded-md bg-violet-50 border border-violet-200 px-3 py-2 text-violet-800">
+              <p className="font-semibold">
+                {pending.reason === 'backfill' ? 'Reprocessando' : 'Em andamento'}:{' '}
+                {pending.daysTotal
+                  ? `${pending.daysDone}/${pending.daysTotal} dias`
+                  : `${pending.stepsDone}/${pending.stepsTotal} etapas`}{' '}
+                · {fmtInt(pending.records)} registros
+              </p>
+              <p className="text-[11px] text-violet-600 mt-0.5">
+                Continua sozinho a cada 15 minutos, de onde parou.
+              </p>
+            </div>
+          )}
+          {blocked && (
+            <div className="sm:col-span-2 rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-amber-800">
+              Credencial recusada pelo provedor. O agendamento tenta de novo depois de{' '}
+              {fmtDateTime(blockedUntil)}; "Sincronizar agora" tenta já.
+            </div>
+          )}
           {setting?.last_error && (
             <div className="sm:col-span-2 rounded-md bg-rose-50 border border-rose-200 px-3 py-2 text-rose-700 break-words">
               {setting.last_error}
@@ -320,7 +378,9 @@ function ProviderCard({ provider, setting, onChanged }: ProviderCardProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {DAY_OPTIONS.filter((o) => provider !== 'guru' || Number(o.value) <= 180).map((o) => (
+              {DAY_OPTIONS.filter(
+                (o) => o.value === 'auto' || Number(o.value) <= MAX_REPROCESS_DAYS[provider],
+              ).map((o) => (
                 <SelectItem key={o.value} value={o.value} className="text-xs">
                   {o.label}
                 </SelectItem>

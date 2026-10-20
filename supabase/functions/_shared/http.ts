@@ -22,6 +22,24 @@ export function safeEqual(a: string, b: string): boolean {
   return diff === 0
 }
 
+/** Provedor pediu para esperar mais do que cabe na invocação: salva o estado e encerra. */
+export class RateLimitError extends Error {
+  readonly retryAfterSec: number
+  constructor(message: string, retryAfterSec: number) {
+    super(message)
+    this.name = 'RateLimitError'
+    this.retryAfterSec = retryAfterSec
+  }
+}
+
+/** Credencial recusada (401/403): o cron só tenta de novo depois de 1 hora. */
+export class ProviderAuthError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ProviderAuthError'
+  }
+}
+
 export function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms))
 }

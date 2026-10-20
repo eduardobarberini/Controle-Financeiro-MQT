@@ -1,4 +1,4 @@
-import { int, num, sleep, str } from './http.ts'
+import { int, num, ProviderAuthError, RateLimitError, sleep, str } from './http.ts'
 
 export const GURU_BASE = 'https://digitalmanager.guru/api/v2'
 
@@ -128,7 +128,13 @@ export function mapSubscription(s: Obj, userId: string): Obj | null {
   }
 }
 
-/** GET autenticado na API do Guru com tratamento de 429. */
+/** Abaixo disso a próxima chamada espera (limite do Guru: 360 por minuto). */
+const GURU_RATE_FLOOR = 30
+
+/**
+ * GET autenticado na API do Guru. 429 com espera curta é repetido; espera
+ * longa vira RateLimitError (a invocação salva o estado e encerra).
+ */
 export async function guruGet(
   token: string,
   path: string,
@@ -139,36 +145,46 @@ export async function guruGet(
     if (Array.isArray(v)) v.forEach((x) => url.searchParams.append(`${k}[]`, x))
     else url.searchParams.set(k, v)
   }
-  for (let attempt = 0; attempt < 4; attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
     })
+    const retryAfter = Number(res.headers.get('Retry-After') ?? '') || 0
     if (res.status === 429) {
-      const retry = Number(res.headers.get('Retry-After') ?? '5')
-      await sleep(Math.min(60, Math.max(1, retry)) * 1000)
+      await res.body?.cancel()
+      if (retryAfter > 10 || attempt === 2) {
+        throw new RateLimitError(`Guru: limite de requisições (aguardar ${retryAfter || 60} s)`, retryAfter || 60)
+      }
+      await sleep(Math.max(1, retryAfter || 5) * 1000)
       continue
+    }
+    if (res.status === 401 || res.status === 403) {
+      const body = await res.text().catch(() => '')
+      throw new ProviderAuthError(`Guru ${res.status} em ${path}: token recusado. ${body.slice(0, 200)}`)
     }
     if (!res.ok) {
       const body = await res.text().catch(() => '')
       throw new Error(`Guru ${res.status} em ${path}: ${body.slice(0, 300)}`)
     }
-    return (await res.json()) as Obj
+    const data = (await res.json()) as Obj
+    const remaining = Number(res.headers.get('X-RateLimit-Remaining') ?? '')
+    if (Number.isFinite(remaining) && remaining < GURU_RATE_FLOOR) {
+      await sleep(Math.min(15, Math.max(1, retryAfter || 10)) * 1000)
+    }
+    return data
   }
-  throw new Error(`Guru: limite de requisições excedido em ${path}`)
+  throw new RateLimitError(`Guru: limite de requisições excedido em ${path}`, 60)
 }
 
-/** Percorre todas as páginas (cursor) de um endpoint de listagem. */
-export async function* guruPaginate(
+/** Uma página (50 itens, fixo no Guru) e o cursor da próxima, ou null. */
+export async function guruPage(
   token: string,
   path: string,
   params: Record<string, string | string[]>,
-): AsyncGenerator<Obj> {
-  let cursor: string | null = null
-  for (let page = 0; page < 500; page++) {
-    const res = await guruGet(token, path, cursor ? { ...params, cursor } : params)
-    const data = Array.isArray(res.data) ? (res.data as Obj[]) : []
-    for (const item of data) yield item
-    if (!res.has_more_pages || !res.next_cursor) break
-    cursor = String(res.next_cursor)
-  }
+  cursor: string | null,
+): Promise<{ data: Obj[]; next: string | null }> {
+  const res = await guruGet(token, path, cursor ? { ...params, cursor } : params)
+  const data = Array.isArray(res.data) ? (res.data as Obj[]) : []
+  const next = res.has_more_pages && res.next_cursor ? String(res.next_cursor) : null
+  return { data, next }
 }
