@@ -21,16 +21,31 @@ const date = (v: unknown): string | null => {
   return s ? s.slice(0, 10) : null
 }
 
+/**
+ * Parcela e total de parcelas. O Asaas descreve parcelamentos como
+ * "Parcela 1 de 3. ..."; cobrança sem parcelamento é 1 de 1.
+ */
+export function parseInstallment(p: Obj): { number: number | null; count: number | null } {
+  const m = /parcela\s+(\d+)\s+de\s+(\d+)/i.exec(str(p.description) ?? '')
+  const explicit = p.installmentNumber === undefined || p.installmentNumber === null ? null : int(p.installmentNumber)
+  if (m) return { number: explicit ?? Number(m[1]), count: Number(m[2]) }
+  if (!str(p.installment)) return { number: explicit, count: 1 }
+  return { number: explicit, count: null }
+}
+
 /** Converte uma cobrança (REST ou webhook) na linha de asaas_payments. */
 export function mapPayment(p: Obj, userId: string, overrides: Obj = {}): Obj | null {
   const id = str(p.id)
   if (!id) return null
+  const installment = parseInstallment(p)
   return {
     user_id: userId,
     asaas_id: id,
     customer_id: str(p.customer),
     installment_id: str(p.installment),
-    installment_number: p.installmentNumber === undefined || p.installmentNumber === null ? null : int(p.installmentNumber),
+    installment_number: installment.number,
+    installment_count: installment.count,
+    payment_link_id: str(p.paymentLink),
     value: num(p.value),
     net_value: num(p.netValue),
     original_value: p.originalValue === undefined || p.originalValue === null ? null : num(p.originalValue),

@@ -84,3 +84,36 @@ aparecem com badge "Novo, classifique". Botão "Reclassificar vendas".
 - Venda com `checkout_name` "Comercial - Maju - R$ 297 - Desafio Pago" fica com `seller_id` = Maju.
 - Cobrança Asaas do link "Plataforma Mães Que Treinam (MZ)" fica plataforma / Marlene / contrato 297.
 - Teste unitário da função de classificação com os nomes reais listados em spec 00.
+
+## Implementação (19/10/2026)
+
+Feito em `supabase/migrations/20261019000001_catalog.sql`, tela em Integrações → Catálogo
+(`src/components/integrations/`), testes em `supabase/tests/database/catalog.test.sql` (pgTAP, 41).
+
+Decisões tomadas na implementação (diferenças em relação ao texto acima):
+
+- **Classificação no banco, por gatilho.** Toda venda que entra (webhook, sync ou importador) é
+  classificada na gravação: o gatilho cria o produto/link desconhecido com a sugestão e preenche
+  `kind`, `seller_id`, `checkout_name`, `contract_value`. Mudar um produto ou link no catálogo
+  propaga na hora para as vendas dele; mudar padrões de vendedora refaz a atribuição.
+  `reclassify_sales()` continua existindo (botão "Reclassificar vendas", importador).
+- `sales_count`/`last_seen_at` não ficam na tabela: saem das views `v_guru_product_catalog` e
+  `v_asaas_link_catalog` (quantidade, última venda, preço/valor típico), sempre corretas.
+- Total de parcelas usa a coluna já existente `asaas_payments.installment_count` (não
+  `installment_total`), preenchida pelo mapeador a partir de "Parcela X de Y".
+- Cobrança do Asaas **sem link** é classificada pela descrição (mesma regra dos links) e fica sem
+  vendedora. Ex.: "Parcela 1 de 3." sem link (cobrança manual) fica "outro".
+- Regra do link ganhou `projeto mae(s) sem barriga` → plataforma (igual ao Guru). Promoções sem
+  "plataforma"/"Mães Que Treinam" no nome (ex.: "Promoção Adeus Barriga de Mãe (MJ)") ficam
+  "outro" até serem classificadas na tela.
+- Venda com `payment.method = free` recebe `kind = 'ignorar'`; ingresso vendido como order bump
+  recebe `outro` (regra do `turma.mjs`; não há nenhum no histórico).
+- Padrões das vendedoras: regex aplicada ao texto minúsculo e sem acento; `\b` é aceito (vira o
+  `\y` do Postgres). Padrão inválido é recusado ao salvar.
+- `business_settings` criada aqui (uma linha por usuário, padrões da spec 00);
+  `ensure_business_defaults()` cria a linha e as vendedoras Maju (MJ, 1.500) e Marlene (MZ, 1.200).
+- `asaas-sync` passa a buscar `/paymentLinks` antes das cobranças.
+
+Aceite com os dados reais (out/2025–out/2026): set–out/2026 tem 31.710 transações e só 2 ficam
+"outro" (oferta avulsa "Desafio 21 Dias"); checkout "Comercial - Maju - R$ 297 - Desafio Pago" →
+Maju; link "Plataforma Mães Que Treinam (MZ)" → plataforma / Marlene / 297.

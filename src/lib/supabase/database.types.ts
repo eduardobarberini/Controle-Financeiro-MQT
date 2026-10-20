@@ -37,16 +37,56 @@ export type Database = {
                   Relationships: [
                     
                   ]
-                },"asaas_payments": {
+                },"asaas_payment_links": {
                   Row: {
-                    "asaas_created_at": string | null,"asaas_id": string,"billing_type": string | null,"client_payment_date": string | null,"confirmed_date": string | null,"created_at": string,"credit_date": string | null,"customer_id": string | null,"deleted": boolean,"description": string | null,"due_date": string | null,"estimated_credit_date": string | null,"external_reference": string | null,"id": string,"installment_count": number | null,"installment_id": string | null,"installment_number": number | null,"interest_value": number | null,"invoice_url": string | null,"net_value": number,"original_due_date": string | null,"original_value": number | null,"payment_date": string | null,"raw": Json | null,"refunded_value": number,"status": string,"updated_at": string,"user_id": string,"value": number
+                    "asaas_link_id": string,"contract_value": number | null,"created_at": string,"id": string,"is_company_link": boolean,"kind": Database["public"]['Enums']["product_kind"],"kind_source": string,"name": string,"seller_id": string | null,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "asaas_created_at"?: string | null,"asaas_id": string,"billing_type"?: string | null,"client_payment_date"?: string | null,"confirmed_date"?: string | null,"created_at"?: string,"credit_date"?: string | null,"customer_id"?: string | null,"deleted"?: boolean,"description"?: string | null,"due_date"?: string | null,"estimated_credit_date"?: string | null,"external_reference"?: string | null,"id"?: string,"installment_count"?: number | null,"installment_id"?: string | null,"installment_number"?: number | null,"interest_value"?: number | null,"invoice_url"?: string | null,"net_value"?: number,"original_due_date"?: string | null,"original_value"?: number | null,"payment_date"?: string | null,"raw"?: Json | null,"refunded_value"?: number,"status": string,"updated_at"?: string,"user_id": string,"value"?: number
+                    "asaas_link_id": string,"contract_value"?: number | null,"created_at"?: string,"id"?: string,"is_company_link"?: boolean,"kind"?: Database["public"]['Enums']["product_kind"],"kind_source"?: string,"name": string,"seller_id"?: string | null,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "asaas_created_at"?: string | null,"asaas_id"?: string,"billing_type"?: string | null,"client_payment_date"?: string | null,"confirmed_date"?: string | null,"created_at"?: string,"credit_date"?: string | null,"customer_id"?: string | null,"deleted"?: boolean,"description"?: string | null,"due_date"?: string | null,"estimated_credit_date"?: string | null,"external_reference"?: string | null,"id"?: string,"installment_count"?: number | null,"installment_id"?: string | null,"installment_number"?: number | null,"interest_value"?: number | null,"invoice_url"?: string | null,"net_value"?: number,"original_due_date"?: string | null,"original_value"?: number | null,"payment_date"?: string | null,"raw"?: Json | null,"refunded_value"?: number,"status"?: string,"updated_at"?: string,"user_id"?: string,"value"?: number
+                    "asaas_link_id"?: string,"contract_value"?: number | null,"created_at"?: string,"id"?: string,"is_company_link"?: boolean,"kind"?: Database["public"]['Enums']["product_kind"],"kind_source"?: string,"name"?: string,"seller_id"?: string | null,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "asaas_payment_links_seller_id_fkey"
+      columns: ["seller_id"]
+isOneToOne: false
+      referencedRelation: "sellers"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"asaas_payments": {
+                  Row: {
+                    "asaas_created_at": string | null,"asaas_id": string,"billing_type": string | null,"client_payment_date": string | null,"confirmed_date": string | null,"contract_value": number | null,"created_at": string,"credit_date": string | null,"customer_id": string | null,"deleted": boolean,"description": string | null,"due_date": string | null,"estimated_credit_date": string | null,"external_reference": string | null,"id": string,"installment_count": number | null,"installment_id": string | null,"installment_number": number | null,"interest_value": number | null,"invoice_url": string | null,"kind": Database["public"]['Enums']["product_kind"] | null,"net_value": number,"original_due_date": string | null,"original_value": number | null,"payment_date": string | null,"payment_link_id": string | null,"raw": Json | null,"refunded_value": number,"seller_id": string | null,"status": string,"updated_at": string,"user_id": string,"value": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "asaas_created_at"?: string | null,"asaas_id": string,"billing_type"?: string | null,"client_payment_date"?: string | null,"confirmed_date"?: string | null,"contract_value"?: number | null,"created_at"?: string,"credit_date"?: string | null,"customer_id"?: string | null,"deleted"?: boolean,"description"?: string | null,"due_date"?: string | null,"estimated_credit_date"?: string | null,"external_reference"?: string | null,"id"?: string,"installment_count"?: number | null,"installment_id"?: string | null,"installment_number"?: number | null,"interest_value"?: number | null,"invoice_url"?: string | null,"kind"?: Database["public"]['Enums']["product_kind"] | null,"net_value"?: number,"original_due_date"?: string | null,"original_value"?: number | null,"payment_date"?: string | null,"payment_link_id"?: string | null,"raw"?: Json | null,"refunded_value"?: number,"seller_id"?: string | null,"status": string,"updated_at"?: string,"user_id": string,"value"?: number
+                  }
+                  Update: {
+                    "asaas_created_at"?: string | null,"asaas_id"?: string,"billing_type"?: string | null,"client_payment_date"?: string | null,"confirmed_date"?: string | null,"contract_value"?: number | null,"created_at"?: string,"credit_date"?: string | null,"customer_id"?: string | null,"deleted"?: boolean,"description"?: string | null,"due_date"?: string | null,"estimated_credit_date"?: string | null,"external_reference"?: string | null,"id"?: string,"installment_count"?: number | null,"installment_id"?: string | null,"installment_number"?: number | null,"interest_value"?: number | null,"invoice_url"?: string | null,"kind"?: Database["public"]['Enums']["product_kind"] | null,"net_value"?: number,"original_due_date"?: string | null,"original_value"?: number | null,"payment_date"?: string | null,"payment_link_id"?: string | null,"raw"?: Json | null,"refunded_value"?: number,"seller_id"?: string | null,"status"?: string,"updated_at"?: string,"user_id"?: string,"value"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "asaas_payments_seller_id_fkey"
+      columns: ["seller_id"]
+isOneToOne: false
+      referencedRelation: "sellers"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"business_settings": {
+                  Row: {
+                    "api_cost_per_launch": number,"bump_price": number,"commission_rate": number,"created_at": string,"id": string,"launch_window": NonNullable<Json>,"meta_ad_account_id": string | null,"platform_list_price": number,"sales_tax_rate": number,"tax_meta_rate": number,"ticket_price": number,"updated_at": string,"user_id": string,"whatsapp_cost_per_ticket": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "api_cost_per_launch"?: number,"bump_price"?: number,"commission_rate"?: number,"created_at"?: string,"id"?: string,"launch_window"?: NonNullable<Json>,"meta_ad_account_id"?: string | null,"platform_list_price"?: number,"sales_tax_rate"?: number,"tax_meta_rate"?: number,"ticket_price"?: number,"updated_at"?: string,"user_id": string,"whatsapp_cost_per_ticket"?: number
+                  }
+                  Update: {
+                    "api_cost_per_launch"?: number,"bump_price"?: number,"commission_rate"?: number,"created_at"?: string,"id"?: string,"launch_window"?: NonNullable<Json>,"meta_ad_account_id"?: string | null,"platform_list_price"?: number,"sales_tax_rate"?: number,"tax_meta_rate"?: number,"ticket_price"?: number,"updated_at"?: string,"user_id"?: string,"whatsapp_cost_per_ticket"?: number
                   }
                   Relationships: [
                     
@@ -119,6 +159,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"guru_products": {
+                  Row: {
+                    "created_at": string,"first_seen_at": string | null,"guru_product_id": string,"id": string,"internal_id": string | null,"kind": Database["public"]['Enums']["product_kind"],"kind_source": string,"list_price": number | null,"marketplace_name": string | null,"name": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"first_seen_at"?: string | null,"guru_product_id": string,"id"?: string,"internal_id"?: string | null,"kind"?: Database["public"]['Enums']["product_kind"],"kind_source"?: string,"list_price"?: number | null,"marketplace_name"?: string | null,"name": string,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"first_seen_at"?: string | null,"guru_product_id"?: string,"id"?: string,"internal_id"?: string | null,"kind"?: Database["public"]['Enums']["product_kind"],"kind_source"?: string,"list_price"?: number | null,"marketplace_name"?: string | null,"name"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"guru_subscriptions": {
                   Row: {
                     "cancel_at_cycle_end": boolean,"cancelled_at": string | null,"charged_every_days": number | null,"charged_times": number | null,"created_at": string,"customer_email": string | null,"customer_id": string | null,"customer_name": string | null,"guru_id": string,"id": string,"next_cycle_at": string | null,"next_cycle_value": number | null,"payment_method": string | null,"product_id": string | null,"product_name": string | null,"raw": Json | null,"started_at": string | null,"status": string,"subscription_code": string | null,"updated_at": string,"user_id": string
@@ -135,17 +189,23 @@ isOneToOne: false
                   ]
                 },"guru_transactions": {
                   Row: {
-                    "affiliate_name": string | null,"affiliate_value": number,"canceled_at": string | null,"checkout_source": string | null,"confirmed_at": string | null,"coupon_code": string | null,"created_at": string,"currency": string | null,"customer_doc": string | null,"customer_email": string | null,"customer_id": string | null,"customer_name": string | null,"discount_value": number,"gross": number,"guru_id": string,"guru_updated_at": string | null,"has_order_bump": boolean,"id": string,"installments": number | null,"invoice_cycle": number | null,"invoice_type": string | null,"is_order_bump": boolean,"marketplace_id": string | null,"marketplace_name": string | null,"marketplace_value": number,"net": number,"offer_id": string | null,"offer_name": string | null,"ordered_at": string | null,"payment_method": string | null,"product_id": string | null,"product_name": string | null,"product_type": string | null,"quantity": number | null,"raw": Json | null,"source": string | null,"status": string,"subscription_code": string | null,"subscription_status": string | null,"tax_value": number,"total": number,"type": string | null,"updated_at": string,"user_id": string,"utm_campaign": string | null,"utm_content": string | null,"utm_medium": string | null,"utm_source": string | null,"utm_term": string | null
+                    "affiliate_name": string | null,"affiliate_value": number,"canceled_at": string | null,"checkout_name": string | null,"checkout_source": string | null,"confirmed_at": string | null,"confirmed_local": string | null,"coupon_code": string | null,"created_at": string,"currency": string | null,"customer_doc": string | null,"customer_email": string | null,"customer_id": string | null,"customer_name": string | null,"discount_value": number,"gross": number,"guru_id": string,"guru_updated_at": string | null,"has_order_bump": boolean,"id": string,"installments": number | null,"invoice_cycle": number | null,"invoice_type": string | null,"is_commercial": boolean | null,"is_order_bump": boolean,"kind": Database["public"]['Enums']["product_kind"] | null,"marketplace_id": string | null,"marketplace_name": string | null,"marketplace_value": number,"net": number,"offer_id": string | null,"offer_name": string | null,"ordered_at": string | null,"payment_method": string | null,"product_id": string | null,"product_name": string | null,"product_type": string | null,"quantity": number | null,"raw": Json | null,"seller_id": string | null,"source": string | null,"status": string,"subscription_code": string | null,"subscription_status": string | null,"tax_value": number,"total": number,"type": string | null,"updated_at": string,"user_id": string,"utm_campaign": string | null,"utm_content": string | null,"utm_medium": string | null,"utm_source": string | null,"utm_term": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "affiliate_name"?: string | null,"affiliate_value"?: number,"canceled_at"?: string | null,"checkout_source"?: string | null,"confirmed_at"?: string | null,"coupon_code"?: string | null,"created_at"?: string,"currency"?: string | null,"customer_doc"?: string | null,"customer_email"?: string | null,"customer_id"?: string | null,"customer_name"?: string | null,"discount_value"?: number,"gross"?: number,"guru_id": string,"guru_updated_at"?: string | null,"has_order_bump"?: boolean,"id"?: string,"installments"?: number | null,"invoice_cycle"?: number | null,"invoice_type"?: string | null,"is_order_bump"?: boolean,"marketplace_id"?: string | null,"marketplace_name"?: string | null,"marketplace_value"?: number,"net"?: number,"offer_id"?: string | null,"offer_name"?: string | null,"ordered_at"?: string | null,"payment_method"?: string | null,"product_id"?: string | null,"product_name"?: string | null,"product_type"?: string | null,"quantity"?: number | null,"raw"?: Json | null,"source"?: string | null,"status": string,"subscription_code"?: string | null,"subscription_status"?: string | null,"tax_value"?: number,"total"?: number,"type"?: string | null,"updated_at"?: string,"user_id": string,"utm_campaign"?: string | null,"utm_content"?: string | null,"utm_medium"?: string | null,"utm_source"?: string | null,"utm_term"?: string | null
+                    "affiliate_name"?: string | null,"affiliate_value"?: number,"canceled_at"?: string | null,"checkout_name"?: string | null,"checkout_source"?: string | null,"confirmed_at"?: string | null,"confirmed_local"?: never,"coupon_code"?: string | null,"created_at"?: string,"currency"?: string | null,"customer_doc"?: string | null,"customer_email"?: string | null,"customer_id"?: string | null,"customer_name"?: string | null,"discount_value"?: number,"gross"?: number,"guru_id": string,"guru_updated_at"?: string | null,"has_order_bump"?: boolean,"id"?: string,"installments"?: number | null,"invoice_cycle"?: number | null,"invoice_type"?: string | null,"is_commercial"?: never,"is_order_bump"?: boolean,"kind"?: Database["public"]['Enums']["product_kind"] | null,"marketplace_id"?: string | null,"marketplace_name"?: string | null,"marketplace_value"?: number,"net"?: number,"offer_id"?: string | null,"offer_name"?: string | null,"ordered_at"?: string | null,"payment_method"?: string | null,"product_id"?: string | null,"product_name"?: string | null,"product_type"?: string | null,"quantity"?: number | null,"raw"?: Json | null,"seller_id"?: string | null,"source"?: string | null,"status": string,"subscription_code"?: string | null,"subscription_status"?: string | null,"tax_value"?: number,"total"?: number,"type"?: string | null,"updated_at"?: string,"user_id": string,"utm_campaign"?: string | null,"utm_content"?: string | null,"utm_medium"?: string | null,"utm_source"?: string | null,"utm_term"?: string | null
                   }
                   Update: {
-                    "affiliate_name"?: string | null,"affiliate_value"?: number,"canceled_at"?: string | null,"checkout_source"?: string | null,"confirmed_at"?: string | null,"coupon_code"?: string | null,"created_at"?: string,"currency"?: string | null,"customer_doc"?: string | null,"customer_email"?: string | null,"customer_id"?: string | null,"customer_name"?: string | null,"discount_value"?: number,"gross"?: number,"guru_id"?: string,"guru_updated_at"?: string | null,"has_order_bump"?: boolean,"id"?: string,"installments"?: number | null,"invoice_cycle"?: number | null,"invoice_type"?: string | null,"is_order_bump"?: boolean,"marketplace_id"?: string | null,"marketplace_name"?: string | null,"marketplace_value"?: number,"net"?: number,"offer_id"?: string | null,"offer_name"?: string | null,"ordered_at"?: string | null,"payment_method"?: string | null,"product_id"?: string | null,"product_name"?: string | null,"product_type"?: string | null,"quantity"?: number | null,"raw"?: Json | null,"source"?: string | null,"status"?: string,"subscription_code"?: string | null,"subscription_status"?: string | null,"tax_value"?: number,"total"?: number,"type"?: string | null,"updated_at"?: string,"user_id"?: string,"utm_campaign"?: string | null,"utm_content"?: string | null,"utm_medium"?: string | null,"utm_source"?: string | null,"utm_term"?: string | null
+                    "affiliate_name"?: string | null,"affiliate_value"?: number,"canceled_at"?: string | null,"checkout_name"?: string | null,"checkout_source"?: string | null,"confirmed_at"?: string | null,"confirmed_local"?: never,"coupon_code"?: string | null,"created_at"?: string,"currency"?: string | null,"customer_doc"?: string | null,"customer_email"?: string | null,"customer_id"?: string | null,"customer_name"?: string | null,"discount_value"?: number,"gross"?: number,"guru_id"?: string,"guru_updated_at"?: string | null,"has_order_bump"?: boolean,"id"?: string,"installments"?: number | null,"invoice_cycle"?: number | null,"invoice_type"?: string | null,"is_commercial"?: never,"is_order_bump"?: boolean,"kind"?: Database["public"]['Enums']["product_kind"] | null,"marketplace_id"?: string | null,"marketplace_name"?: string | null,"marketplace_value"?: number,"net"?: number,"offer_id"?: string | null,"offer_name"?: string | null,"ordered_at"?: string | null,"payment_method"?: string | null,"product_id"?: string | null,"product_name"?: string | null,"product_type"?: string | null,"quantity"?: number | null,"raw"?: Json | null,"seller_id"?: string | null,"source"?: string | null,"status"?: string,"subscription_code"?: string | null,"subscription_status"?: string | null,"tax_value"?: number,"total"?: number,"type"?: string | null,"updated_at"?: string,"user_id"?: string,"utm_campaign"?: string | null,"utm_content"?: string | null,"utm_medium"?: string | null,"utm_source"?: string | null,"utm_term"?: string | null
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "guru_transactions_seller_id_fkey"
+      columns: ["seller_id"]
+isOneToOne: false
+      referencedRelation: "sellers"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"integration_settings": {
                   Row: {
@@ -231,6 +291,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"sellers": {
+                  Row: {
+                    "active": boolean,"asaas_patterns": (string)[],"code": string,"commission_rate": number,"created_at": string,"fixed_salary": number,"guru_patterns": (string)[],"id": string,"name": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "active"?: boolean,"asaas_patterns"?: (string)[],"code": string,"commission_rate"?: number,"created_at"?: string,"fixed_salary"?: number,"guru_patterns"?: (string)[],"id"?: string,"name": string,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "active"?: boolean,"asaas_patterns"?: (string)[],"code"?: string,"commission_rate"?: number,"created_at"?: string,"fixed_salary"?: number,"guru_patterns"?: (string)[],"id"?: string,"name"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"sync_runs": {
                   Row: {
                     "details": NonNullable<Json>,"error": string | null,"finished_at": string | null,"id": string,"provider": Database["public"]['Enums']["integration_provider"],"records_upserted": number,"started_at": string,"status": string,"trigger": string,"user_id": string | null
@@ -262,9 +336,31 @@ isOneToOne: false
                 }
           }
           Views: {
-            "v_asaas_receivables": {
+            "v_asaas_link_catalog": {
+                  Row: {
+                    "asaas_link_id": string | null,"contract_value": number | null,"contracts": number | null,"created_at": string | null,"id": string | null,"is_company_link": boolean | null,"kind": Database["public"]['Enums']["product_kind"] | null,"kind_source": string | null,"last_sale_on": string | null,"name": string | null,"paid_contracts": number | null,"seller_id": string | null,"typical_contract_value": number | null,"updated_at": string | null,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "asaas_payment_links_seller_id_fkey"
+      columns: ["seller_id"]
+isOneToOne: false
+      referencedRelation: "sellers"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"v_asaas_receivables": {
                   Row: {
                     "open_count": number | null,"open_value": number | null,"overdue_count": number | null,"overdue_value": number | null,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
+                },"v_guru_product_catalog": {
+                  Row: {
+                    "created_at": string | null,"first_seen_at": string | null,"guru_product_id": string | null,"id": string | null,"internal_id": string | null,"kind": Database["public"]['Enums']["product_kind"] | null,"kind_source": string | null,"last_sale_at": string | null,"list_price": number | null,"marketplace_name": string | null,"name": string | null,"sales_count": number | null,"typical_price": number | null,"updated_at": string | null,"user_id": string | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -281,10 +377,36 @@ isOneToOne: false
                 }
           }
           Functions: {
-            [_ in never]: never
+            "ensure_business_defaults":
+{ Args: { "p_user_id"?: string }; Returns: undefined
+                           },
+"guru_transaction_kind":
+{ Args: { "p_is_order_bump": boolean,"p_payment_method": string,"p_product_kind": Database["public"]['Enums']["product_kind"] }; Returns: Database["public"]['Enums']["product_kind"]
+                           },
+"is_company_link_name":
+{ Args: { "p_name": string }; Returns: boolean
+                           },
+"is_standard_platform_link":
+{ Args: { "p_name": string }; Returns: boolean
+                           },
+"match_seller":
+{ Args: { "p_source": string,"p_text": string,"p_user_id": string }; Returns: string
+                           },
+"norm_text":
+{ Args: { "s": string }; Returns: string
+                           },
+"reclassify_sales":
+{ Args: { "p_user_id"?: string }; Returns: Json
+                           },
+"suggest_asaas_kind":
+{ Args: { "p_name": string }; Returns: Database["public"]['Enums']["product_kind"]
+                           },
+"suggest_guru_product_kind":
+{ Args: { "p_name": string }; Returns: Database["public"]['Enums']["product_kind"]
+                           }
           }
           Enums: {
-            "expense_recurrence": "pontual"|"mensal"|"trimestral"|"semestral"|"anual","expense_status": "pago"|"pendente","integration_provider": "guru"|"asaas"|"meta"
+            "expense_recurrence": "pontual"|"mensal"|"trimestral"|"semestral"|"anual","expense_status": "pago"|"pendente","integration_provider": "guru"|"asaas"|"meta","product_kind": "ingresso"|"bump"|"plataforma"|"renovacao"|"outro"|"ignorar"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -404,7 +526,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "expense_recurrence": ["pontual", "mensal", "trimestral", "semestral", "anual"],"expense_status": ["pago", "pendente"],"integration_provider": ["guru", "asaas", "meta"]
+            "expense_recurrence": ["pontual", "mensal", "trimestral", "semestral", "anual"],"expense_status": ["pago", "pendente"],"integration_provider": ["guru", "asaas", "meta"],"product_kind": ["ingresso", "bump", "plataforma", "renovacao", "outro", "ignorar"]
           }
         }
 } as const

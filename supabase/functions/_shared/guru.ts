@@ -18,6 +18,15 @@ export function toIso(v: unknown): string | null {
   return Number.isNaN(d.getTime()) ? null : d.toISOString()
 }
 
+/**
+ * Cópia da transação para a coluna `raw`, sem `infrastructure` (IP, navegador,
+ * geolocalização): não serve ao financeiro e é ~15% do tamanho.
+ */
+export function compactRaw(t: Obj): Obj {
+  const { infrastructure: _infrastructure, ...rest } = t
+  return rest
+}
+
 /** Converte uma transação (REST ou webhook) na linha de guru_transactions. */
 export function mapTransaction(t: Obj, userId: string): Obj | null {
   const id = str(t.id)
@@ -69,6 +78,8 @@ export function mapTransaction(t: Obj, userId: string): Obj | null {
     coupon_code: str(coupon.coupon_code),
     source: str(track.source),
     checkout_source: str(track.checkout_source),
+    // Nome do checkout ("Comercial - Maju - R$ 297 - ...") identifica a vendedora.
+    checkout_name: str(obj(track.pptc).checkout_name),
     utm_source: str(track.utm_source),
     utm_medium: str(track.utm_medium),
     utm_campaign: str(track.utm_campaign),
@@ -82,7 +93,7 @@ export function mapTransaction(t: Obj, userId: string): Obj | null {
     confirmed_at: toIso(dates.confirmed_at),
     canceled_at: toIso(dates.canceled_at),
     guru_updated_at: toIso(dates.updated_at),
-    raw: t,
+    raw: compactRaw(t),
   }
 }
 

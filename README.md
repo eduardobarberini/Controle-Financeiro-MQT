@@ -12,7 +12,8 @@ vista), **Asaas** (parcelado em PIX e boleto) e **Meta Ads** (tráfego).
 
 ## Rodando localmente
 
-Pré-requisitos: Node 20+, pnpm (`npm i -g pnpm`) e Docker Desktop rodando.
+Pré-requisitos: Node 22.18+ (roda o importador em TypeScript direto), pnpm (`npm i -g pnpm`) e
+Docker Desktop rodando.
 
 ```bash
 pnpm install
@@ -33,6 +34,14 @@ curl -X POST http://127.0.0.1:54721/auth/v1/admin/users \
   -d '{"email":"voce@exemplo.com","password":"sua-senha","email_confirm":true,"user_metadata":{"name":"Seu Nome"}}'
 ```
 
+Histórico (Guru e Asaas desde out/2025) a partir das exportações em `../MQT - IA/ferramentas`
+(spec 02; ~2 min, pode rodar de novo sem duplicar):
+
+```bash
+pnpm import:historico                                   # Guru + Asaas no banco local
+pnpm import:historico --fonte asaas --db "<connection string de produção>"
+```
+
 Edge Functions locais (webhooks e sincronizações):
 
 ```bash
@@ -45,7 +54,9 @@ pnpm supabase functions serve --env-file supabase/functions/.env
 | ----------------- | ------------------------------------------- |
 | `pnpm dev`        | servidor de desenvolvimento                 |
 | `pnpm build`      | build de produção em `dist/`                |
-| `pnpm test`       | testes unitários dos cálculos (vitest)      |
+| `pnpm test`       | testes unitários dos cálculos e mapeadores (vitest) |
+| `pnpm test:db`    | testes das regras no banco (pgTAP, `supabase/tests`) |
+| `pnpm import:historico` | importa as exportações do Guru/Asaas (`scripts/import-historico.ts`) |
 | `pnpm lint`       | oxlint                                      |
 | `pnpm format`     | oxfmt                                       |
 | `pnpm db:types`   | regenera `src/lib/supabase/database.types.ts` a partir do banco local |
@@ -59,9 +70,12 @@ src/
   contexts/         auth, empresa, financeiro (ano selecionado + resumo anual)
   hooks/            realtime, dados mensais, valores automáticos
   lib/              cálculos financeiros, recorrência de gastos, cliente Supabase
+  components/integrations/  catálogo (produtos Guru, links Asaas, vendedoras)
 supabase/
-  migrations/       esquema, integrações, agendamento (pg_cron)
+  migrations/       esquema, integrações, agendamento (pg_cron), catálogo e classificação
   functions/        guru-webhook, guru-sync, asaas-webhook, asaas-sync, meta-sync (+ _shared)
+  tests/database/   testes pgTAP
+scripts/            importador do histórico
 ```
 
 ## Deploy em produção

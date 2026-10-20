@@ -32,6 +32,9 @@ Feito na branch `supabase-migration` (PR #1): migração PocketBase → Supabase
 integração, webhooks e syncs (versão inicial, não incremental), tela Integrações, preenchimento
 automático básico do Mensal, correções da revisão de código. O que está nas specs é o que falta.
 
+Specs 01 (catálogo) e 02 (importador) implementadas em 19/10/2026; cada uma tem uma seção
+"Implementação" com as decisões e a validação contra os relatórios.
+
 ## Convenções
 
 - Dinheiro em `numeric(14,2)`; percentuais guardados como número em % (9,00 = 9%).

@@ -42,8 +42,13 @@ import {
   Receipt,
   Megaphone,
 } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { CatalogTab } from '@/components/integrations/CatalogTab'
 
 const PROVIDERS: IntegrationProvider[] = ['guru', 'asaas', 'meta']
+
+const TAB_CLASS =
+  'rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#6D49F2] data-[state=active]:to-[#FF2AFF] data-[state=active]:text-white data-[state=active]:shadow-xs text-xs font-bold px-4 py-2 text-slate-600'
 
 const PROVIDER_META: Record<
   IntegrationProvider,
@@ -81,9 +86,14 @@ const DAY_OPTIONS = [
 ]
 
 const fmtDateTime = (iso: string | null | undefined) =>
-  iso
-    ? new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
-    : '—'
+  iso ? new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '—'
+
+/** Detalhes da execução em uma linha (listas e objetos aninhados ficam de fora). */
+const fmtDetails = (details: Record<string, unknown> | null) =>
+  Object.entries(details ?? {})
+    .filter(([, v]) => v === null || typeof v !== 'object')
+    .map(([k, v]) => `${k}: ${String(v)}`)
+    .join(' · ')
 
 const fmtDuration = (run: SyncRun) => {
   if (!run.finished_at) return '…'
@@ -216,7 +226,10 @@ function ProviderCard({ provider, setting, onChanged }: ProviderCardProps) {
         .filter(([k]) => !['ok', 'error', 'days', 'since', 'until', 'ad_account_id'].includes(k))
         .map(([k, v]) => `${k}: ${String(v)}`)
         .join(' · ')
-      toast({ title: `${PROVIDER_LABELS[provider]} sincronizado`, description: summary || 'Concluído.' })
+      toast({
+        title: `${PROVIDER_LABELS[provider]} sincronizado`,
+        description: summary || 'Concluído.',
+      })
       onChanged()
     } catch (err) {
       toast({
@@ -371,8 +384,16 @@ export default function Integracoes() {
     load()
   }, [load])
 
-  useRealtime('sync_runs', useCallback(() => load(), [load]), isAuthenticated)
-  useRealtime('integration_settings', useCallback(() => load(), [load]), isAuthenticated)
+  useRealtime(
+    'sync_runs',
+    useCallback(() => load(), [load]),
+    isAuthenticated,
+  )
+  useRealtime(
+    'integration_settings',
+    useCallback(() => load(), [load]),
+    isAuthenticated,
+  )
 
   const byProvider = useMemo(
     () => new Map(settings.map((s) => [s.provider, s] as const)),
@@ -401,77 +422,101 @@ export default function Integracoes() {
         </Button>
       </div>
 
-      {loading ? (
-        <div className="flex items-center gap-2 text-sm text-slate-500">
-          <Loader2 className="w-4 h-4 animate-spin" /> Carregando integrações...
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          {PROVIDERS.map((p) => (
-            <ProviderCard key={p} provider={p} setting={byProvider.get(p)} onChanged={load} />
-          ))}
-        </div>
-      )}
+      <Tabs defaultValue="conexoes" className="space-y-6">
+        <TabsList className="bg-white border border-slate-200/90 shadow-sm rounded-2xl p-1.5 h-auto flex flex-col sm:flex-row w-full sm:w-fit gap-1">
+          <TabsTrigger value="conexoes" className={TAB_CLASS}>
+            Conexões
+          </TabsTrigger>
+          <TabsTrigger value="catalogo" className={TAB_CLASS}>
+            Catálogo
+          </TabsTrigger>
+        </TabsList>
 
-      <Card className="border-slate-200 shadow-xs">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-bold text-slate-900">Histórico de sincronizações</CardTitle>
-          <CardDescription className="text-xs">
-            Execuções agendadas, manuais e de carga de histórico, com registros gravados e erros.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-slate-50/80">
-                  <TableHead className="text-[11px]">Quando</TableHead>
-                  <TableHead className="text-[11px]">Integração</TableHead>
-                  <TableHead className="text-[11px]">Origem</TableHead>
-                  <TableHead className="text-[11px]">Status</TableHead>
-                  <TableHead className="text-[11px] text-right">Registros</TableHead>
-                  <TableHead className="text-[11px] text-right">Duração</TableHead>
-                  <TableHead className="text-[11px]">Detalhes</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {runs.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-10 text-slate-400 text-sm">
-                      Nenhuma sincronização ainda.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  runs.map((run) => (
-                    <TableRow key={run.id} className="border-b border-slate-100">
-                      <TableCell className="text-xs text-slate-700 whitespace-nowrap">
-                        {fmtDateTime(run.started_at)}
-                      </TableCell>
-                      <TableCell className="text-xs font-medium text-slate-900">
-                        {PROVIDER_LABELS[run.provider].split(' (')[0]}
-                      </TableCell>
-                      <TableCell className="text-xs text-slate-600">{TRIGGER_LABEL[run.trigger]}</TableCell>
-                      <TableCell>
-                        <StatusBadge status={run.status} />
-                      </TableCell>
-                      <TableCell className="text-xs text-right text-slate-700">
-                        {run.records_upserted}
-                      </TableCell>
-                      <TableCell className="text-xs text-right text-slate-500">{fmtDuration(run)}</TableCell>
-                      <TableCell className="text-[11px] text-slate-500 max-w-[320px] truncate" title={run.error ?? JSON.stringify(run.details)}>
-                        {run.error ??
-                          Object.entries(run.details ?? {})
-                            .map(([k, v]) => `${k}: ${String(v)}`)
-                            .join(' · ')}
-                      </TableCell>
+        <TabsContent value="catalogo" className="mt-0">
+          <CatalogTab />
+        </TabsContent>
+
+        <TabsContent value="conexoes" className="mt-0 space-y-8">
+          {loading ? (
+            <div className="flex items-center gap-2 text-sm text-slate-500">
+              <Loader2 className="w-4 h-4 animate-spin" /> Carregando integrações...
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+              {PROVIDERS.map((p) => (
+                <ProviderCard key={p} provider={p} setting={byProvider.get(p)} onChanged={load} />
+              ))}
+            </div>
+          )}
+
+          <Card className="border-slate-200 shadow-xs">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-bold text-slate-900">
+                Histórico de sincronizações
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Execuções agendadas, manuais e de carga de histórico, com registros gravados e
+                erros.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50/80">
+                      <TableHead className="text-[11px]">Quando</TableHead>
+                      <TableHead className="text-[11px]">Integração</TableHead>
+                      <TableHead className="text-[11px]">Origem</TableHead>
+                      <TableHead className="text-[11px]">Status</TableHead>
+                      <TableHead className="text-[11px] text-right">Registros</TableHead>
+                      <TableHead className="text-[11px] text-right">Duração</TableHead>
+                      <TableHead className="text-[11px]">Detalhes</TableHead>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {runs.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-10 text-slate-400 text-sm">
+                          Nenhuma sincronização ainda.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      runs.map((run) => (
+                        <TableRow key={run.id} className="border-b border-slate-100">
+                          <TableCell className="text-xs text-slate-700 whitespace-nowrap">
+                            {fmtDateTime(run.started_at)}
+                          </TableCell>
+                          <TableCell className="text-xs font-medium text-slate-900">
+                            {PROVIDER_LABELS[run.provider].split(' (')[0]}
+                          </TableCell>
+                          <TableCell className="text-xs text-slate-600">
+                            {TRIGGER_LABEL[run.trigger]}
+                          </TableCell>
+                          <TableCell>
+                            <StatusBadge status={run.status} />
+                          </TableCell>
+                          <TableCell className="text-xs text-right text-slate-700">
+                            {run.records_upserted}
+                          </TableCell>
+                          <TableCell className="text-xs text-right text-slate-500">
+                            {fmtDuration(run)}
+                          </TableCell>
+                          <TableCell
+                            className="text-[11px] text-slate-500 max-w-[320px] truncate"
+                            title={run.error ?? JSON.stringify(run.details)}
+                          >
+                            {run.error ?? fmtDetails(run.details)}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

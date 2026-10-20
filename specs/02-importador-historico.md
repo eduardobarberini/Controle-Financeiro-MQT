@@ -52,3 +52,44 @@ Comparar com os relatórios existentes, mesmo período:
 
 Meta Ads histórico (não há exportação completa; `GASTO_DIA` em `turma.mjs` cobre só 24/07–29/08/2026
 e pode ser importado como tabela manual `meta_manual_spend` se o Eduardo quiser os meses antigos).
+
+## Implementação (19/10/2026)
+
+`scripts/import-historico.ts` (`pnpm import:historico`, opções no topo do arquivo). Diferenças:
+
+- TypeScript rodado direto pelo Node 22.18+ (importa os mapeadores das Edge Functions sem build).
+- Leitura em streaming própria (`scripts/lib/json-array-stream.ts`, testada) em vez de
+  stream-json: recorta cada objeto do array e faz `JSON.parse` só dele (~20 MB/s → 2,4 GB em ~1 min).
+- Upsert em lotes de 500 via `jsonb_populate_recordset` (um parâmetro JSON por lote).
+  Guru: só sobrescreve com `dates.updated_at` mais novo (`--forcar` regrava versões iguais).
+  Asaas: arquivos por data de modificação (o mais novo vence) e só sobrescreve linha do banco
+  anterior ao arquivo, então sync/webhook mais recentes nunca regridem.
+- **Cobranças apagadas no Asaas**: a API não lista cobranças apagadas, então elas somem das
+  exportações seguintes. Cobrança que aparece num arquivo e falta num arquivo mais novo que
+  cobre a mesma data de criação é marcada `deleted = true` (378 no histórico, ex.: parcelas
+  2 e 3 canceladas). Sem isso o comercial mostrava ~120 "não pagas" a mais.
+- `raw` do Guru é gravado sem `infrastructure` (IP, navegador): ~15% menor e sem dado pessoal
+  que o financeiro não usa. Vale também para sync e webhook (mapeador compartilhado).
+- Um registro em `sync_runs` por fonte (`trigger = 'backfill'`), com totais e `por_arquivo`.
+- Ajustes do comercial (`decisoes/*.json` → `commercial_adjustments`) ficam para a spec 05,
+  que cria a tabela.
+
+Resultado no banco local (19/10/2026): 63 arquivos do Guru (497.981 linhas) → 181.324 transações;
+19 arquivos do Asaas → 12.263 cobranças, 153 links, 12.616 clientes. Do zero em 2 min 08 s;
+segunda execução não grava nada. Banco com ~740 MB (`guru_transactions` ~690 MB).
+
+Validação:
+
+- Turma de 9/8/2026 igual ao `relatorio_turma_2026-08-09.html`: 3.885 ingressos, 801 bumps,
+  308 plataforma Guru, 100 Asaas; comercial Guru MJ 57 / MZ 56, Asaas MJ 60 / MZ 37.
+  Pela regra D1 (só link de plataforma) o Asaas dá 99: a 100ª é cobrança manual sem link.
+- Turmas de 30/8 a 11/10 (regras do `turma.mjs` reproduzidas em streaming): ingressos, bumps e
+  plataforma iguais, exceto 4/10 com 5 ingressos a menos — ofertas `free` (valor 0), que a
+  spec 00 manda ignorar.
+- Fechamentos de ago e set/2026 (Maju e Marlene): Guru igual em quantidade, faturamento e
+  reembolsos; Asaas igual cobrança a cobrança (950 contratos, vendas e não pagas), antes dos
+  ajustes. Única diferença: 2 contratos com parcelas 2/3 canceladas valem 3 × 90 = 270 no banco
+  (contrato vendido) e 90 no script; os dois são exclusões manuais das `decisoes/` de setembro.
+- `v_monthly_integrations` com os 13 meses de out/2025 a out/2026. O Asaas de out/2025 é baixo
+  porque as exportações começam nas cobranças criadas em 01/10/2025 (parcelas de contratos
+  anteriores não estão nelas).

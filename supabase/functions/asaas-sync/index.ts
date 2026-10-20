@@ -43,6 +43,16 @@ Deno.serve(async (req) => {
     const apiKey = requireEnv('ASAAS_API_KEY')
     const since = daysAgoIso(days)
 
+    // Links de pagamento primeiro: o nome do link classifica a cobrança
+    // (plataforma/renovação, vendedora) quando ela é gravada.
+    const links: Obj[] = []
+    for await (const l of asaasPaginate(apiKey, '/paymentLinks')) {
+      const id = l.id ? String(l.id) : null
+      const name = l.name ? String(l.name).trim() : ''
+      if (id && name) links.push({ user_id: owner.userId, asaas_link_id: id, name })
+    }
+    const linksCount = await upsertBatches(sb, 'asaas_payment_links', links, 'user_id,asaas_link_id')
+
     const byId = new Map<string, Obj>()
     const collect = async (params: Record<string, string>) => {
       for await (const p of asaasPaginate(apiKey, '/payments', params)) {
@@ -86,7 +96,7 @@ Deno.serve(async (req) => {
       customersCount = await upsertBatches(sb, 'asaas_customers', rows, 'asaas_id')
     }
 
-    const details = { days, since, payments: paymentsCount, customers: customersCount }
+    const details = { days, since, links: linksCount, payments: paymentsCount, customers: customersCount }
     await finishRun(sb, runId, {
       userId: owner.userId,
       provider: 'asaas',
